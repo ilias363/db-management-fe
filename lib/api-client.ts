@@ -1,0 +1,219 @@
+import type {
+  ApiClient,
+  LoginRequestDto,
+  LoginResponse,
+  LogoutResponse,
+  IsLoggedInResponse,
+  CurrentUserResponse,
+  UserPermissionsResponse,
+  DetailedPermissionsResponse,
+  UsersResponse,
+  UserResponse,
+  NewUserDto,
+  UpdateUserDto,
+  VoidResponse,
+  RolesResponse,
+  RoleResponse,
+  NewRoleDto,
+  UpdateRoleDto,
+  AuditLogPageResponse,
+  AuditLogResponse,
+  PaginationParams,
+} from "./types"
+
+class ApiClientImpl implements ApiClient {
+  private baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api"
+
+  private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
+    const url = `${this.baseUrl}${endpoint}`
+
+    const response = await fetch(url, {
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+      },
+      ...options,
+      credentials: "include",
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: "An error occurred" }))
+      console.error(`API Error for ${url}:`, errorData)
+      throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`)
+    }
+
+    return response.json()
+  }
+
+  auth = {
+    login: async (credentials: LoginRequestDto): Promise<LoginResponse> => {
+      const response = await this.request<LoginResponse>("/auth/login", {
+        method: "POST",
+        body: JSON.stringify(credentials),
+      })
+
+      return response
+    },
+
+    logout: async (): Promise<LogoutResponse> => {
+      const response = await this.request<LogoutResponse>("/auth/logout", { method: "POST" })
+      return response
+    },
+
+    isLoggedIn: (): Promise<IsLoggedInResponse> => this.request("/auth/isloggedin"),
+
+    getCurrentUser: (): Promise<CurrentUserResponse> => this.request("/auth/current-user"),
+
+    getCurrentUserPermissions: (): Promise<UserPermissionsResponse> => this.request("/auth/current-user/permissions"),
+
+    getDetailedPermissions: (schemaName?: string, tableName?: string): Promise<DetailedPermissionsResponse> => {
+      const params = new URLSearchParams()
+      if (schemaName) params.append("schemaName", schemaName)
+      if (tableName) params.append("tableName", tableName)
+      const query = params.toString() ? `?${params.toString()}` : ""
+      return this.request(`/auth/current-user/detailed-permissions${query}`)
+    },
+  }
+
+  users = {
+    getAllUsers: (): Promise<UsersResponse> => this.request("/users"),
+
+    getAllActiveUsers: (): Promise<UsersResponse> => this.request("/users/active"),
+
+    getUserById: (id: number): Promise<UserResponse> => this.request(`/users/${id}`),
+
+    getUserByUsername: (username: string): Promise<UserResponse> => this.request(`/users/username/${username}`),
+
+    createUser: (user: NewUserDto): Promise<UserResponse> =>
+      this.request("/users", {
+        method: "POST",
+        body: JSON.stringify(user),
+      }),
+
+    updateUser: (user: UpdateUserDto): Promise<UserResponse> =>
+      this.request("/users", {
+        method: "PUT",
+        body: JSON.stringify(user),
+      }),
+
+    deactivateUser: (id: number): Promise<VoidResponse> => this.request(`/users/${id}/deactivate`, { method: "PUT" }),
+
+    activateUser: (id: number): Promise<VoidResponse> => this.request(`/users/${id}/activate`, { method: "PUT" }),
+  }
+
+  roles = {
+    getAllRoles: (): Promise<RolesResponse> => this.request("/roles"),
+
+    getRoleById: (id: number): Promise<RoleResponse> => this.request(`/roles/${id}`),
+
+    createRole: (role: NewRoleDto): Promise<RoleResponse> =>
+      this.request("/roles", {
+        method: "POST",
+        body: JSON.stringify(role),
+      }),
+
+    updateRole: (role: UpdateRoleDto): Promise<RoleResponse> =>
+      this.request("/roles", {
+        method: "PUT",
+        body: JSON.stringify(role),
+      }),
+
+    deleteRole: (id: number): Promise<VoidResponse> => this.request(`/roles/${id}`, { method: "DELETE" }),
+  }
+
+  audit = {
+    getAuditLogs: (params?: PaginationParams): Promise<AuditLogPageResponse> => {
+      const query = params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : ""
+      return this.request(`/audit${query}`)
+    },
+
+    getAuditLogsByUserId: (userId: number, params?: PaginationParams): Promise<AuditLogPageResponse> => {
+      const query = params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : ""
+      return this.request(`/audit/user/${userId}${query}`)
+    },
+
+    getAuditLogById: (id: number): Promise<AuditLogResponse> => this.request(`/audit/${id}`),
+
+    deleteAuditLog: (id: number): Promise<VoidResponse> => this.request(`/audit/${id}`, { method: "DELETE" }),
+  }
+
+  schema = {
+    getAllSchemas: () => Promise.reject(new Error("Not implemented")),
+    getAllSchemasIncludingSystem: () => Promise.reject(new Error("Not implemented")),
+    getSchemaByName: () => Promise.reject(new Error("Not implemented")),
+    createSchema: () => Promise.reject(new Error("Not implemented")),
+    deleteSchema: () => Promise.reject(new Error("Not implemented")),
+  }
+
+  table = {
+    getTable: () => Promise.reject(new Error("Not implemented")),
+    getAllTablesInSchema: () => Promise.reject(new Error("Not implemented")),
+    createTable: () => Promise.reject(new Error("Not implemented")),
+    renameTable: () => Promise.reject(new Error("Not implemented")),
+    deleteTable: () => Promise.reject(new Error("Not implemented")),
+  }
+
+  view = {
+    getView: () => Promise.reject(new Error("Not implemented")),
+    getAllViewsInSchema: () => Promise.reject(new Error("Not implemented")),
+    getViewRecords: () => Promise.reject(new Error("Not implemented")),
+    renameView: () => Promise.reject(new Error("Not implemented")),
+    deleteView: () => Promise.reject(new Error("Not implemented")),
+  }
+
+  column = {
+    getColumn: () => Promise.reject(new Error("Not implemented")),
+    getColumnsForTable: () => Promise.reject(new Error("Not implemented")),
+    createStandardColumn: () => Promise.reject(new Error("Not implemented")),
+    createPrimaryKeyColumn: () => Promise.reject(new Error("Not implemented")),
+    createForeignKeyColumn: () => Promise.reject(new Error("Not implemented")),
+    deleteColumn: () => Promise.reject(new Error("Not implemented")),
+    renameColumn: () => Promise.reject(new Error("Not implemented")),
+    updateColumnDataType: () => Promise.reject(new Error("Not implemented")),
+    updateColumnAutoIncrement: () => Promise.reject(new Error("Not implemented")),
+    updateColumnNullable: () => Promise.reject(new Error("Not implemented")),
+    updateColumnUnique: () => Promise.reject(new Error("Not implemented")),
+    updateColumnDefault: () => Promise.reject(new Error("Not implemented")),
+    updateColumnPrimaryKey: () => Promise.reject(new Error("Not implemented")),
+    updateColumnForeignKey: () => Promise.reject(new Error("Not implemented")),
+  }
+
+  index = {
+    getindex: () => Promise.reject(new Error("Not implemented")),
+    getIndexesForTable: () => Promise.reject(new Error("Not implemented")),
+    createIndex: () => Promise.reject(new Error("Not implemented")),
+    deleteIndex: () => Promise.reject(new Error("Not implemented")),
+  }
+
+  record = {
+    getRecords: () => Promise.reject(new Error("Not implemented")),
+    getRecord: () => Promise.reject(new Error("Not implemented")),
+    createRecord: () => Promise.reject(new Error("Not implemented")),
+    updateRecord: () => Promise.reject(new Error("Not implemented")),
+    deleteRecord: () => Promise.reject(new Error("Not implemented")),
+    getRecordByValues: () => Promise.reject(new Error("Not implemented")),
+    getRecordsByValues: () => Promise.reject(new Error("Not implemented")),
+    updateRecordByValues: () => Promise.reject(new Error("Not implemented")),
+    deleteRecordByValues: () => Promise.reject(new Error("Not implemented")),
+    createRecords: () => Promise.reject(new Error("Not implemented")),
+    updateRecords: () => Promise.reject(new Error("Not implemented")),
+    deleteRecords: () => Promise.reject(new Error("Not implemented")),
+    updateRecordsByValues: () => Promise.reject(new Error("Not implemented")),
+    deleteRecordsByValues: () => Promise.reject(new Error("Not implemented")),
+    advancedSearch: () => Promise.reject(new Error("Not implemented")),
+    getRecordCount: () => Promise.reject(new Error("Not implemented")),
+  }
+}
+
+export const apiClient = new ApiClientImpl()
+
+// Expose for debugging in browser console
+declare global {
+  interface Window {
+    apiClient: ApiClientImpl
+  }
+}
+
+if (typeof window !== 'undefined') {
+  window.apiClient = apiClient
+}
