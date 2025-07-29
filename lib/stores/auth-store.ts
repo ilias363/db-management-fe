@@ -25,7 +25,7 @@ interface AuthState {
 const initialState = {
     user: null,
     permissions: null,
-    isLoading: true,
+    isLoading: false,
     isInitialized: false,
 };
 
@@ -60,7 +60,7 @@ export const useAuthStore = create<AuthState>()(
                             }, false, 'refreshAuth:failed');
                         }
                     } catch (error) {
-                        console.error('Error refreshing auth:', error);
+                        console.error('Auth store : Error refreshing auth:', error);
                         set({
                             user: null,
                             permissions: null,
@@ -95,10 +95,12 @@ export const useAuthStore = create<AuthState>()(
                 },
 
                 logout: async () => {
+                    set({ isLoading: true }, false, 'logout:start');
+
                     try {
                         await apiClient.auth.logout();
                     } catch (error) {
-                        console.error('Logout error:', error);
+                        console.error('Auth store : Logout error:', error);
                     } finally {
                         set({
                             user: null,
@@ -125,7 +127,7 @@ export const useAuthStore = create<AuthState>()(
                             }, false, 'initializeAuth:notLoggedIn');
                         }
                     } catch (error) {
-                        console.error('Authentication check failed:', error);
+                        console.error('Auth store : Authentication check failed:', error);
                         set({
                             user: null,
                             permissions: null,
