@@ -38,6 +38,10 @@ export function AuthGuard({ children }: AuthGuardProps) {
   }, [isInitialized, initializeAuth, isInitializing]);
 
   useEffect(() => {
+    setHasRedirected(false);
+  }, [pathname]);
+
+  useEffect(() => {
     if (isLoading || isInitializing || !isInitialized || hasRedirected) {
       return;
     }
@@ -54,11 +58,6 @@ export function AuthGuard({ children }: AuthGuardProps) {
       return;
     }
   }, [user, isLoading, isInitialized, isPublicRoute, router, pathname, isInitializing, hasRedirected]);
-
-  useEffect(() => {
-    setHasRedirected(false);
-  }, [pathname]);
-
   if (!isInitialized || isInitializing) {
     return <LoadingScreen message="Initializing authentication..." />;
   }
