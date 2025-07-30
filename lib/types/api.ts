@@ -6,12 +6,12 @@ import type {
   CurrentUserResponse,
   UserPermissionsResponse,
   DetailedPermissionsResponse,
-  UsersResponse,
+  UserPageResponse,
   UserResponse,
   NewUserDto,
   UpdateUserDto,
   VoidResponse,
-  RolesResponse,
+  RolePageResponse,
   RoleResponse,
   NewRoleDto,
   UpdateRoleDto,
@@ -68,8 +68,8 @@ export interface ApiClient {
     getDetailedPermissions: (schemaName?: string, tableName?: string) => Promise<DetailedPermissionsResponse>
   }
   users: {
-    getAllUsers: () => Promise<UsersResponse>
-    getAllActiveUsers: () => Promise<UsersResponse>
+    getAllUsers: () => Promise<UserPageResponse>
+    getAllActiveUsers: () => Promise<UserPageResponse>
     getUserById: (id: number) => Promise<UserResponse>
     getUserByUsername: (username: string) => Promise<UserResponse>
     createUser: (user: NewUserDto) => Promise<UserResponse>
@@ -78,7 +78,7 @@ export interface ApiClient {
     activateUser: (id: number) => Promise<VoidResponse>
   }
   roles: {
-    getAllRoles: () => Promise<RolesResponse>
+    getAllRoles: () => Promise<RolePageResponse>
     getRoleById: (id: number) => Promise<RoleResponse>
     createRole: (role: NewRoleDto) => Promise<RoleResponse>
     updateRole: (role: UpdateRoleDto) => Promise<RoleResponse>

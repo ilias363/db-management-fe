@@ -7,12 +7,12 @@ import type {
   CurrentUserResponse,
   UserPermissionsResponse,
   DetailedPermissionsResponse,
-  UsersResponse,
+  UserPageResponse,
   UserResponse,
   NewUserDto,
   UpdateUserDto,
   VoidResponse,
-  RolesResponse,
+  RolePageResponse,
   RoleResponse,
   NewRoleDto,
   UpdateRoleDto,
@@ -76,9 +76,9 @@ class ApiClientImpl implements ApiClient {
   }
 
   users = {
-    getAllUsers: (): Promise<UsersResponse> => this.request("/users"),
+    getAllUsers: (): Promise<UserPageResponse> => this.request("/users"),
 
-    getAllActiveUsers: (): Promise<UsersResponse> => this.request("/users/active"),
+    getAllActiveUsers: (): Promise<UserPageResponse> => this.request("/users/active"),
 
     getUserById: (id: number): Promise<UserResponse> => this.request(`/users/${id}`),
 
@@ -102,7 +102,7 @@ class ApiClientImpl implements ApiClient {
   }
 
   roles = {
-    getAllRoles: (): Promise<RolesResponse> => this.request("/roles"),
+    getAllRoles: (): Promise<RolePageResponse> => this.request("/roles"),
 
     getRoleById: (id: number): Promise<RoleResponse> => this.request(`/roles/${id}`),
 

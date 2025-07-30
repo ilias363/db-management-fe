@@ -1,11 +1,12 @@
 // Role management related interfaces
 
-import { ApiResponse, PermissionDetailDto } from "./index";
+import { ApiResponse, PageDto, PermissionDetailDto } from "./index";
 
 export interface RoleDto {
     id: number;
     name: string;
     description: string;
+    isSystemRole: boolean;
     permissions: PermissionDetailDto[];
 }
 
@@ -22,5 +23,7 @@ export interface UpdateRoleDto {
     permissions: PermissionDetailDto[];
 }
 
+export type RolePageDto = PageDto<RoleDto>;
+
 export type RoleResponse = ApiResponse<RoleDto>;
-export type RolesResponse = ApiResponse<RoleDto[]>;
+export type RolePageResponse = ApiResponse<RolePageDto>;

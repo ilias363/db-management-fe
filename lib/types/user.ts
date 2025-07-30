@@ -1,6 +1,6 @@
 // User management related interfaces
 
-import { ApiResponse , RoleDto } from './index';
+import { ApiResponse, PageDto, RoleDto } from './index';
 
 export interface UserDto {
     id: number;
@@ -23,5 +23,7 @@ export interface UpdateUserDto {
     roles: number[];
 }
 
+export type UserPageDto = PageDto<UserDto>;
+
 export type UserResponse = ApiResponse<UserDto>;
-export type UsersResponse = ApiResponse<UserDto[]>;
+export type UserPageResponse = ApiResponse<UserPageDto>;
