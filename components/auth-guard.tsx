@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/lib/stores/auth-store";
+import { apiClient } from "@/lib/api-client";
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -21,7 +22,7 @@ const LoadingScreen = ({ message = "Loading..." }: { message?: string }) => (
 export function AuthGuard({ children }: AuthGuardProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, isLoading, isInitialized, initializeAuth, reset } = useAuth();
+  const { user, isLoading, isInitialized, initializeAuth, clearUser } = useAuth();
   const [isInitializing, setIsInitializing] = useState(false);
   const [hasRedirected, setHasRedirected] = useState(false);
 
@@ -38,9 +39,17 @@ export function AuthGuard({ children }: AuthGuardProps) {
   }, [isInitialized, initializeAuth, isInitializing]);
 
   useEffect(() => {
-    reset();
     setHasRedirected(false);
-  }, [pathname, reset]);
+    apiClient.auth
+      .isLoggedIn()
+      .then(resp => {
+        if (resp.success && resp.data?.isLoggedIn) {
+          return;
+        }
+        clearUser();
+      })
+      .catch(err => console.log(err));
+  }, [pathname, clearUser]);
 
   useEffect(() => {
     if (isLoading || isInitializing || !isInitialized || hasRedirected) {
@@ -60,7 +69,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
     }
   }, [user, isLoading, isInitialized, isPublicRoute, router, pathname, isInitializing, hasRedirected]);
   if (!isInitialized || isInitializing) {
-    return <LoadingScreen message="Initializing authentication..." />;
+    return <LoadingScreen message="Checking authentication..." />;
   }
 
   if (!user && !isPublicRoute) {

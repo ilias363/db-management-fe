@@ -19,6 +19,7 @@ interface AuthState {
     logout: () => Promise<void>;
     refreshAuth: () => Promise<void>;
     initializeAuth: () => Promise<void>;
+    clearUser: () => void;
     reset: () => void;
 }
 
@@ -139,6 +140,8 @@ export const useAuthStore = create<AuthState>()(
                         }, false, 'initializeAuth:complete');
                     }
                 },
+
+                clearUser: () => set({ user: null, permissions: null }, false, 'clearUser'),
 
                 reset: () => set(initialState, false, 'reset'),
             }),
