@@ -21,7 +21,7 @@ const LoadingScreen = ({ message = "Loading..." }: { message?: string }) => (
 export function AuthGuard({ children }: AuthGuardProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, isLoading, isInitialized, initializeAuth } = useAuth();
+  const { user, isLoading, isInitialized, initializeAuth, reset } = useAuth();
   const [isInitializing, setIsInitializing] = useState(false);
   const [hasRedirected, setHasRedirected] = useState(false);
 
@@ -38,8 +38,9 @@ export function AuthGuard({ children }: AuthGuardProps) {
   }, [isInitialized, initializeAuth, isInitializing]);
 
   useEffect(() => {
+    reset();
     setHasRedirected(false);
-  }, [pathname]);
+  }, [pathname, reset]);
 
   useEffect(() => {
     if (isLoading || isInitializing || !isInitialized || hasRedirected) {

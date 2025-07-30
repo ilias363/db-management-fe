@@ -144,8 +144,9 @@ export const useAuthStore = create<AuthState>()(
             }),
             {
                 name: 'auth-store',
-                // Only persist non-sensitive data
                 partialize: (state) => ({
+                    user: state.user,
+                    permissions: state.permissions,
                     isInitialized: state.isInitialized,
                 }),
             }
