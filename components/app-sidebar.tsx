@@ -43,19 +43,16 @@ const adminMenuItems: NavItem[] = [
     title: "User Management",
     href: "/admin/users",
     icon: Users,
-    comingSoon: true,
   },
   {
     title: "Role Management",
     href: "/admin/roles",
     icon: Shield,
-    comingSoon: true,
   },
   {
     title: "Audit Logs",
     href: "/admin/audit",
     icon: FileText,
-    comingSoon: true,
   },
 ];
 
@@ -64,6 +61,7 @@ const globalMenuItems: NavItem[] = [
     title: "Database Explorer",
     href: "/database",
     icon: Database,
+    comingSoon: true,
   },
 ];
 
