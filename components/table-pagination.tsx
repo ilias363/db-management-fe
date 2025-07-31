@@ -24,8 +24,9 @@ export function TablePagination({
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 sm:p-0 sm:mt-4">
       <div className="text-xs sm:text-sm text-muted-foreground order-2 sm:order-1">
-        Showing <span className="font-bold">{startItem}</span> to <span className="font-bold">{endItem}</span>{" "}
-        of <span className="font-bold">{totalItems}</span> results
+        Showing <span className="font-semibold">{startItem}</span> to{" "}
+        <span className="font-semibold">{endItem}</span> of{" "}
+        <span className="font-semibold">{totalItems}</span> results
       </div>
       <div className="flex items-center justify-center sm:justify-end space-x-2 order-1 sm:order-2">
         <Button
@@ -37,8 +38,8 @@ export function TablePagination({
           <ChevronLeft className="h-4 w-4" />
         </Button>
         <div className="text-sm">
-          Page <span className="font-bold">{currentPage + 1}</span> of{" "}
-          <span className="font-bold">{totalPages}</span>
+          Page <span className="font-semibold">{currentPage + 1}</span> of{" "}
+          <span className="font-semibold">{totalPages}</span>
         </div>
         <Button
           variant="outline"
