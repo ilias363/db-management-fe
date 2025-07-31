@@ -123,7 +123,7 @@ export enum FilterOperator {
 export type SortDirection = 'ASC' | 'DESC';
 
 export interface PaginationParams {
-    page?: number;
+    page?: number; // pages starts from 0
     size?: number;
     sortBy?: string;
     sortDirection?: SortDirection;
