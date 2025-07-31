@@ -23,7 +23,15 @@ export interface UpdateUserDto {
     roles: number[];
 }
 
+export interface UserStats {
+    totalUsers: number;
+    activeUsers: number;
+    adminUsers: number;
+    newThisMonth: number;
+}
+
 export type UserPageDto = PageDto<UserDto>;
 
 export type UserResponse = ApiResponse<UserDto>;
 export type UserPageResponse = ApiResponse<UserPageDto>;
+export type UserStatsResponse = ApiResponse<UserStats>;

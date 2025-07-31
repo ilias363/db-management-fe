@@ -56,6 +56,7 @@ import type {
   BatchDeleteRecordsByValuesDto,
   RecordAdvancedSearchDto,
   RecordAdvancedSearchResponseDto,
+  UserStatsResponse,
 } from "./index"
 
 export interface ApiClient {
@@ -68,17 +69,19 @@ export interface ApiClient {
     getDetailedPermissions: (schemaName?: string, tableName?: string) => Promise<DetailedPermissionsResponse>
   }
   users: {
-    getAllUsers: () => Promise<UserPageResponse>
-    getAllActiveUsers: () => Promise<UserPageResponse>
+    getAllUsers: (params?: PaginationParams & { search?: string }) => Promise<UserPageResponse>
+    getAllActiveUsers: (params?: PaginationParams & { search?: string }) => Promise<UserPageResponse>
     getUserById: (id: number) => Promise<UserResponse>
     getUserByUsername: (username: string) => Promise<UserResponse>
     createUser: (user: NewUserDto) => Promise<UserResponse>
     updateUser: (user: UpdateUserDto) => Promise<UserResponse>
     deactivateUser: (id: number) => Promise<VoidResponse>
     activateUser: (id: number) => Promise<VoidResponse>
+    // TODO: Backend - Add user statistics endpoint
+    getUserStats: () => Promise<UserStatsResponse>
   }
   roles: {
-    getAllRoles: () => Promise<RolePageResponse>
+    getAllRoles: (params?: PaginationParams & { search?: string }) => Promise<RolePageResponse>
     getRoleById: (id: number) => Promise<RoleResponse>
     createRole: (role: NewRoleDto) => Promise<RoleResponse>
     updateRole: (role: UpdateRoleDto) => Promise<RoleResponse>

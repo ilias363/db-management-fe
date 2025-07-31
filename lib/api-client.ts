@@ -19,6 +19,7 @@ import type {
   AuditLogPageResponse,
   AuditLogResponse,
   PaginationParams,
+  UserStatsResponse,
 } from "./types"
 
 class ApiClientImpl implements ApiClient {
@@ -76,9 +77,15 @@ class ApiClientImpl implements ApiClient {
   }
 
   users = {
-    getAllUsers: (): Promise<UserPageResponse> => this.request("/users"),
+    getAllUsers: (params?: PaginationParams & { search?: string }): Promise<UserPageResponse> => {
+      const query = params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : ""
+      return this.request(`/users${query}`)
+    },
 
-    getAllActiveUsers: (): Promise<UserPageResponse> => this.request("/users/active"),
+    getAllActiveUsers: (params?: PaginationParams & { search?: string }): Promise<UserPageResponse> => {
+      const query = params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : ""
+      return this.request(`/users/active${query}`)
+    },
 
     getUserById: (id: number): Promise<UserResponse> => this.request(`/users/${id}`),
 
@@ -99,10 +106,15 @@ class ApiClientImpl implements ApiClient {
     deactivateUser: (id: number): Promise<VoidResponse> => this.request(`/users/${id}/deactivate`, { method: "PUT" }),
 
     activateUser: (id: number): Promise<VoidResponse> => this.request(`/users/${id}/activate`, { method: "PUT" }),
+
+    getUserStats: (): Promise<UserStatsResponse> => this.request("/users/stats"),
   }
 
   roles = {
-    getAllRoles: (): Promise<RolePageResponse> => this.request("/roles"),
+    getAllRoles: (params?: PaginationParams & { search?: string }): Promise<RolePageResponse> => {
+      const query = params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : ""
+      return this.request(`/roles${query}`)
+    },
 
     getRoleById: (id: number): Promise<RoleResponse> => this.request(`/roles/${id}`),
 
