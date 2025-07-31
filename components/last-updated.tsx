@@ -8,11 +8,18 @@ import { cn } from "@/lib/utils";
 interface LastUpdatedProps {
   onRefresh?: () => void | Promise<void>;
   className?: string;
+  resetTrigger?: number;
 }
 
-export const LastUpdated = ({ onRefresh, className }: LastUpdatedProps) => {
+export const LastUpdated = ({ onRefresh, className, resetTrigger }: LastUpdatedProps) => {
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  useEffect(() => {
+    if (resetTrigger !== undefined) {
+      setLastUpdated(new Date());
+    }
+  }, [resetTrigger]);
 
   const formatTime = useCallback((date: Date) => {
     return date.toLocaleTimeString("en-US", {
