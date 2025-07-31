@@ -98,7 +98,7 @@ class ApiClientImpl implements ApiClient {
       }),
 
     updateUser: (user: UpdateUserDto): Promise<UserResponse> =>
-      this.request("/users", {
+      this.request(`/users/${user.id}`, {
         method: "PUT",
         body: JSON.stringify(user),
       }),
