@@ -26,8 +26,10 @@ export interface UpdateUserDto {
 export interface UserStats {
     totalUsers: number;
     activeUsers: number;
+    inactiveUsers: number;
     adminUsers: number;
     newThisMonth: number;
+    activeUserPercentage: number;
 }
 
 export type UserPageDto = PageDto<UserDto>;

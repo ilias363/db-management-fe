@@ -77,7 +77,6 @@ export interface ApiClient {
     updateUser: (user: UpdateUserDto) => Promise<UserResponse>
     deactivateUser: (id: number) => Promise<VoidResponse>
     activateUser: (id: number) => Promise<VoidResponse>
-    // TODO: Backend - Add user statistics endpoint
     getUserStats: () => Promise<UserStatsResponse>
   }
   roles: {
