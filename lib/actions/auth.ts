@@ -25,13 +25,15 @@ export async function login(prevState: unknown, formData: FormData) {
             return { errors: { username: ["No user data returned from login."] } };
         }
         await saveSession(response.data);
-        redirect("/");
     } catch (error) {
         if (error instanceof HttpError) {
             return { errors: { username: [error.message] } };
         }
         console.error('Unexpected error during login:', error);
+        return { errors: { username: ["An unexpected error occurred. Please try again."] } };
     }
+
+    redirect("/");
 }
 
 export async function logout() {
