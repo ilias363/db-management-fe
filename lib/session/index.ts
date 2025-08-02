@@ -42,7 +42,7 @@ export async function getAuthTokens(): Promise<{ accessToken: string | null, ref
     return { accessToken, refreshToken };
 }
 
-export async function getAccesToken(): Promise<string | null> {
+export async function getAccessToken(): Promise<string | null> {
     const cookieStore = await cookies();
     return cookieStore.get("access_token")?.value || null;
 }
