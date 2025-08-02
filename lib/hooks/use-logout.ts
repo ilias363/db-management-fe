@@ -1,14 +1,19 @@
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/stores/auth-store';
+"use client";
+
+import { useAuth } from "@/lib/stores/auth-store";
 
 export function useLogout() {
-    const router = useRouter();
-    const { logout: storeLogout } = useAuth();
+    const { logout } = useAuth();
 
-    const logout = async () => {
-        await storeLogout();
-        router.push('/login');
+    return async () => {
+        try {
+            // Clear the auth store immediately
+            logout();
+
+            // Call the logout API to clear cookies and invalidate tokens
+            await fetch('/api/auth/logout');
+        } catch (error) {
+            console.error('Logout failed:', error);
+        }
     };
-
-    return logout;
 }
