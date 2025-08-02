@@ -4,17 +4,23 @@ import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Search } from "lucide-react";
-import { apiClient } from "@/lib/api-client";
 import { toast } from "sonner";
-import type { UserDto, NewUserDto, UpdateUserDto, RoleDto, UserStats, SortDirection } from "@/lib/types";
+import type { UserDto, RoleDto, UserStats, SortDirection, PaginationParams } from "@/lib/types";
 
 import { UserStatsCards } from "@/components/user-stats-cards";
 import { UserTable } from "@/components/user-table";
 import { UserDialog } from "@/components/user-dialog";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { LastUpdated } from "@/components/last-updated";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { getUsersData, toggleUserStatus } from "@/lib/actions";
 
 export default function UsersPage() {
   const [users, setUsers] = useState<UserDto[]>([]);
@@ -33,7 +39,7 @@ export default function UsersPage() {
 
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize] = useState(5);
-  const [sortBy, setSortBy] = useState<string>("username");
+  const [sortBy, setSortBy] = useState<string>("id");
   const [sortDirection, setSortDirection] = useState<SortDirection>("ASC");
   const [totalUsers, setTotalUsers] = useState(0);
 
@@ -49,38 +55,39 @@ export default function UsersPage() {
       try {
         toast.loading("Loading users data...", { id: "loading-users" });
 
-        const userParams: Record<string, string> = {
-          page: currentPage.toString(),
-          size: pageSize.toString(),
+        const userParams: PaginationParams & { search?: string; activeOnly?: boolean } = {
+          page: currentPage,
+          size: pageSize,
           sortBy: sortBy,
           sortDirection: sortDirection,
         };
-        if (searchTerm) {
-          userParams.search = searchTerm;
-        }
-        const usersResponse =
-          statusFilter === "active"
-            ? await apiClient.users.getAllActiveUsers(userParams)
-            : await apiClient.users.getAllUsers(userParams);
+        if (searchTerm) userParams.search = searchTerm;
+        userParams.activeOnly = statusFilter === "active";
 
-        console.log("Users response:", usersResponse);
+        const usersDataResponse = await getUsersData(userParams);
 
-        const [rolesResponse, statsResponse] = await Promise.all([
-          apiClient.roles.getAllRoles(),
-          apiClient.users.getUserStats(),
-        ]);
-
-        if (usersResponse.success && usersResponse.data) {
-          setUsers(usersResponse.data.items);
-          setTotalUsers(usersResponse.data.totalItems || usersResponse.data.items.length);
+        if (!usersDataResponse.success || !usersDataResponse.data) {
+          toast.error(usersDataResponse.message);
+          return;
         }
 
-        if (rolesResponse.success && rolesResponse.data) {
-          setRoles(rolesResponse.data.items);
+        const {
+          users: usersResponse,
+          roles: rolesResponse,
+          stats: statsResponse,
+        } = usersDataResponse.data;
+
+        if (usersResponse) {
+          setUsers(usersResponse.items);
+          setTotalUsers(usersResponse.totalItems || usersResponse.items.length);
         }
 
-        if (statsResponse.success && statsResponse.data) {
-          setStats(statsResponse.data);
+        if (rolesResponse) {
+          setRoles(rolesResponse.items);
+        }
+
+        if (statsResponse) {
+          setStats(statsResponse);
         }
 
         setTimeout(() => {
@@ -103,44 +110,6 @@ export default function UsersPage() {
     loadData();
   }, [loadData]);
 
-  const handleCreateUser = async (newUser: NewUserDto) => {
-    try {
-      const response = await apiClient.users.createUser(newUser);
-      if (response.success) {
-        toast.success("User created successfully");
-        loadData(true);
-        setResetTrigger(prev => prev + 1);
-      } else {
-        toast.error(response.message || "Failed to create user");
-      }
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to create user");
-    }
-  };
-
-  const handleUpdateUser = async (updateData: UpdateUserDto) => {
-    try {
-      const response = await apiClient.users.updateUser(updateData);
-      if (response.success) {
-        toast.success("User updated successfully");
-        loadData(true);
-        setResetTrigger(prev => prev + 1);
-      } else {
-        toast.error(response.message || "Failed to update user");
-      }
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to update user");
-    }
-  };
-
-  const handleUserSave = async (userData: NewUserDto | UpdateUserDto) => {
-    if (isCreateMode) {
-      await handleCreateUser(userData as NewUserDto);
-    } else {
-      await handleUpdateUser(userData as UpdateUserDto);
-    }
-  };
-
   const handleToggleUserStatus = (user: UserDto) => {
     setUserToToggle(user);
     setIsConfirmOpen(true);
@@ -150,19 +119,19 @@ export default function UsersPage() {
     if (!userToToggle) return;
 
     try {
-      const response = userToToggle.active
-        ? await apiClient.users.deactivateUser(userToToggle.id)
-        : await apiClient.users.activateUser(userToToggle.id);
+      const result = await toggleUserStatus(userToToggle.id, userToToggle.active);
 
-      if (response.success) {
-        toast.success(`User ${userToToggle.active ? "deactivated" : "activated"} successfully`);
+      if (result.success) {
+        toast.success(result.message);
         loadData(true);
         setResetTrigger(prev => prev + 1);
       } else {
-        toast.error(response.message || "Failed to update user status");
+        toast.error(result.message);
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to update user status");
+      toast.error("An unexpected error occurred", {
+        description: error instanceof Error ? error.message : "Failed to update user status",
+      });
     } finally {
       setIsConfirmOpen(false);
       setUserToToggle(null);
@@ -248,7 +217,9 @@ export default function UsersPage() {
       <Card>
         <CardHeader>
           <CardTitle>Users</CardTitle>
-          <CardDescription>A list of all users in the system with their roles and status</CardDescription>
+          <CardDescription>
+            A list of all users in the system with their roles and status
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <UserTable
@@ -273,16 +244,16 @@ export default function UsersPage() {
         user={editingUser}
         roles={roles}
         isCreateMode={isCreateMode}
-        onSave={handleUserSave}
+        onSuccess={loadData}
       />
 
       <ConfirmDialog
         open={isConfirmOpen}
         onOpenChange={setIsConfirmOpen}
         title={`${userToToggle?.active ? "Deactivate" : "Activate"} User`}
-        description={`Are you sure you want to ${userToToggle?.active ? "deactivate" : "activate"} ${
-          userToToggle?.username
-        }? ${
+        description={`Are you sure you want to ${
+          userToToggle?.active ? "deactivate" : "activate"
+        } ${userToToggle?.username}? ${
           userToToggle?.active
             ? "This will prevent them from accessing the system."
             : "This will allow them to access the system again."
