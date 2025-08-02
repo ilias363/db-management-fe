@@ -43,7 +43,6 @@ export async function logout() {
         console.error('Logout API call failed:', error);
     }
     await clearSession();
-    redirect("/login");
 }
 
 export async function validateAccessToken(): Promise<boolean> {

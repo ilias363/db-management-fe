@@ -36,7 +36,7 @@ export const useAuth = create<AuthState>()(
 
             logout: () => set({
                 ...initialState,
-                isInitialized: false
+                isInitialized: true
             }),
 
             setUser: (user) => set({ user }, false),
@@ -66,8 +66,7 @@ export const useAuth = create<AuthState>()(
                         ...initialState,
                         isInitialized: true
                     });
-                } catch (error) {
-                    console.error('Auth refresh failed:', error);
+                } catch {
                     set({
                         ...initialState,
                         isInitialized: true
