@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { Users, Power, PowerOff, Edit } from "lucide-react";
+import { Users, Power, PowerOff, Edit, Eye, Trash2 } from "lucide-react";
 import type { UserDto } from "@/lib/types";
 import { DataTable, type ColumnDef, type ActionButton } from "@/components/data-table";
 
@@ -7,6 +7,8 @@ interface UserTableProps {
   users: UserDto[];
   onEditUser: (user: UserDto) => void;
   onToggleUserStatus: (user: UserDto) => void;
+  onViewUser?: (user: UserDto) => void;
+  onDeleteUser?: (user: UserDto) => void;
   searchTerm: string;
   showSelection?: boolean;
   sortBy?: string;
@@ -22,6 +24,8 @@ export function UserTable({
   users,
   onEditUser,
   onToggleUserStatus,
+  onViewUser,
+  onDeleteUser,
   searchTerm,
   sortBy,
   sortDirection,
@@ -33,6 +37,13 @@ export function UserTable({
 }: UserTableProps) {
   const columns: ColumnDef<UserDto>[] = [
     {
+      key: "id",
+      title: "ID",
+      sortable: true,
+      render: user => <span className="text-muted-foreground text-sm">#{user.id}</span>,
+      className: "w-16",
+    },
+    {
       key: "username",
       title: "Username",
       sortable: true,
@@ -43,19 +54,26 @@ export function UserTable({
       title: "Status",
       sortable: true,
       render: user => (
-        <Badge variant={user.active ? "default" : "secondary"}>{user.active ? "Active" : "Inactive"}</Badge>
+        <Badge variant={user.active ? "default" : "secondary"}>
+          {user.active ? "Active" : "Inactive"}
+        </Badge>
       ),
+      className: "w-24",
     },
     {
       key: "roles",
       title: "Roles",
       render: user => (
         <div className="flex flex-wrap gap-1">
-          {user.roles.map(role => (
-            <Badge key={role.id} variant="outline" className="text-xs">
-              {role.name}
-            </Badge>
-          ))}
+          {user.roles.length > 0 ? (
+            user.roles.map(role => (
+              <Badge key={role.id} variant="outline" className="text-xs">
+                {role.name}
+              </Badge>
+            ))
+          ) : (
+            <span className="text-muted-foreground text-sm">No roles</span>
+          )}
         </div>
       ),
     },
@@ -63,24 +81,36 @@ export function UserTable({
 
   const actions: ActionButton<UserDto>[] = [
     {
+      label: "View Details",
+      icon: <Eye className="h-4 w-4" />,
+      onClick: onViewUser || (() => {}),
+      variant: "ghost",
+      hidden: () => !onViewUser,
+    },
+    {
       label: "Edit User",
       icon: <Edit className="h-4 w-4" />,
       onClick: onEditUser,
-      variant: "outline",
-      size: "sm",
+      variant: "ghost",
     },
     {
-      label: "Toggle Status",
-      icon: user =>
+      label: (user: UserDto) => (user.active ? "Deactivate" : "Activate"),
+      icon: (user: UserDto) =>
         user.active ? (
           <PowerOff className="h-4 w-4 text-destructive" />
         ) : (
           <Power className="h-4 w-4 text-green-600" />
         ),
       onClick: onToggleUserStatus,
-      variant: "outline",
-      size: "sm",
-      hidden: user => user.roles.some(role => role.name === "ADMIN"),
+      variant: "ghost",
+      hidden: (user: UserDto) => user.roles.some(role => role.name === "ADMIN"),
+    },
+    {
+      label: "Delete User",
+      icon: <Trash2 className="h-4 w-4" />,
+      onClick: onDeleteUser || (() => {}),
+      variant: "destructive",
+      hidden: (user: UserDto) => !onDeleteUser || user.roles.some(role => role.name === "ADMIN"),
     },
   ];
 
