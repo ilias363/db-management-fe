@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,10 +14,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { createUserSchema, updateUserSchema } from "@/lib/schemas";
-import type { UserDto, RoleDto, NewUserDto, UpdateUserDto } from "@/lib/types";
-import { toast } from "sonner";
-import z from "zod";
+import type { UserDto, RoleDto } from "@/lib/types";
+import { useActionState } from "react";
+import { createUser, updateUser } from "@/lib/actions/user";
+import { useFormStatus } from "react-dom";
+import ErrorMessage from "./error-message";
 
 interface UserDialogProps {
   open: boolean;
@@ -25,118 +26,51 @@ interface UserDialogProps {
   user: UserDto | null;
   roles: RoleDto[];
   isCreateMode: boolean;
-  onSave: (userData: NewUserDto | UpdateUserDto) => Promise<void>;
+  onSuccess: () => void;
 }
 
-export function UserDialog({ open, onOpenChange, user, roles, isCreateMode, onSave }: UserDialogProps) {
-  const [formData, setFormData] = useState({
-    username: "",
-    password: "",
-    active: true,
-    selectedRoles: [] as number[],
-  });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
+export function UserDialog({
+  open,
+  onOpenChange,
+  user,
+  roles,
+  isCreateMode,
+  onSuccess,
+}: UserDialogProps) {
+  const isSystemAdmin = user?.roles?.some(role => role.name.toUpperCase() === "ADMIN");
+
+  const actionFn = isCreateMode ? createUser : updateUser;
+
+  const [state, action] = useActionState(actionFn, undefined);
 
   useEffect(() => {
-    if (user && !isCreateMode) {
-      setFormData({
-        username: user.username,
-        password: "",
-        active: user.active,
-        selectedRoles: user.roles.map(r => r.id),
-      });
-    } else if (isCreateMode) {
-      setFormData({
-        username: "",
-        password: "",
-        active: true,
-        selectedRoles: [],
-      });
-    }
-    setErrors({});
-  }, [user, isCreateMode, open]);
-
-  const validateForm = (): boolean => {
-    try {
-      if (isCreateMode) {
-        createUserSchema.parse({
-          username: formData.username,
-          password: formData.password,
-          active: formData.active,
-          roles: formData.selectedRoles,
-        });
-      } else {
-        updateUserSchema.parse({
-          id: user?.id || 0,
-          username: formData.username,
-          active: formData.active,
-          roles: formData.selectedRoles,
-        });
-      }
-      setErrors({});
-      return true;
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const validationErrors: Record<string, string> = {};
-        error.issues.forEach(issue => {
-          validationErrors[issue.path[0] as string] = issue.message;
-        });
-        setErrors(validationErrors);
-      }
-      return false;
-    }
-  };
-
-  const handleRoleToggle = (roleId: number) => {
-    setFormData(prev => ({
-      ...prev,
-      selectedRoles: prev.selectedRoles.includes(roleId)
-        ? prev.selectedRoles.filter(id => id !== roleId)
-        : [...prev.selectedRoles, roleId],
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm()) {
-      toast.error("Please fix the validation errors");
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      if (isCreateMode) {
-        const newUserData: NewUserDto = {
-          username: formData.username,
-          password: formData.password,
-          active: formData.active,
-          roles: formData.selectedRoles,
-        };
-        await onSave(newUserData);
-      } else {
-        const updateUserData: UpdateUserDto = {
-          id: user!.id,
-          username: formData.username,
-          active: formData.active,
-          roles: formData.selectedRoles,
-        };
-        await onSave(updateUserData);
-      }
+    if (state?.success) {
       onOpenChange(false);
-    } finally {
-      setIsSubmitting(false);
+      onSuccess();
     }
-  };
+  }, [state, onOpenChange, onSuccess]);
 
-  const isSystemAdmin = user?.roles.some(role => role.name.toUpperCase() === "ADMIN");
+  function getFieldErrors(field: string): string | string[] | undefined {
+    if (state?.errors && typeof state.errors === "object" && field in state.errors) {
+      return state.errors[field as keyof typeof state.errors];
+    }
+    return undefined;
+  }
+
+  function getGeneralErrors(): string | string[] | undefined {
+    if (state?.errors && typeof state.errors === "object" && "general" in state.errors) {
+      return state.errors["general"];
+    }
+    return undefined;
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{isCreateMode ? "Create New User" : `Edit User: ${user?.username}`}</DialogTitle>
+          <DialogTitle>
+            {isCreateMode ? "Create New User" : `Edit User: ${user?.username}`}
+          </DialogTitle>
           <DialogDescription>
             {isCreateMode
               ? "Create a new user account with assigned roles."
@@ -144,20 +78,25 @@ export function UserDialog({ open, onOpenChange, user, roles, isCreateMode, onSa
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form action={action} className="space-y-6">
+          {getGeneralErrors() && <ErrorMessage error={getGeneralErrors()} />}
           <div className="grid gap-4">
+            {!isCreateMode && (
+              <Input id="id" name="id" defaultValue={isCreateMode ? "" : user?.id} hidden />
+            )}
+
             <div className="space-y-2">
               <Label htmlFor="username">Username</Label>
               <Input
                 id="username"
-                value={formData.username}
-                onChange={e => setFormData(prev => ({ ...prev, username: e.target.value }))}
+                name="username"
+                defaultValue={isCreateMode ? "" : user?.username}
                 placeholder="Enter username"
                 required
                 disabled={isSystemAdmin}
-                className={errors.username ? "border-red-500" : ""}
+                className={getFieldErrors("username") ? "border-red-500" : ""}
               />
-              {errors.username && <p className="text-sm text-red-500">{errors.username}</p>}
+              {getFieldErrors("username") && <ErrorMessage error={getFieldErrors("username")} />}
             </div>
 
             {isCreateMode && (
@@ -165,22 +104,22 @@ export function UserDialog({ open, onOpenChange, user, roles, isCreateMode, onSa
                 <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
+                  name="password"
                   type="password"
-                  value={formData.password}
-                  onChange={e => setFormData(prev => ({ ...prev, password: e.target.value }))}
                   placeholder="Enter password"
                   required
-                  className={errors.password ? "border-red-500" : ""}
+                  className={getFieldErrors("password") ? "border-red-500" : ""}
                 />
-                {errors.password && <p className="text-sm text-red-500">{errors.password}</p>}
+                {getFieldErrors("password") && <ErrorMessage error={getFieldErrors("password")} />}
               </div>
             )}
 
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="active"
-                checked={formData.active}
-                onCheckedChange={(checked: boolean) => setFormData(prev => ({ ...prev, active: checked }))}
+                name="active"
+                defaultChecked={isCreateMode ? true : user?.active}
+                value="true"
                 disabled={isSystemAdmin}
               />
               <Label htmlFor="active">Active User</Label>
@@ -191,7 +130,8 @@ export function UserDialog({ open, onOpenChange, user, roles, isCreateMode, onSa
             <CardHeader>
               <CardTitle className="text-lg">Role Assignment</CardTitle>
               <CardDescription>
-                Select the roles to assign to this user. Roles determine what actions the user can perform.
+                Select the roles to assign to this user. Roles determine what actions the user can
+                perform.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -204,11 +144,15 @@ export function UserDialog({ open, onOpenChange, user, roles, isCreateMode, onSa
                     const isCurrentlyAdmin = role.name.toUpperCase() === "ADMIN" && isSystemAdmin;
 
                     return (
-                      <div key={role.id} className="flex items-center space-x-3 p-2 border rounded-lg">
+                      <div
+                        key={role.id}
+                        className="flex items-center space-x-3 p-2 border rounded-lg"
+                      >
                         <Checkbox
                           id={`role-${role.id}`}
-                          checked={formData.selectedRoles.includes(role.id)}
-                          onCheckedChange={() => handleRoleToggle(role.id)}
+                          name="roleIds"
+                          value={role.id}
+                          defaultChecked={user?.roles?.some(r => r.id === role.id)}
                           disabled={isCurrentlyAdmin}
                         />
                         <div className="grid gap-1.5 leading-none flex-1">
@@ -218,7 +162,9 @@ export function UserDialog({ open, onOpenChange, user, roles, isCreateMode, onSa
                           >
                             {role.name}
                             {isSystemRole && (
-                              <span className="text-xs bg-muted px-2 py-1 rounded-full">System Role</span>
+                              <span className="text-xs bg-muted px-2 py-1 rounded-full">
+                                System Role
+                              </span>
                             )}
                           </label>
                           <p className="text-xs text-muted-foreground">{role.description}</p>
@@ -227,7 +173,7 @@ export function UserDialog({ open, onOpenChange, user, roles, isCreateMode, onSa
                     );
                   })}
               </div>
-              {errors.roles && <p className="text-sm text-red-500 mt-2">{errors.roles}</p>}
+              {getFieldErrors("roles") && <ErrorMessage error={getFieldErrors("roles")} />}
             </CardContent>
           </Card>
 
@@ -235,12 +181,19 @@ export function UserDialog({ open, onOpenChange, user, roles, isCreateMode, onSa
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Saving..." : isCreateMode ? "Create User" : "Update User"}
-            </Button>
+            <SubmitButton />
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <Button type="submit" disabled={pending}>
+      {pending ? "Saving..." : "Save"}
+    </Button>
   );
 }
