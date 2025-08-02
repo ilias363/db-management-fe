@@ -19,8 +19,25 @@ import {
   SidebarMenuItem,
   SidebarMenuBadge,
 } from "@/components/ui/sidebar";
-import { Database, LayoutDashboard, Users, Shield, FileText, LogOut, ChevronUp, User2 } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import {
+  Database,
+  LayoutDashboard,
+  Users,
+  Shield,
+  FileText,
+  LogOut,
+  ChevronUp,
+  User2,
+  User,
+} from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import { toast } from "sonner";
 
 interface NavItem {
   title: string;
@@ -67,7 +84,7 @@ const globalMenuItems: NavItem[] = [
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const { user, permissions } = useAuth();
+  const { user } = useAuth();
   const logout = useLogout();
 
   const isAdmin = user?.roles?.some(role => role.name === "ADMIN");
@@ -199,13 +216,11 @@ export function AppSidebar() {
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
                   <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                    <User2 className="w-4 h-4 text-primary-foreground" />
+                    <User2 className="w-5 h-5 text-primary-foreground" />
                   </div>
                   <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
                     <span className="truncate font-semibold">{user?.username}</span>
-                    <span className="truncate text-xs">
-                      {permissions?.isAdmin ? "Administrator" : "User"}
-                    </span>
+                    <span className="truncate text-xs">{isAdmin ? "Admin" : "User"}</span>
                   </div>
                   <ChevronUp className="ml-auto size-4 group-data-[collapsible=icon]:hidden" />
                 </SidebarMenuButton>
@@ -216,9 +231,14 @@ export function AppSidebar() {
                 align="end"
                 sideOffset={4}
               >
-                <DropdownMenuItem onClick={logout}>
-                  <LogOut />
-                  Log out
+                <DropdownMenuItem onClick={() => toast("Profile feature coming soon!")}>
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="text-red-600 focus:text-red-600" onClick={logout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
