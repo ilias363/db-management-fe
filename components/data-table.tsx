@@ -1,7 +1,20 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ArrowUpDown, ArrowUp, ArrowDown, MoreHorizontal } from "lucide-react";
 import { TablePagination } from "@/components/table-pagination";
 
 export interface ColumnDef<T> {
@@ -13,11 +26,10 @@ export interface ColumnDef<T> {
 }
 
 export interface ActionButton<T> {
-  label: string;
+  label: string | ((item: T) => string);
   icon?: React.ReactNode | ((item: T) => React.ReactNode);
   onClick: (item: T) => void;
   variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
-  size?: "default" | "sm" | "lg" | "icon";
   disabled?: (item: T) => boolean;
   hidden?: (item: T) => boolean;
   className?: string;
@@ -93,7 +105,10 @@ export function DataTable<T>({
           <TableHeader>
             <TableRow>
               {columns.map(column => (
-                <TableHead key={column.key} className={`text-muted-foreground ${column.className || ""}`}>
+                <TableHead
+                  key={column.key}
+                  className={`text-muted-foreground ${column.className || ""}`}
+                >
                   {column.sortable && onSort ? (
                     <SortableHeader field={column.key}>{column.title}</SortableHeader>
                   ) : (
@@ -101,7 +116,9 @@ export function DataTable<T>({
                   )}
                 </TableHead>
               ))}
-              {hasActions && <TableHead className="text-muted-foreground">Actions</TableHead>}
+              {hasActions && (
+                <TableHead className="text-center text-muted-foreground">Actions</TableHead>
+              )}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -115,32 +132,55 @@ export function DataTable<T>({
                   </TableCell>
                 ))}
                 {hasActions && (
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      {actions
-                        .filter(action => !action.hidden?.(item))
-                        .map((action, index) => (
-                          <Button
-                            key={index}
-                            variant={action.variant || "outline"}
-                            size={action.size || "sm"}
-                            onClick={() => action.onClick(item)}
-                            disabled={action.disabled?.(item)}
-                            className={action.className}
-                            title={action.label}
-                          >
-                            {typeof action.icon === "function" ? action.icon(item) : action.icon}
-                          </Button>
-                        ))}
-                    </div>
+                  <TableCell align="center">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Open menu</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {actions
+                          .filter(action => !action.hidden?.(item))
+                          .map((action, index) => (
+                            <DropdownMenuItem
+                              key={index}
+                              onClick={() => action.onClick(item)}
+                              disabled={action.disabled?.(item)}
+                              className={`cursor-pointer ${action.className || ""} ${
+                                action.variant === "destructive"
+                                  ? "text-destructive focus:text-destructive"
+                                  : ""
+                              }`}
+                            >
+                              <div className="flex items-center gap-2">
+                                {typeof action.icon === "function"
+                                  ? action.icon(item)
+                                  : action.icon}
+                                <span>
+                                  {typeof action.label === "function"
+                                    ? action.label(item)
+                                    : action.label}
+                                </span>
+                              </div>
+                            </DropdownMenuItem>
+                          ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 )}
               </TableRow>
             ))}
             {data.length === 0 && (
               <TableRow>
-                <TableCell colSpan={columns.length + (hasActions ? 1 : 0)} className="text-center py-8">
-                  {emptyStateIcon && <div className="flex justify-center mb-4">{emptyStateIcon}</div>}
+                <TableCell
+                  colSpan={columns.length + (hasActions ? 1 : 0)}
+                  className="text-center py-8"
+                >
+                  {emptyStateIcon && (
+                    <div className="flex justify-center mb-4">{emptyStateIcon}</div>
+                  )}
                   <p className="text-muted-foreground font-medium">{emptyStateTitle}</p>
                   {emptyStateDescription && (
                     <p className="text-muted-foreground text-sm mt-1">
