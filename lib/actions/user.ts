@@ -1,7 +1,42 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { apiClient } from "../api-client";
 import type { PaginationParams } from "../types";
+import { HttpError } from "../errors";
+
+export async function toggleUserStatus(userId: number, currentStatus: boolean) {
+    try {
+        const response = currentStatus
+            ? await apiClient.users.deactivateUser(userId)
+            : await apiClient.users.activateUser(userId);
+
+        if (!response.success) {
+            return {
+                success: false,
+                message: response.message || "Failed to update user status"
+            };
+        }
+
+        revalidatePath("/admin/users");
+        return {
+            success: true,
+            message: `User ${currentStatus ? "deactivated" : "activated"} successfully`
+        };
+    } catch (error) {
+        if (error instanceof HttpError) {
+            return {
+                success: false,
+                message: error.message
+            };
+        }
+        console.error('Unexpected error during user status toggle:', error);
+        return {
+            success: false,
+            message: "An unexpected error occurred"
+        };
+    }
+}
 
 export async function getUsersData(params: PaginationParams & { search?: string; activeOnly?: boolean }) {
     try {
