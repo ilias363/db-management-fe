@@ -35,7 +35,6 @@ export async function login(prevState: unknown, formData: FormData) {
 }
 
 export async function logout() {
-
     try {
         await apiClient.auth.logout();
     } catch (error) {
