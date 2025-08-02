@@ -2,7 +2,6 @@ import type {
   LoginRequestDto,
   LoginResponse,
   LogoutResponse,
-  IsLoggedInResponse,
   CurrentUserResponse,
   UserPermissionsResponse,
   DetailedPermissionsResponse,
@@ -57,13 +56,16 @@ import type {
   RecordAdvancedSearchDto,
   RecordAdvancedSearchResponseDto,
   UserStatsResponse,
+  RefreshTokenResponse,
+  ValidateTokenResponse,
 } from "./index"
 
 export interface ApiClient {
   auth: {
     login: (credentials: LoginRequestDto) => Promise<LoginResponse>
     logout: () => Promise<LogoutResponse>
-    isLoggedIn: () => Promise<IsLoggedInResponse>
+    refreshToken: (refreshToken: string) => Promise<RefreshTokenResponse>
+    validateToken: () => Promise<ValidateTokenResponse>
     getCurrentUser: () => Promise<CurrentUserResponse>
     getCurrentUserPermissions: () => Promise<UserPermissionsResponse>
     getDetailedPermissions: (schemaName?: string, tableName?: string) => Promise<DetailedPermissionsResponse>

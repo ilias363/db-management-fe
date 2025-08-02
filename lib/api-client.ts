@@ -1,9 +1,10 @@
+import "server-only";
+
 import type {
   ApiClient,
   LoginRequestDto,
   LoginResponse,
   LogoutResponse,
-  IsLoggedInResponse,
   CurrentUserResponse,
   UserPermissionsResponse,
   DetailedPermissionsResponse,
@@ -20,27 +21,41 @@ import type {
   AuditLogResponse,
   PaginationParams,
   UserStatsResponse,
+  RefreshTokenResponse,
+  ValidateTokenResponse,
 } from "./types"
+import { cookies } from "next/headers";
+import { HttpError } from "./errors";
 
 class ApiClientImpl implements ApiClient {
   private baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api"
 
+  private async getAuthHeaders(): Promise<Record<string, string>> {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("access_token")?.value;
+
+    return {
+      "Content-Type": "application/json",
+      ...(token && { "Authorization": `Bearer ${token}` }),
+    };
+  }
+
   private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`
+    const authHeaders = await this.getAuthHeaders();
 
     const response = await fetch(url, {
       headers: {
-        "Content-Type": "application/json",
+        ...authHeaders,
         ...options?.headers,
       },
       ...options,
-      credentials: "include",
     })
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ message: "An error occurred" }))
       console.error(`API Error for ${url}:`, errorData)
-      throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`)
+      throw new HttpError(response.status, errorData.message || `HTTP ${response.status}: ${response.statusText}`)
     }
 
     return response.json()
@@ -61,7 +76,18 @@ class ApiClientImpl implements ApiClient {
       return response
     },
 
-    isLoggedIn: (): Promise<IsLoggedInResponse> => this.request("/auth/isloggedin"),
+    refreshToken: async (refreshToken: string): Promise<RefreshTokenResponse> => {
+      const response = await this.request<RefreshTokenResponse>("/auth/refresh", {
+        method: "POST",
+        body: JSON.stringify({ refreshToken }),
+      })
+      return response
+    },
+
+    validateToken: async (): Promise<ValidateTokenResponse> => {
+      const response = await this.request<ValidateTokenResponse>("/auth/validate")
+      return response
+    },
 
     getCurrentUser: (): Promise<CurrentUserResponse> => this.request("/auth/current-user"),
 
@@ -218,14 +244,3 @@ class ApiClientImpl implements ApiClient {
 }
 
 export const apiClient = new ApiClientImpl()
-
-// Expose for debugging in browser console
-declare global {
-  interface Window {
-    apiClient: ApiClientImpl
-  }
-}
-
-if (typeof window !== 'undefined') {
-  window.apiClient = apiClient
-}
