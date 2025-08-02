@@ -1,9 +1,114 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import z from "zod";
+
 import { apiClient } from "../api-client";
-import type { PaginationParams } from "../types";
+import type { NewUserDto, PaginationParams, UpdateUserDto } from "../types";
 import { HttpError } from "../errors";
+import { createUserSchema, updateUserSchema } from "../schemas";
+
+export async function createUser(prevState: unknown, formData: FormData) {
+    const formObject = Object.fromEntries(formData);
+
+    const roleIds = formData.getAll("roleIds").map(id => parseInt(id as string, 10));
+    const userData: NewUserDto = {
+        username: formObject.username as string,
+        password: formObject.password as string,
+        roles: roleIds,
+        active: formObject.active === "true",
+    };
+
+    const result = createUserSchema.safeParse(userData);
+
+    if (!result.success) {
+        return {
+            success: false,
+            errors: z.flattenError(result.error).fieldErrors
+        };
+    }
+
+    try {
+        const response = await apiClient.users.createUser(result.data);
+
+        if (!response.success) {
+            return {
+                success: false,
+                errors: { general: [response.message] }
+            };
+        }
+
+        revalidatePath("/admin/users");
+        return {
+            success: true,
+            message: "User created successfully",
+            data: response.data
+        };
+    } catch (error) {
+        if (error instanceof HttpError) {
+            return {
+                success: false,
+                errors: { general: [error.message] }
+            };
+        }
+        console.error('Unexpected error during user creation:', error);
+        return {
+            success: false,
+            errors: { general: ["An unexpected error occurred"] }
+        };
+    }
+}
+
+export async function updateUser(prevState: unknown, formData: FormData) {
+    const formObject = Object.fromEntries(formData);
+
+    const roleIds = formData.getAll("roleIds");
+    const userData: UpdateUserDto = {
+        id: parseInt(formObject.id as string, 0),
+        username: formObject.username as string,
+        roles: roleIds.map(id => parseInt(id as string, 10)),
+        active: formObject.active === "true",
+    };
+
+    const result = updateUserSchema.safeParse(userData);
+
+    if (!result.success) {
+        return {
+            success: false,
+            errors: z.flattenError(result.error).fieldErrors
+        };
+    }
+
+    try {
+        const response = await apiClient.users.updateUser(result.data);
+
+        if (!response.success) {
+            return {
+                success: false,
+                errors: { general: [response.message] }
+            };
+        }
+
+        revalidatePath("/admin/users");
+        return {
+            success: true,
+            message: "User updated successfully",
+            data: response.data
+        };
+    } catch (error) {
+        if (error instanceof HttpError) {
+            return {
+                success: false,
+                errors: { general: [error.message] }
+            };
+        }
+        console.error('Unexpected error during user update:', error);
+        return {
+            success: false,
+            errors: { general: ["An unexpected error occurred"] }
+        };
+    }
+}
 
 export async function toggleUserStatus(userId: number, currentStatus: boolean) {
     try {
