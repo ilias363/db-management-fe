@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/stores/auth-store";
 import { LoadingScreen } from "./loading-screen";
 import { useRouter } from "next/navigation";
@@ -11,25 +11,33 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const { initializeAuth, isInitialized, user, isLoading } = useAuth();
+  const { initializeAuth, isInitialized, user, hasAttemptedAuth, isLoading, refreshAuth } = useAuth();
   const router = useRouter();
+  const [isInitializing, setIsInitializing] = useState(false);
 
   useEffect(() => {
     if (!isInitialized) {
-      initializeAuth();
+      setIsInitializing(true);
+      initializeAuth().finally(() => setIsInitializing(false));
+    } else if (!user && !hasAttemptedAuth) {
+      refreshAuth();
     }
-  }, [initializeAuth, isInitialized]);
+  }, [initializeAuth, isInitialized, user, hasAttemptedAuth, refreshAuth]);
 
-  if (isLoading) {
+  if (isInitializing || isLoading) {
     return <LoadingScreen message="Refreshing user authentication..." />;
   }
 
-  if (isInitialized && !user) {
+  if (isInitialized && !user && hasAttemptedAuth) {
     toast.error("An error occurred while fetching user data. Please log in again.");
 
     router.push("/login");
     return null;
   }
 
-  return <>{children}</>;
+  if (user) {
+    return <>{children}</>;
+  }
+
+  return <LoadingScreen message="Loading user data..." />;
 }

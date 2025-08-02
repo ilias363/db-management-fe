@@ -6,6 +6,7 @@ interface AuthState {
     user: UserDto | null;
     isLoading: boolean;
     isInitialized: boolean;
+    hasAttemptedAuth: boolean;
 
     setUser: (user: UserDto) => void;
     setLoading: (loading: boolean) => void;
@@ -19,6 +20,7 @@ const initialState = {
     user: null,
     isLoading: false,
     isInitialized: false,
+    hasAttemptedAuth: false,
 };
 
 export const useAuth = create<AuthState>()(
@@ -42,7 +44,7 @@ export const useAuth = create<AuthState>()(
             setLoading: (isLoading) => set({ isLoading }, false),
 
             refreshAuth: async () => {
-                set({ isLoading: true });
+                set({ isLoading: true, hasAttemptedAuth: true });
 
                 try {
                     const userResponse = await fetch('/api/auth/current-user');
