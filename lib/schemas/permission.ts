@@ -6,23 +6,25 @@ export const permissionSchema = z.object({
         .string()
         .regex(/^[a-zA-Z0-9_-]+$/,
             { error: "Schema name can only contain letters, numbers, underscores, and hyphens" })
+        .nullable()
         .optional(),
     tableName: z
         .string()
         .regex(/^[a-zA-Z0-9_-]+$/,
             { error: "Table name can only contain letters, numbers, underscores, and hyphens" })
+        .nullable()
         .optional(),
     viewName: z
         .string()
         .regex(/^[a-zA-Z0-9_-]+$/,
             { error: "View name can only contain letters, numbers, underscores, and hyphens" })
+        .nullable()
         .optional(),
     permissionType: z.enum(PermissionType, { error: "Invalid permission type" }),
 })
     .refine(
         (data) =>
-            data.schemaName !== undefined ||
-            (data.tableName === undefined && data.viewName === undefined),
+            data.schemaName || (!data.tableName && !data.viewName),
         {
             message: "If schemaName is not set, tableName and viewName must also be unset",
             path: ["schemaName"],
