@@ -23,6 +23,7 @@ import type {
   UserStatsResponse,
   RefreshTokenResponse,
   ValidateTokenResponse,
+  isSystemAdminResponse,
 } from "./types"
 import { cookies } from "next/headers";
 import { HttpError } from "./errors";
@@ -90,6 +91,9 @@ class ApiClientImpl implements ApiClient {
     },
 
     getCurrentUser: (): Promise<CurrentUserResponse> => this.request("/auth/current-user"),
+
+    getIsCurrentUserSystemAdmin: (): Promise<isSystemAdminResponse> =>
+      this.request("/auth/current-user/is-system-admin"),
 
     getCurrentUserPermissions: (): Promise<UserPermissionsResponse> => this.request("/auth/current-user/permissions"),
 

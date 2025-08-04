@@ -102,6 +102,19 @@ export async function getCurrentUser(): Promise<UserDto | null> {
     }
 }
 
+export async function getIsSystemAdmin(): Promise<boolean> {
+    try {
+        const response = await apiClient.auth.getIsCurrentUserSystemAdmin();
+        if (!response.success || !response.data) {
+            return false;
+        }
+        return response.data.isSystemAdmin;
+    } catch (error) {
+        console.error('Failed to check if current user is system admin:', error);
+        return false;
+    }
+}
+
 export async function getCurrentUserPermissions(): Promise<UserPermissions | null> {
     try {
         const response = await apiClient.auth.getCurrentUserPermissions();

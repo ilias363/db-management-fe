@@ -62,5 +62,6 @@ export type LogoutResponse = ApiResponse<void>;
 export type RefreshTokenResponse = ApiResponse<TokenRefreshResponseDto>;
 export type ValidateTokenResponse = ApiResponse<{ isValid: boolean }>;
 export type CurrentUserResponse = ApiResponse<UserDto>;
+export type isSystemAdminResponse = ApiResponse<{ isSystemAdmin: boolean }>;
 export type UserPermissionsResponse = ApiResponse<UserPermissions>;
 export type DetailedPermissionsResponse = ApiResponse<DetailedPermissions>;
