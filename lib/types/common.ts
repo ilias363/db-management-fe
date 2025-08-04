@@ -128,3 +128,10 @@ export interface PaginationParams {
     sortBy?: string;
     sortDirection?: SortDirection;
 }
+
+export interface ActionState<T = unknown> {
+    success: boolean;
+    message?: string;
+    errors?: Record<string, string[]>;
+    data?: T;
+}
