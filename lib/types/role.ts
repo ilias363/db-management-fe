@@ -23,7 +23,15 @@ export interface UpdateRoleDto {
     permissions: PermissionDetailDto[];
 }
 
+export interface RoleStats {
+    totalRoles: number;
+    systemRoles: number;
+    customRoles: number;
+    roleAssignations: number;
+}
+
 export type RolePageDto = PageDto<RoleDto>;
 
 export type RoleResponse = ApiResponse<RoleDto>;
 export type RolePageResponse = ApiResponse<RolePageDto>;
+export type RoleStatsResponse = ApiResponse<RoleStats>;

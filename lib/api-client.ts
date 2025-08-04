@@ -24,6 +24,7 @@ import type {
   RefreshTokenResponse,
   ValidateTokenResponse,
   isSystemAdminResponse,
+  RoleStatsResponse,
 } from "./types"
 import { cookies } from "next/headers";
 import { HttpError } from "./errors";
@@ -161,6 +162,8 @@ class ApiClientImpl implements ApiClient {
       }),
 
     deleteRole: (id: number): Promise<VoidResponse> => this.request(`/roles/${id}`, { method: "DELETE" }),
+
+    getRoleStats: (): Promise<RoleStatsResponse> => this.request("/roles/stats"),
   }
 
   audit = {
