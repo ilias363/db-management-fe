@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthTokens } from './lib/session';
-import { refreshAuthTokens, validateAccessToken } from './lib/actions';
-
-const publicRoutes = ['/login'];
-const authRoutes = ['/login'];
+import { refreshAuthTokens, validateAccessToken, getIsSystemAdmin } from './lib/actions';
 
 export async function middleware(request: NextRequest) {
 	try {
@@ -11,9 +8,10 @@ export async function middleware(request: NextRequest) {
 
 		const { accessToken, refreshToken } = await getAuthTokens();
 
-		const isPublicRoute = publicRoutes.includes(pathname);
+		const isAuthRoute = ["/login"].includes(pathname);
+		const isPublicRoute = ["/login"].includes(pathname);
 		const isProtectedRoute = !isPublicRoute;
-		const isAuthRoute = authRoutes.includes(pathname);
+		const isAdminRoute = pathname.startsWith('/admin');
 
 		if (accessToken) {
 			// If user has access token, validate it
@@ -21,6 +19,13 @@ export async function middleware(request: NextRequest) {
 			if (isValid) {
 				if (isAuthRoute) {
 					return NextResponse.redirect(new URL('/', request.nextUrl));
+				}
+				// Check for admin route access
+				if (isAdminRoute) {
+					const isSystemAdmin = await getIsSystemAdmin();
+					if (!isSystemAdmin) {
+						return NextResponse.redirect(new URL('/', request.nextUrl));
+					}
 				}
 				return NextResponse.next();
 			}
@@ -32,6 +37,13 @@ export async function middleware(request: NextRequest) {
 			if (refreshed) {
 				if (isAuthRoute) {
 					return NextResponse.redirect(new URL('/', request.nextUrl));
+				}
+				// Check for admin route access after refresh
+				if (isAdminRoute) {
+					const isSystemAdmin = await getIsSystemAdmin();
+					if (!isSystemAdmin) {
+						return NextResponse.redirect(new URL('/', request.nextUrl));
+					}
 				}
 				return NextResponse.next();
 			}
