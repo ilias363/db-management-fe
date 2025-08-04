@@ -69,7 +69,7 @@ export async function getRolesData(params: RolesDataParams = {}): Promise<RolesD
     }
 }
 
-export async function createRole(prevState: ActionState<RoleDto>, formData: FormData): Promise<ActionState<RoleDto>> {
+export async function createRole(prevState: ActionState<RoleDto> | undefined, formData: FormData): Promise<ActionState<RoleDto>> {
     const formObject = Object.fromEntries(formData);
 
     const permissions = formData.getAll("permissions").map((perm) => {
@@ -139,7 +139,7 @@ export async function createRole(prevState: ActionState<RoleDto>, formData: Form
     }
 }
 
-export async function updateRole(prevState: ActionState<RoleDto>, formData: FormData): Promise<ActionState<RoleDto>> {
+export async function updateRole(prevState: ActionState<RoleDto> | undefined, formData: FormData): Promise<ActionState<RoleDto>> {
     const formObject = Object.fromEntries(formData);
 
     const permissions = formData.getAll("permissions").map((perm) => {
