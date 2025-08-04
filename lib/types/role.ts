@@ -27,7 +27,7 @@ export interface RoleStats {
     totalRoles: number;
     systemRoles: number;
     customRoles: number;
-    roleAssignations: number;
+    roleAssignments: number;
 }
 
 export type RolePageDto = PageDto<RoleDto>;
