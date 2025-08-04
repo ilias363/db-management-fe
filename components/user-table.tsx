@@ -1,39 +1,38 @@
 import { Badge } from "@/components/ui/badge";
 import { Users, Power, PowerOff, Edit, Eye, Trash2 } from "lucide-react";
-import type { UserDto } from "@/lib/types";
+import type { SortDirection, UserDto } from "@/lib/types";
 import { DataTable, type ColumnDef, type ActionButton } from "@/components/data-table";
 
 interface UserTableProps {
   users: UserDto[];
+  onViewUser: (user: UserDto) => void;
   onEditUser: (user: UserDto) => void;
   onToggleUserStatus: (user: UserDto) => void;
-  onViewUser?: (user: UserDto) => void;
-  onDeleteUser?: (user: UserDto) => void;
+  onDeleteUser: (user: UserDto) => void;
   searchTerm: string;
-  showSelection?: boolean;
-  sortBy?: string;
-  sortDirection?: "ASC" | "DESC";
-  onSort?: (field: string) => void;
-  currentPage?: number;
-  pageSize?: number;
-  totalItems?: number;
-  onPageChange?: (page: number) => void;
+  sortBy: string;
+  sortDirection: SortDirection;
+  onSort: (field: string) => void;
+  currentPage: number;
+  pageSize: number;
+  totalItems: number;
+  onPageChange: (page: number) => void;
 }
 
 export function UserTable({
   users,
+  onViewUser,
   onEditUser,
   onToggleUserStatus,
-  onViewUser,
   onDeleteUser,
   searchTerm,
   sortBy,
   sortDirection,
   onSort,
-  currentPage = 0,
-  pageSize = 10,
-  totalItems = 0,
-  onPageChange = () => {},
+  currentPage,
+  pageSize,
+  totalItems,
+  onPageChange,
 }: UserTableProps) {
   const columns: ColumnDef<UserDto>[] = [
     {
@@ -83,9 +82,8 @@ export function UserTable({
     {
       label: "View Details",
       icon: <Eye className="h-4 w-4" />,
-      onClick: onViewUser || (() => {}),
+      onClick: onViewUser,
       variant: "ghost",
-      hidden: () => !onViewUser,
     },
     {
       label: "Edit User",
@@ -108,9 +106,9 @@ export function UserTable({
     {
       label: "Delete User",
       icon: <Trash2 className="h-4 w-4" />,
-      onClick: onDeleteUser || (() => {}),
+      onClick: onDeleteUser,
       variant: "destructive",
-      hidden: (user: UserDto) => !onDeleteUser || user.roles.some(role => role.name === "ADMIN"),
+      hidden: (user: UserDto) => user.roles.some(role => role.name === "ADMIN"),
     },
   ];
 

@@ -160,6 +160,7 @@ export default function UsersPage() {
   };
 
   const handlePageChange = (page: number) => {
+    setUsers([]);
     setCurrentPage(page);
   };
 
@@ -226,6 +227,8 @@ export default function UsersPage() {
             users={users}
             onEditUser={openEditDialog}
             onToggleUserStatus={handleToggleUserStatus}
+            onViewUser={() => toast.info("View user details not implemented yet")}
+            onDeleteUser={() => toast.info("Delete user not implemented yet")}
             searchTerm={searchTerm}
             sortBy={sortBy}
             sortDirection={sortDirection}
