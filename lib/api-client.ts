@@ -26,6 +26,7 @@ import type {
   ValidateTokenResponse,
   isSystemAdminResponse,
   RoleStatsResponse,
+  ActionType,
 } from "./types"
 import { cookies } from "next/headers";
 import { HttpError } from "./errors";
@@ -168,7 +169,12 @@ class ApiClientImpl implements ApiClient {
   }
 
   audit = {
-    getAuditLogs: (params?: PaginationParams): Promise<AuditLogPageResponse> => {
+    getAuditLogs: (params?: PaginationParams & {
+      search?: string;
+      userId?: number;
+      actionType?: ActionType;
+      successful?: boolean;
+    }): Promise<AuditLogPageResponse> => {
       const query = params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : ""
       return this.request(`/audit-logs${query}`)
     },

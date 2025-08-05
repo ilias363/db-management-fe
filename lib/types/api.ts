@@ -60,6 +60,7 @@ import type {
   RoleStatsResponse,
   RefreshTokenResponse,
   ValidateTokenResponse,
+  ActionType,
 } from "./index"
 
 export interface ApiClient {
@@ -92,7 +93,12 @@ export interface ApiClient {
     getRoleStats: () => Promise<RoleStatsResponse>
   }
   audit: {
-    getAuditLogs: (params?: PaginationParams) => Promise<AuditLogPageResponse>
+    getAuditLogs: (params?: PaginationParams & {
+      search?: string;
+      userId?: number;
+      actionType?: ActionType;
+      successful?: boolean;
+    }) => Promise<AuditLogPageResponse>
     getAuditLogsByUserId: (userId: number, params?: PaginationParams) => Promise<AuditLogPageResponse>
     getAuditLogById: (id: number) => Promise<AuditLogResponse>
     deleteAuditLog: (id: number) => Promise<VoidResponse>
