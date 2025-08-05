@@ -156,7 +156,7 @@ class ApiClientImpl implements ApiClient {
       }),
 
     updateRole: (role: UpdateRoleDto): Promise<RoleResponse> =>
-      this.request("/roles", {
+      this.request(`/roles/${role.id}`, {
         method: "PUT",
         body: JSON.stringify(role),
       }),
