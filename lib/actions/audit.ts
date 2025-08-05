@@ -51,7 +51,7 @@ export async function getAuditData(params: AuditDataParams = {}): Promise<AuditD
         if (params.actionType) {
             queryParams.actionType = params.actionType;
         }
-        if (params.successful) {
+        if (params.successful !== undefined) {
             queryParams.successful = params.successful.toString();
         }
 
