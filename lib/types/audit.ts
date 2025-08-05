@@ -15,7 +15,18 @@ export interface AuditLogDto {
     errorMessage?: string;
 }
 
+export interface AuditStats {
+    totalAudits: number;
+    totalSuccessful: number;
+    totalFailed: number;
+    failedPercentage: number;
+    last24hActivityCount: number;
+    mostCommonAction: ActionType;
+    averageActionsPerDay: number;
+}
+
 export type AuditLogPageDto = PageDto<AuditLogDto>
 
 export type AuditLogResponse = ApiResponse<AuditLogDto>;
 export type AuditLogPageResponse = ApiResponse<AuditLogPageDto>;
+export type AuditStatsResponse = ApiResponse<AuditStats>;

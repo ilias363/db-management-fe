@@ -19,6 +19,7 @@ import type {
   UpdateRoleDto,
   AuditLogPageResponse,
   AuditLogResponse,
+  AuditStatsResponse,
   PaginationParams,
   UserStatsResponse,
   RefreshTokenResponse,
@@ -169,17 +170,19 @@ class ApiClientImpl implements ApiClient {
   audit = {
     getAuditLogs: (params?: PaginationParams): Promise<AuditLogPageResponse> => {
       const query = params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : ""
-      return this.request(`/audit${query}`)
+      return this.request(`/audit-logs${query}`)
     },
 
     getAuditLogsByUserId: (userId: number, params?: PaginationParams): Promise<AuditLogPageResponse> => {
       const query = params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : ""
-      return this.request(`/audit/user/${userId}${query}`)
+      return this.request(`/audit-logs/user/${userId}${query}`)
     },
 
-    getAuditLogById: (id: number): Promise<AuditLogResponse> => this.request(`/audit/${id}`),
+    getAuditLogById: (id: number): Promise<AuditLogResponse> => this.request(`/audit-logs/${id}`),
 
-    deleteAuditLog: (id: number): Promise<VoidResponse> => this.request(`/audit/${id}`, { method: "DELETE" }),
+    deleteAuditLog: (id: number): Promise<VoidResponse> => this.request(`/audit-logs/${id}`, { method: "DELETE" }),
+
+    getAuditStats: (): Promise<AuditStatsResponse> => this.request("/audit-logs/stats"),
   }
 
   schema = {

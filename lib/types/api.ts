@@ -16,6 +16,7 @@ import type {
   UpdateRoleDto,
   AuditLogPageResponse,
   AuditLogResponse,
+  AuditStatsResponse,
   PaginationParams,
   SchemasResponse,
   SchemaResponse,
@@ -56,6 +57,7 @@ import type {
   RecordAdvancedSearchDto,
   RecordAdvancedSearchResponseDto,
   UserStatsResponse,
+  RoleStatsResponse,
   RefreshTokenResponse,
   ValidateTokenResponse,
 } from "./index"
@@ -87,12 +89,14 @@ export interface ApiClient {
     createRole: (role: NewRoleDto) => Promise<RoleResponse>
     updateRole: (role: UpdateRoleDto) => Promise<RoleResponse>
     deleteRole: (id: number) => Promise<VoidResponse>
+    getRoleStats: () => Promise<RoleStatsResponse>
   }
   audit: {
     getAuditLogs: (params?: PaginationParams) => Promise<AuditLogPageResponse>
     getAuditLogsByUserId: (userId: number, params?: PaginationParams) => Promise<AuditLogPageResponse>
     getAuditLogById: (id: number) => Promise<AuditLogResponse>
     deleteAuditLog: (id: number) => Promise<VoidResponse>
+    getAuditStats: () => Promise<AuditStatsResponse>
   }
   schema: {
     getAllSchemas(): Promise<SchemasResponse>;
