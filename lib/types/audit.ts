@@ -4,7 +4,7 @@ import { ActionType, ApiResponse, PageDto, UserDto } from './index';
 
 export interface AuditLogDto {
     id: number;
-    user: UserDto;
+    user?: UserDto;
     actionType: ActionType;
     auditTimestamp: string;
     successful: boolean;
