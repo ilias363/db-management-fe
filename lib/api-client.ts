@@ -174,6 +174,8 @@ class ApiClientImpl implements ApiClient {
       userId?: number;
       actionType?: ActionType;
       successful?: boolean;
+      after?: Date;
+      before?: Date;
     }): Promise<AuditLogPageResponse> => {
       const query = params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : ""
       return this.request(`/audit-logs${query}`)

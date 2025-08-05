@@ -98,6 +98,8 @@ export interface ApiClient {
       userId?: number;
       actionType?: ActionType;
       successful?: boolean;
+      after?: Date;
+      before?: Date;
     }) => Promise<AuditLogPageResponse>
     getAuditLogsByUserId: (userId: number, params?: PaginationParams) => Promise<AuditLogPageResponse>
     getAuditLogById: (id: number) => Promise<AuditLogResponse>

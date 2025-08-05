@@ -15,6 +15,8 @@ export interface AuditDataParams extends PaginationParams {
     userId?: number;
     actionType?: string;
     successful?: boolean;
+    after?: Date;
+    before?: Date;
 }
 
 export interface AuditDataResponse {
@@ -51,6 +53,14 @@ export async function getAuditData(params: AuditDataParams = {}): Promise<AuditD
         }
         if (params.successful) {
             queryParams.successful = params.successful.toString();
+        }
+
+        if (params.after) {
+            queryParams.after = params.after.toISOString();
+        }
+
+        if (params.before) {
+            queryParams.before = params.before.toISOString();
         }
 
         const [auditResponse, statsResponse] = await Promise.all([
