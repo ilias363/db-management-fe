@@ -94,6 +94,7 @@ export function RoleTable({
       icon: <Edit className="h-4 w-4" />,
       onClick: onEditRole,
       variant: "ghost",
+      hidden: (role: RoleDto) => role.isSystemRole,
     },
     {
       label: "Delete Role",
