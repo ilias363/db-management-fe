@@ -21,6 +21,7 @@ import ErrorMessage from "./error-message";
 import { usePermissions } from "@/lib/hooks/use-permissions";
 import { PermissionForm } from "./permission-form";
 import { ConfirmDialog } from "./confirm-dialog";
+import { getStateFieldErrors, getStateGeneralErrors } from "@/lib/utils";
 
 interface RoleDialogProps {
   open: boolean;
@@ -143,23 +144,9 @@ export function RoleDialog({ open, onOpenChange, role, isCreateMode, onSuccess }
     setFormData(prev => ({ ...prev, permissions }));
   }, [permissions]);
 
-  // Error handling helpers
-  const getFieldErrors = useCallback(
-    (field: string): string | string[] | undefined => {
-      if (state?.errors && typeof state.errors === "object" && field in state.errors) {
-        return state.errors[field as keyof typeof state.errors];
-      }
-      return undefined;
-    },
-    [state]
-  );
+  const getFieldErrors = useCallback((field: string) => getStateFieldErrors(field, state), [state]);
 
-  const getGeneralErrors = useCallback((): string | string[] | undefined => {
-    if (state?.errors && typeof state.errors === "object" && "general" in state.errors) {
-      return state.errors["general"];
-    }
-    return undefined;
-  }, [state?.errors]);
+  const getGeneralErrors = useCallback(() => getStateGeneralErrors(state), [state]);
 
   const handleAddPermission = useCallback(() => {
     const permission: PermissionDetailDto = {
