@@ -162,7 +162,7 @@ export function UserDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>
               {isCreateMode ? "Create New User" : `Edit User: ${user?.username}`}
@@ -174,131 +174,139 @@ export function UserDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <form action={action} className="space-y-6">
-            {getGeneralErrors() && <ErrorMessage error={getGeneralErrors()} />}
+          <form action={action} className="flex flex-col flex-1 min-h-0">
+            <div className="flex-1 overflow-y-auto space-y-6 pr-2">
+              {getGeneralErrors() && <ErrorMessage error={getGeneralErrors()} />}
 
-            <div className="grid gap-4">
-              {!isCreateMode && user && (
-                <Input id="id" name="id" defaultValue={user.id.toString()} hidden />
-              )}
-
-              <div className="space-y-2">
-                <Label htmlFor="username">Username *</Label>
-                <Input
-                  ref={usernameInputRef}
-                  id="username"
-                  name="username"
-                  value={formData.username}
-                  onChange={e => setFormData(prev => ({ ...prev, username: e.target.value }))}
-                  placeholder="Enter username"
-                  required
-                  disabled={isSystemAdmin}
-                  className={getFieldErrors("username") ? "border-red-500" : ""}
-                />
-                {getFieldErrors("username") && <ErrorMessage error={getFieldErrors("username")} />}
-                {isSystemAdmin && (
-                  <p className="text-xs text-muted-foreground">
-                    System admin username cannot be modified
-                  </p>
+              <div className="grid gap-4">
+                {!isCreateMode && user && (
+                  <Input id="id" name="id" defaultValue={user.id.toString()} hidden />
                 )}
-              </div>
 
-              {isCreateMode && (
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password *</Label>
+                  <Label htmlFor="username">Username *</Label>
                   <Input
-                    id="password"
-                    name="password"
-                    type="password"
-                    value={formData.password}
-                    onChange={e => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                    placeholder="Enter password"
+                    ref={usernameInputRef}
+                    id="username"
+                    name="username"
+                    value={formData.username}
+                    onChange={e => setFormData(prev => ({ ...prev, username: e.target.value }))}
+                    placeholder="Enter username"
                     required
-                    className={getFieldErrors("password") ? "border-red-500" : ""}
+                    disabled={isSystemAdmin}
+                    className={getFieldErrors("username") ? "border-red-500" : ""}
                   />
-                  {getFieldErrors("password") && (
-                    <ErrorMessage error={getFieldErrors("password")} />
+                  {getFieldErrors("username") && (
+                    <ErrorMessage error={getFieldErrors("username")} />
+                  )}
+                  {isSystemAdmin && (
+                    <p className="text-xs text-muted-foreground">
+                      System admin username cannot be modified
+                    </p>
                   )}
                 </div>
-              )}
 
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="active"
-                  name="active"
-                  checked={formData.active}
-                  onCheckedChange={checked => setFormData(prev => ({ ...prev, active: !!checked }))}
-                  value="true"
-                  disabled={isSystemAdmin}
-                />
-                <Label htmlFor="active">Active User</Label>
-                {isSystemAdmin && (
-                  <span className="text-xs text-muted-foreground ml-2">
-                    (System admin status cannot be changed)
-                  </span>
+                {isCreateMode && (
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password *</Label>
+                    <Input
+                      id="password"
+                      name="password"
+                      type="password"
+                      value={formData.password}
+                      onChange={e => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                      placeholder="Enter password"
+                      required
+                      className={getFieldErrors("password") ? "border-red-500" : ""}
+                    />
+                    {getFieldErrors("password") && (
+                      <ErrorMessage error={getFieldErrors("password")} />
+                    )}
+                  </div>
                 )}
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="active"
+                    name="active"
+                    checked={formData.active}
+                    onCheckedChange={checked =>
+                      setFormData(prev => ({ ...prev, active: !!checked }))
+                    }
+                    value="true"
+                    disabled={isSystemAdmin}
+                  />
+                  <Label htmlFor="active">Active User</Label>
+                  {isSystemAdmin && (
+                    <span className="text-xs text-muted-foreground ml-2">
+                      (System admin status cannot be changed)
+                    </span>
+                  )}
+                </div>
               </div>
+
+              {/* Hidden inputs for form submission */}
+              {formData.selectedRoleIds.map(roleId => (
+                <input key={roleId} type="hidden" name="roleIds" value={roleId} />
+              ))}
+
+              <Card className="py-3">
+                <CardHeader>
+                  <CardTitle className="text-lg">Role Assignment</CardTitle>
+                  <CardDescription>
+                    Select the roles to assign to this user. Roles determine what actions the user
+                    can perform.
+                  </CardDescription>
+                  {getFieldErrors("roles") && <ErrorMessage error={getFieldErrors("roles")} />}
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-2">
+                    {roles
+                      .sort((r1, r2) => r1.id - r2.id)
+                      .map(role => {
+                        const isSystemRole =
+                          role.name.toUpperCase() === "ADMIN" ||
+                          role.name.toUpperCase() === "VIEWER";
+                        const isCurrentlyAdmin =
+                          role.name.toUpperCase() === "ADMIN" && isSystemAdmin;
+                        const isSelected = formData.selectedRoleIds.includes(role.id);
+
+                        return (
+                          <div
+                            key={role.id}
+                            className="flex items-center space-x-3 p-2 border rounded-lg"
+                          >
+                            <Checkbox
+                              id={`role-${role.id}`}
+                              checked={isSelected}
+                              onCheckedChange={checked => handleRoleChange(role.id, !!checked)}
+                              disabled={isCurrentlyAdmin}
+                            />
+                            <div className="grid gap-1.5 leading-none flex-1">
+                              <label
+                                htmlFor={`role-${role.id}`}
+                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2"
+                              >
+                                {role.name}
+                                {isSystemRole && (
+                                  <span className="text-xs bg-muted px-2 py-1 rounded-full">
+                                    System Role
+                                  </span>
+                                )}
+                              </label>
+                              <p className="text-xs text-muted-foreground">
+                                {role.description || "No description"}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
-            {/* Hidden inputs for form submission */}
-            {formData.selectedRoleIds.map(roleId => (
-              <input key={roleId} type="hidden" name="roleIds" value={roleId} />
-            ))}
-
-            <Card className="py-3">
-              <CardHeader>
-                <CardTitle className="text-lg">Role Assignment</CardTitle>
-                <CardDescription>
-                  Select the roles to assign to this user. Roles determine what actions the user can
-                  perform.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-2 max-h-48 overflow-y-auto pr-2">
-                  {roles
-                    .sort((r1, r2) => r1.id - r2.id)
-                    .map(role => {
-                      const isSystemRole =
-                        role.name.toUpperCase() === "ADMIN" || role.name.toUpperCase() === "VIEWER";
-                      const isCurrentlyAdmin = role.name.toUpperCase() === "ADMIN" && isSystemAdmin;
-                      const isSelected = formData.selectedRoleIds.includes(role.id);
-
-                      return (
-                        <div
-                          key={role.id}
-                          className="flex items-center space-x-3 p-2 border rounded-lg"
-                        >
-                          <Checkbox
-                            id={`role-${role.id}`}
-                            checked={isSelected}
-                            onCheckedChange={checked => handleRoleChange(role.id, !!checked)}
-                            disabled={isCurrentlyAdmin}
-                          />
-                          <div className="grid gap-1.5 leading-none flex-1">
-                            <label
-                              htmlFor={`role-${role.id}`}
-                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2"
-                            >
-                              {role.name}
-                              {isSystemRole && (
-                                <span className="text-xs bg-muted px-2 py-1 rounded-full">
-                                  System Role
-                                </span>
-                              )}
-                            </label>
-                            <p className="text-xs text-muted-foreground">
-                              {role.description || "No description"}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                </div>
-                {getFieldErrors("roles") && <ErrorMessage error={getFieldErrors("roles")} />}
-              </CardContent>
-            </Card>
-
-            <DialogFooter className="gap-2">
+            <DialogFooter className="gap-2 flex-shrink-0 border-t pt-4 mt-4">
               <Button type="button" variant="outline" onClick={handleClose} disabled={pending}>
                 Cancel
               </Button>
