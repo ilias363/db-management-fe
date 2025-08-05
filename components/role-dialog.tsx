@@ -195,14 +195,16 @@ export function RoleDialog({ open, onOpenChange, role, isCreateMode, onSuccess }
       setShowUnsavedWarning(true);
     } else {
       onOpenChange(false);
+      if (state?.errors) state.errors = undefined;
     }
-  }, [hasChanges, onOpenChange]);
+  }, [hasChanges, onOpenChange, state]);
 
   const handleForceClose = useCallback(() => {
     setShowUnsavedWarning(false);
     setHasChanges(false);
     onOpenChange(false);
-  }, [onOpenChange]);
+    if (state?.errors) state.errors = undefined;
+  }, [onOpenChange, state]);
 
   // Memoized permission list for performance
   const permissionBadges = useMemo(
@@ -317,7 +319,9 @@ export function RoleDialog({ open, onOpenChange, role, isCreateMode, onSuccess }
                   <p className="text-sm">Add permissions using the form above</p>
                 </div>
               )}
-              {getFieldErrors("permissions") && <ErrorMessage error={getFieldErrors("permissions")} />}
+              {getFieldErrors("permissions") && (
+                <ErrorMessage error={getFieldErrors("permissions")} />
+              )}
             </div>
 
             <DialogFooter className="gap-2">
