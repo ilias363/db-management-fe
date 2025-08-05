@@ -114,7 +114,7 @@ export async function createRole(prevState: ActionState<RoleDto> | undefined, fo
         if (!response.success) {
             return {
                 success: false,
-                errors: { general: [response.message] }
+                errors: { general: response.message.split("\n") }
             };
         }
 
@@ -185,7 +185,7 @@ export async function updateRole(prevState: ActionState<RoleDto> | undefined, fo
         if (!response.success) {
             return {
                 success: false,
-                errors: { general: [response.message] }
+                errors: { general: response.message.split("\n") }
             };
         }
 

@@ -34,7 +34,7 @@ export async function createUser(prevState: unknown, formData: FormData) {
         if (!response.success) {
             return {
                 success: false,
-                errors: { general: [response.message] }
+                errors: { general: response.message.split("\n") }
             };
         }
 
@@ -85,7 +85,7 @@ export async function updateUser(prevState: unknown, formData: FormData) {
         if (!response.success) {
             return {
                 success: false,
-                errors: { general: [response.message] }
+                errors: { general: response.message.split("\n") }
             };
         }
 
