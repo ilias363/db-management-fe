@@ -4,11 +4,79 @@ import { revalidatePath } from "next/cache";
 import z from "zod";
 
 import { apiClient } from "../api-client";
-import type { NewUserDto, PaginationParams, UpdateUserDto } from "../types";
+import type {
+    UserDto,
+    NewUserDto,
+    UpdateUserDto,
+    PaginationParams,
+    UserPageDto,
+    UserStats,
+    ActionState,
+    RolePageDto
+} from "../types";
 import { HttpError } from "../errors";
 import { createUserSchema, updateUserSchema } from "../schemas";
 
-export async function createUser(prevState: unknown, formData: FormData) {
+export interface UsersDataParams extends PaginationParams {
+    search?: string;
+    activeOnly?: boolean;
+}
+
+export interface UsersDataResponse {
+    success: boolean;
+    data?: {
+        users?: UserPageDto | null;
+        roles?: RolePageDto | null;
+        stats?: UserStats | null;
+    };
+    message?: string;
+}
+
+export interface ToggleUserStatusResponse {
+    success: boolean;
+    message: string;
+}
+
+export async function getUsersData(params: UsersDataParams = {}): Promise<UsersDataResponse> {
+    try {
+        const queryParams: Record<string, string> = {
+            page: (params.page || 0).toString(),
+            size: (params.size || 10).toString(),
+            sortBy: params.sortBy || "username",
+            sortDirection: params.sortDirection || "ASC",
+        };
+
+        if (params.search) {
+            queryParams.search = params.search;
+        }
+
+        const usersResponse = params.activeOnly
+            ? await apiClient.users.getAllActiveUsers(queryParams)
+            : await apiClient.users.getAllUsers(queryParams);
+
+        const [rolesResponse, statsResponse] = await Promise.all([
+            apiClient.roles.getAllRoles(),
+            apiClient.users.getUserStats(),
+        ]);
+
+        return {
+            success: true,
+            data: {
+                users: usersResponse.success ? usersResponse.data : null,
+                roles: rolesResponse.success ? rolesResponse.data : null,
+                stats: statsResponse.success ? statsResponse.data : null,
+            }
+        };
+    } catch (error) {
+        console.error('Failed to load users data:', error);
+        return {
+            success: false,
+            message: "Failed to load users data"
+        };
+    }
+}
+
+export async function createUser(prevState: ActionState<UserDto> | undefined, formData: FormData): Promise<ActionState<UserDto>> {
     const formObject = Object.fromEntries(formData);
 
     const roleIds = formData.getAll("roleIds").map(id => parseInt(id as string, 10));
@@ -59,12 +127,12 @@ export async function createUser(prevState: unknown, formData: FormData) {
     }
 }
 
-export async function updateUser(prevState: unknown, formData: FormData) {
+export async function updateUser(prevState: ActionState<UserDto> | undefined, formData: FormData): Promise<ActionState<UserDto>> {
     const formObject = Object.fromEntries(formData);
 
     const roleIds = formData.getAll("roleIds");
     const userData: UpdateUserDto = {
-        id: parseInt(formObject.id as string, 0),
+        id: parseInt(formObject.id as string, 10),
         username: formObject.username as string,
         roles: roleIds.map(id => parseInt(id as string, 10)),
         active: formObject.active === "true",
@@ -110,7 +178,7 @@ export async function updateUser(prevState: unknown, formData: FormData) {
     }
 }
 
-export async function toggleUserStatus(userId: number, currentStatus: boolean) {
+export async function toggleUserStatus(userId: number, currentStatus: boolean): Promise<ToggleUserStatusResponse> {
     try {
         const response = currentStatus
             ? await apiClient.users.deactivateUser(userId)
@@ -139,45 +207,6 @@ export async function toggleUserStatus(userId: number, currentStatus: boolean) {
         return {
             success: false,
             message: "An unexpected error occurred"
-        };
-    }
-}
-
-export async function getUsersData(params: PaginationParams & { search?: string; activeOnly?: boolean }) {
-    try {
-        const queryParams: Record<string, string> = {
-            page: (params.page || 0).toString(),
-            size: (params.size || 10).toString(),
-            sortBy: params.sortBy || "username",
-            sortDirection: params.sortDirection || "ASC",
-        };
-
-        if (params.search) {
-            queryParams.search = params.search;
-        }
-
-        const usersResponse = params.activeOnly
-            ? await apiClient.users.getAllActiveUsers(queryParams)
-            : await apiClient.users.getAllUsers(queryParams);
-
-        const [rolesResponse, statsResponse] = await Promise.all([
-            apiClient.roles.getAllRoles(),
-            apiClient.users.getUserStats(),
-        ]);
-
-        return {
-            success: true,
-            data: {
-                users: usersResponse.success ? usersResponse.data : null,
-                roles: rolesResponse.success ? rolesResponse.data : null,
-                stats: statsResponse.success ? statsResponse.data : null,
-            }
-        };
-    } catch (error) {
-        console.error('Failed to load users data:', error);
-        return {
-            success: false,
-            message: "Failed to load users data"
         };
     }
 }
