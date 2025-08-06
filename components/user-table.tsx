@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Users, Power, PowerOff, Edit, Eye, Trash2 } from "lucide-react";
 import type { SortDirection, UserDto } from "@/lib/types";
 import { DataTable, type ColumnDef, type ActionButton } from "@/components/data-table";
+import Link from "next/link";
 
 interface UserTableProps {
   users: UserDto[];
@@ -46,7 +47,7 @@ export function UserTable({
       key: "username",
       title: "Username",
       sortable: true,
-      render: user => <span className="font-medium">{user.username}</span>,
+      render: user => <Link href={`/admin/users/${user.id}`} className="font-medium underline">{user.username}</Link>,
     },
     {
       key: "active",
