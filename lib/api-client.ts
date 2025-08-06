@@ -27,6 +27,7 @@ import type {
   isSystemAdminResponse,
   RoleStatsResponse,
   ActionType,
+  RolesResponse,
 } from "./types"
 import { cookies } from "next/headers";
 import { HttpError } from "./errors";
@@ -144,7 +145,9 @@ class ApiClientImpl implements ApiClient {
   }
 
   roles = {
-    getAllRoles: (params?: PaginationParams & { search?: string }): Promise<RolePageResponse> => {
+    getAllRoles: () => this.request<RolesResponse>("/roles/all"),
+
+    getAllRolesPaginated: (params?: PaginationParams & { search?: string }): Promise<RolePageResponse> => {
       const query = params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : ""
       return this.request(`/roles${query}`)
     },

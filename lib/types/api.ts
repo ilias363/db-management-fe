@@ -61,6 +61,7 @@ import type {
   RefreshTokenResponse,
   ValidateTokenResponse,
   ActionType,
+  RolesResponse,
 } from "./index"
 
 export interface ApiClient {
@@ -85,7 +86,8 @@ export interface ApiClient {
     getUserStats: () => Promise<UserStatsResponse>
   }
   roles: {
-    getAllRoles: (params?: PaginationParams & { search?: string }) => Promise<RolePageResponse>
+    getAllRoles: () => Promise<RolesResponse>
+    getAllRolesPaginated: (params?: PaginationParams & { search?: string }) => Promise<RolePageResponse>
     getRoleById: (id: number) => Promise<RoleResponse>
     createRole: (role: NewRoleDto) => Promise<RoleResponse>
     updateRole: (role: UpdateRoleDto) => Promise<RoleResponse>

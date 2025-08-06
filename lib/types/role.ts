@@ -34,4 +34,5 @@ export type RolePageDto = PageDto<RoleDto>;
 
 export type RoleResponse = ApiResponse<RoleDto>;
 export type RolePageResponse = ApiResponse<RolePageDto>;
+export type RolesResponse = ApiResponse<RoleDto[]>;
 export type RoleStatsResponse = ApiResponse<RoleStats>;
