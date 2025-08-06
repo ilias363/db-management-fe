@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Search } from "lucide-react";
@@ -23,6 +24,7 @@ import { Input } from "@/components/ui/input";
 import { getUsersData, toggleUserStatus } from "@/lib/actions";
 
 export default function UsersPage() {
+  const router = useRouter();
   const [users, setUsers] = useState<UserDto[]>([]);
   const [roles, setRoles] = useState<RoleDto[]>([]);
   const [stats, setStats] = useState<UserStats>({
@@ -227,7 +229,7 @@ export default function UsersPage() {
             users={users}
             onEditUser={openEditDialog}
             onToggleUserStatus={handleToggleUserStatus}
-            onViewUser={() => toast.info("View user details not implemented yet")}
+            onViewUser={(user) => router.push(`/admin/users/${user.id}`)}
             onDeleteUser={() => toast.info("Delete user not implemented yet")}
             searchTerm={searchTerm}
             sortBy={sortBy}
