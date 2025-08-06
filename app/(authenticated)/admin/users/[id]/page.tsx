@@ -169,10 +169,12 @@ export default function UserDetailsPage() {
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <Button size="sm" className="gap-2" onClick={() => setIsUserDialogOpen(true)}>
-            <Edit className="h-4 w-4" />
-            Edit User
-          </Button>
+          {user && !user.roles.some(role => role.name === "ADMIN") && (
+            <Button size="sm" className="gap-2" onClick={() => setIsUserDialogOpen(true)}>
+              <Edit className="h-4 w-4" />
+              Edit User
+            </Button>
+          )}
           <LastUpdated onRefresh={handleReload} resetTrigger={resetTrigger} />
         </div>
       </div>

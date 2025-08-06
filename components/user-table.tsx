@@ -98,6 +98,7 @@ export function UserTable({
       icon: <Edit className="h-4 w-4" />,
       onClick: onEditUser,
       variant: "ghost",
+      hidden: (user: UserDto) => user.roles.some(role => role.name === "ADMIN"),
     },
     {
       label: (user: UserDto) => (user.active ? "Deactivate" : "Activate"),
