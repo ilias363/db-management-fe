@@ -5,15 +5,17 @@ import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, User, Shield, History, Filter, ExternalLink } from "lucide-react";
+import { ArrowLeft, User, Shield, History, Filter, ExternalLink, Edit } from "lucide-react";
 import { toast } from "sonner";
-import type { UserDto, AuditLogDto, SortDirection } from "@/lib/types";
+import type { UserDto, AuditLogDto, SortDirection, RoleDto } from "@/lib/types";
 import { getUserById, getUserAuditLogs } from "@/lib/actions/user";
+import { getAllRoles } from "@/lib/actions";
 import { AuditTable } from "@/components/audit-table";
 import { AuditDialog } from "@/components/audit-dialog";
 import { LastUpdated } from "@/components/last-updated";
 import { PermissionBadge } from "@/components/permission-badge";
 import { Separator } from "@/components/ui/separator";
+import { UserDialog } from "@/components/user-dialog";
 
 export default function UserDetailsPage() {
   const params = useParams();
@@ -22,6 +24,7 @@ export default function UserDetailsPage() {
 
   const [user, setUser] = useState<UserDto | null>(null);
   const [userAudits, setUserAudits] = useState<AuditLogDto[]>([]);
+  const [roles, setRoles] = useState<RoleDto[]>([]);
 
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize] = useState(10);
@@ -30,7 +33,8 @@ export default function UserDetailsPage() {
   const [totalAudits, setTotalAudits] = useState(0);
 
   const [viewingAudit, setViewingAudit] = useState<AuditLogDto | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isAuditDialogOpen, setIsAuditDialogOpen] = useState(false);
+  const [isUserDialogOpen, setIsUserDialogOpen] = useState(false);
   const [resetTrigger, setResetTrigger] = useState(0);
 
   const loadUserData = useCallback(async () => {
@@ -88,6 +92,24 @@ export default function UserDetailsPage() {
     [userId, currentPage, pageSize, sortBy, sortDirection]
   );
 
+  const loadRoles = useCallback(async () => {
+    try {
+      const response = await getAllRoles();
+
+      if (response.success && response.data) {
+        setRoles(response.data);
+      } else {
+        console.log(response.message || "Failed to load roles");
+      }
+    } catch (error) {
+      console.error("Error loading roles:", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadRoles();
+  }, [loadRoles]);
+
   useEffect(() => {
     if (!isNaN(userId)) {
       Promise.all([loadUserData(), loadUserAuditLogs()]).finally(() => {
@@ -115,7 +137,7 @@ export default function UserDetailsPage() {
 
   const handleViewAudit = (audit: AuditLogDto) => {
     setViewingAudit(audit);
-    setIsDialogOpen(true);
+    setIsAuditDialogOpen(true);
   };
 
   const handleViewAllAudits = () => {
@@ -146,7 +168,13 @@ export default function UserDetailsPage() {
             </p>
           </div>
         </div>
-        <LastUpdated onRefresh={handleReload} resetTrigger={resetTrigger} />
+        <div className="flex items-center gap-4">
+          <Button size="sm" className="gap-2" onClick={() => setIsUserDialogOpen(true)}>
+            <Edit className="h-4 w-4" />
+            Edit User
+          </Button>
+          <LastUpdated onRefresh={handleReload} resetTrigger={resetTrigger} />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -281,12 +309,20 @@ export default function UserDetailsPage() {
         </CardContent>
       </Card>
 
-      {/* Audit Dialog */}
+      <UserDialog
+        open={isUserDialogOpen}
+        onOpenChange={setIsUserDialogOpen}
+        user={user}
+        roles={roles}
+        isCreateMode={false}
+        onSuccess={loadUserData}
+      />
+
       <AuditDialog
         audit={viewingAudit}
-        isOpen={isDialogOpen}
+        isOpen={isAuditDialogOpen}
         onClose={() => {
-          setIsDialogOpen(false);
+          setIsAuditDialogOpen(false);
           setViewingAudit(null);
         }}
       />
