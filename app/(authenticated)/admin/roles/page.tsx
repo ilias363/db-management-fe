@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Search } from "lucide-react";
@@ -16,6 +17,8 @@ import { Input } from "@/components/ui/input";
 import { getRolesData, deleteRole } from "@/lib/actions";
 
 export default function RolesPage() {
+  const router = useRouter();
+
   const [roles, setRoles] = useState<RoleDto[]>([]);
   const [stats, setStats] = useState<RoleStats>({
     totalRoles: 0,
@@ -90,6 +93,10 @@ export default function RolesPage() {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  const handleViewRole = (role: RoleDto) => {
+    router.push(`/admin/roles/${role.id}`);
+  };
 
   const handleDeleteRole = (role: RoleDto) => {
     setRoleToDelete(role);
@@ -193,7 +200,7 @@ export default function RolesPage() {
         <CardContent>
           <RoleTable
             roles={roles}
-            onViewRole={() => toast.info("View role not implemented yet")}
+            onViewRole={handleViewRole}
             onEditRole={openEditDialog}
             onDeleteRole={handleDeleteRole}
             searchTerm={searchTerm}

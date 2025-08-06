@@ -75,7 +75,12 @@ export function UserTable({
           {user.roles.length > 0 ? (
             user.roles.map(role => (
               <Badge key={role.id} variant="outline" className="text-xs">
-                {role.name}
+                <Link
+                  href={`/admin/roles/${role.id}`}
+                  className="font-medium text-primary underline underline-offset-2 hover:text-primary/80 transition-colors"
+                >
+                  {role.name}
+                </Link>
               </Badge>
             ))
           ) : (

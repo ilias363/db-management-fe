@@ -16,6 +16,7 @@ import { LastUpdated } from "@/components/last-updated";
 import { PermissionBadge } from "@/components/permission-badge";
 import { Separator } from "@/components/ui/separator";
 import { UserDialog } from "@/components/user-dialog";
+import Link from "next/link";
 
 export default function UserDetailsPage() {
   const params = useParams();
@@ -218,40 +219,49 @@ export default function UserDetailsPage() {
             <CardDescription>User roles and their associated permissions</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-4 max-h-80 overflow-y-auto">
               {user && user.roles.length > 0 ? (
-                user.roles.map(role => (
-                  <div key={role.id} className="p-3 border rounded-lg space-y-2">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-medium">{role.name}</h4>
-                      <Badge variant={role.isSystemRole ? "default" : "outline"}>
-                        {role.isSystemRole ? "System" : "Custom"}
-                      </Badge>
-                    </div>
-                    {role.description && (
-                      <p className="text-sm text-muted-foreground">{role.description}</p>
-                    )}
-                    <div className="space-y-1">
-                      <span className="text-xs text-muted-foreground">Permissions:</span>
-                      <div className="flex flex-wrap gap-1">
-                        {role.permissions.length > 0 ? (
-                          role.permissions.map((permission, index) => (
-                            <PermissionBadge
-                              key={index}
-                              permission={permission}
-                              variant="outline"
-                              className="text-xs"
-                            />
-                          ))
-                        ) : (
-                          <span className="text-xs text-muted-foreground">
-                            No specific permissions
-                          </span>
-                        )}
+                user.roles
+                  .sort((r1, r2) => r1.id - r2.id)
+                  .map(role => (
+                    <div key={role.id} className="p-3 border rounded-lg space-y-2">
+                      <div className="flex items-center justify-between">
+                        <h4>
+                          <Link
+                            href={`/admin/roles/${role.id}`}
+                            className="font-medium text-primary underline underline-offset-4 hover:text-primary/80 transition-colors"
+                          >
+                            {role.name}
+                          </Link>
+                        </h4>
+                        <Badge variant={role.isSystemRole ? "default" : "outline"}>
+                          {role.isSystemRole ? "System" : "Custom"}
+                        </Badge>
+                      </div>
+                      {role.description && (
+                        <p className="text-sm text-muted-foreground">{role.description}</p>
+                      )}
+                      <div className="space-y-1">
+                        <span className="text-xs text-muted-foreground">Permissions:</span>
+                        <div className="flex flex-wrap gap-1">
+                          {role.permissions.length > 0 ? (
+                            role.permissions.map((permission, index) => (
+                              <PermissionBadge
+                                key={index}
+                                permission={permission}
+                                variant="outline"
+                                className="text-xs"
+                              />
+                            ))
+                          ) : (
+                            <span className="text-xs text-muted-foreground">
+                              No specific permissions
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))
+                  ))
               ) : (
                 <p className="text-center text-muted-foreground py-4">
                   No roles assigned to this user

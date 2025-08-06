@@ -46,19 +46,6 @@ export function PermissionForm({
       newErrors.push("This permission already exists");
     }
 
-    // Check for logical conflicts (e.g., DELETE without READ)
-    if (newPermission.permissionType !== PermissionType.READ) {
-      const readPermission: PermissionDetailDto = {
-        ...permissionToAdd,
-        permissionType: PermissionType.READ,
-      };
-      if (!hasPermission(readPermission)) {
-        newErrors.push(
-          `Consider adding READ permission first for ${newPermission.permissionType} operations`
-        );
-      }
-    }
-
     setErrors(newErrors);
 
     if (newErrors.length === 0) {

@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Edit, Eye, Shield, Trash2 } from "lucide-react";
 import type { RoleDto, SortDirection } from "@/lib/types";
 import { DataTable, type ColumnDef, type ActionButton } from "@/components/data-table";
+import Link from "next/link";
 
 interface RoleTableProps {
   roles: RoleDto[];
@@ -44,7 +45,14 @@ export function RoleTable({
       key: "name",
       title: "Name",
       sortable: true,
-      render: role => <span className="font-medium">{role.name}</span>,
+      render: role => (
+        <Link
+          href={`/admin/roles/${role.id}`}
+          className="font-medium text-primary underline underline-offset-4 hover:text-primary/80 transition-colors"
+        >
+          {role.name}
+        </Link>
+      ),
     },
     {
       key: "description",
