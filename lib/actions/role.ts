@@ -41,6 +41,18 @@ export interface AllRolesResponse {
     message?: string;
 }
 
+export interface RoleByIdResponse {
+    success: boolean;
+    data?: RoleDto;
+    message?: string;
+}
+
+export interface RoleUsersResponse {
+    success: boolean;
+    data?: import("@/lib/types").UserPageDto;
+    message?: string;
+}
+
 export async function getRolesData(params: RolesDataParams = {}): Promise<RolesDataResponse> {
     try {
         const queryParams: Record<string, string> = {
@@ -82,7 +94,7 @@ export async function getAllRoles(): Promise<AllRolesResponse> {
         if (!response.success) {
             return {
                 success: false,
-                message:response.message || "Failed to fetch roles",
+                message: response.message || "Failed to fetch roles",
             };
         }
 
@@ -96,6 +108,63 @@ export async function getAllRoles(): Promise<AllRolesResponse> {
         return {
             success: false,
             message: "Failed to load users data",
+        };
+    }
+}
+
+export async function getRoleById(roleId: number): Promise<RoleByIdResponse> {
+    try {
+        const response = await apiClient.roles.getRoleById(roleId);
+
+        if (!response.success) {
+            return {
+                success: false,
+                message: response.message || "Failed to fetch role",
+            };
+        }
+
+        return {
+            success: true,
+            data: response.data,
+            message: "Role fetched successfully"
+        };
+    } catch (error) {
+        console.error('Failed to fetch role by ID:', error);
+        return {
+            success: false,
+            message: "Failed to load role data",
+        };
+    }
+}
+
+export async function getUsersByRole(roleId: number, params: PaginationParams = {}): Promise<RoleUsersResponse> {
+    try {
+        const queryParams: Record<string, string> = {
+            page: (params.page || 0).toString(),
+            size: (params.size || 5).toString(),
+            sortBy: params.sortBy || "username",
+            sortDirection: params.sortDirection || "ASC",
+        };
+
+        const response = await apiClient.roles.getUsersByRole(roleId, queryParams);
+
+        if (!response.success) {
+            return {
+                success: false,
+                message: response.message || "Failed to fetch users for role",
+            };
+        }
+
+        return {
+            success: true,
+            data: response.data,
+            message: "Users for role fetched successfully"
+        };
+    } catch (error) {
+        console.error('Failed to fetch users by role:', error);
+        return {
+            success: false,
+            message: "Failed to load users for role",
         };
     }
 }
