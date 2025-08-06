@@ -35,6 +35,12 @@ export interface RolesDataResponse {
     message?: string;
 }
 
+export interface AllRolesResponse {
+    success: boolean;
+    data?: RoleDto[];
+    message?: string;
+}
+
 export async function getRolesData(params: RolesDataParams = {}): Promise<RolesDataResponse> {
     try {
         const queryParams: Record<string, string> = {
@@ -49,7 +55,7 @@ export async function getRolesData(params: RolesDataParams = {}): Promise<RolesD
         }
 
         const [rolesResponse, statsResponse] = await Promise.all([
-            apiClient.roles.getAllRoles(queryParams),
+            apiClient.roles.getAllRolesPaginated(queryParams),
             apiClient.roles.getRoleStats(),
         ]);
 
@@ -62,6 +68,31 @@ export async function getRolesData(params: RolesDataParams = {}): Promise<RolesD
         };
     } catch (error) {
         console.error('Failed to fetch roles data:', error);
+        return {
+            success: false,
+            message: "Failed to load users data",
+        };
+    }
+}
+
+export async function getAllRoles(): Promise<AllRolesResponse> {
+    try {
+        const response = await apiClient.roles.getAllRoles();
+
+        if (!response.success) {
+            return {
+                success: false,
+                message:response.message || "Failed to fetch roles",
+            };
+        }
+
+        return {
+            success: true,
+            data: response.data || [],
+            message: "Roles fetched successfully"
+        };
+    } catch (error) {
+        console.error('Failed to fetch all roles:', error);
         return {
             success: false,
             message: "Failed to load users data",
