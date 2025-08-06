@@ -85,7 +85,7 @@ export default function UsersPage() {
         }
 
         if (rolesResponse) {
-          setRoles(rolesResponse.items);
+          setRoles(rolesResponse);
         }
 
         if (statsResponse) {
@@ -229,7 +229,7 @@ export default function UsersPage() {
             users={users}
             onEditUser={openEditDialog}
             onToggleUserStatus={handleToggleUserStatus}
-            onViewUser={(user) => router.push(`/admin/users/${user.id}`)}
+            onViewUser={user => router.push(`/admin/users/${user.id}`)}
             onDeleteUser={() => toast.info("Delete user not implemented yet")}
             searchTerm={searchTerm}
             sortBy={sortBy}

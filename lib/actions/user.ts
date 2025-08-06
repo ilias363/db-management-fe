@@ -12,8 +12,8 @@ import type {
     UserPageDto,
     UserStats,
     ActionState,
-    RolePageDto,
-    AuditLogPageDto
+    AuditLogPageDto,
+    RoleDto
 } from "../types";
 import { HttpError } from "../errors";
 import { createUserSchema, updateUserSchema } from "../schemas";
@@ -27,7 +27,7 @@ export interface UsersDataResponse {
     success: boolean;
     data?: {
         users?: UserPageDto | null;
-        roles?: RolePageDto | null;
+        roles?: RoleDto[] | null;
         stats?: UserStats | null;
     };
     message?: string;
@@ -170,7 +170,6 @@ export async function updateUser(prevState: ActionState<UserDto> | undefined, fo
             };
         }
 
-        revalidatePath("/admin/users");
         return {
             success: true,
             message: "User updated successfully",
