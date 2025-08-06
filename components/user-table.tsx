@@ -47,7 +47,14 @@ export function UserTable({
       key: "username",
       title: "Username",
       sortable: true,
-      render: user => <Link href={`/admin/users/${user.id}`} className="font-medium underline">{user.username}</Link>,
+      render: user => (
+        <Link
+          href={`/admin/users/${user.id}`}
+          className="font-medium text-primary underline underline-offset-4 hover:text-primary/80 transition-colors"
+        >
+          {user.username}
+        </Link>
+      ),
     },
     {
       key: "active",

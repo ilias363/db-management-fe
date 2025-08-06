@@ -90,11 +90,7 @@ export default function UserDetailsPage() {
 
   useEffect(() => {
     if (!isNaN(userId)) {
-      //   toast.loading("Loading user details...", { id: "loading-user-details" });
       Promise.all([loadUserData(), loadUserAuditLogs()]).finally(() => {
-        // setTimeout(() => {
-        //   toast.dismiss("loading-user-details");
-        // }, 500);
         setResetTrigger(prev => prev + 1);
       });
     } else {

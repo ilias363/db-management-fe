@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Eye, Trash2, Calendar, AlertCircle, CheckCircle2 } from "lucide-react";
 import type { SortDirection, AuditLogDto } from "@/lib/types";
 import { DataTable, type ColumnDef, type ActionButton } from "@/components/data-table";
+import Link from "next/link";
 
 interface AuditTableProps {
   audits: AuditLogDto[];
@@ -55,7 +56,14 @@ export function AuditTable({
       sortable: true,
       render: audit => {
         if (audit.user) {
-          return <span className="font-medium">{audit.user.username}</span>;
+          return (
+            <Link
+              href={`/admin/users/${audit.user.id}`}
+              className="font-medium text-primary underline underline-offset-4 hover:text-primary/80 transition-colors"
+            >
+              {audit.user.username}
+            </Link>
+          );
         }
         return <span className="text-muted-foreground text-sm italic">null</span>;
       },
