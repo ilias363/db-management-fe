@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Search, Calendar, CalendarDays } from "lucide-react";
+import { Search, Calendar, CalendarDays, User, X } from "lucide-react";
 import { toast } from "sonner";
 import { AuditLogDto, AuditStats, SortDirection, ActionType } from "@/lib/types";
 
@@ -42,8 +43,14 @@ const isValidDateRange = (afterDate: string, beforeDate: string) => {
 };
 
 export default function AuditPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const userIdParam = searchParams.get("userId");
+  const filteredUserId = userIdParam ? parseInt(userIdParam, 10) : null;
+
   const [audits, setAudits] = useState<AuditLogDto[]>([]);
   const [stats, setStats] = useState<AuditStats>(DEFAULT_STATS);
+  const [filteredUserInfo, setFilteredUserInfo] = useState<{ username: string } | null>(null);
 
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize] = useState(10);
@@ -58,6 +65,27 @@ export default function AuditPage() {
   const [resetTrigger, setResetTrigger] = useState(0);
 
   const filters = useAuditFilters();
+
+  // Load user info if filtering by user ID
+  const loadUserInfo = useCallback(async () => {
+    if (filteredUserId) {
+      try {
+        const { getUserById } = await import("@/lib/actions");
+        const response = await getUserById(filteredUserId);
+        if (response.success && response.data) {
+          setFilteredUserInfo({ username: response.data.username });
+        }
+      } catch (error) {
+        console.error("Error loading user info:", error);
+      }
+    } else {
+      setFilteredUserInfo(null);
+    }
+  }, [filteredUserId]);
+
+  useEffect(() => {
+    loadUserInfo();
+  }, [loadUserInfo]);
 
   const loadData = useCallback(
     async (isReload: boolean = false) => {
@@ -94,6 +122,10 @@ export default function AuditPage() {
 
         if (filters.beforeDate) {
           auditParams.before = new Date(filters.beforeDate);
+        }
+
+        if (filteredUserId) {
+          auditParams.userId = filteredUserId;
         }
 
         const response = await getAuditData(auditParams);
@@ -135,6 +167,7 @@ export default function AuditPage() {
       filters.actionTypeFilter,
       filters.afterDate,
       filters.beforeDate,
+      filteredUserId,
     ]
   );
 
@@ -144,6 +177,10 @@ export default function AuditPage() {
 
   const handleReload = () => {
     loadData(true);
+  };
+
+  const clearUserFilter = () => {
+    router.push("/admin/audit");
   };
 
   const handleSort = (field: string) => {
@@ -247,7 +284,26 @@ export default function AuditPage() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>Audit Logs</CardTitle>
-              <CardDescription>View and manage system audit logs and user actions</CardDescription>
+              <CardDescription>
+                <div className="flex items-center gap-2">
+                  <p>View and manage system audit logs and user actions</p>
+                  {filteredUserId && filteredUserInfo && (
+                    <div className="flex items-center">
+                      <Badge variant="secondary" className="gap-1 pr-1">
+                        <User className="h-3 w-3" />
+                        Filtered by user: {filteredUserInfo.username}
+                        <button
+                          onClick={clearUserFilter}
+                          className="ml-1 hover:bg-muted-foreground/20 rounded-sm p-0.5"
+                          title="Clear user filter"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    </div>
+                  )}
+                </div>
+              </CardDescription>
             </div>
             {filters.hasActiveFilters && (
               <div className="flex items-center gap-2">
@@ -292,7 +348,7 @@ export default function AuditPage() {
                     handleFilterChange("status", value)
                   }
                 >
-                  <SelectTrigger className="h-10">
+                  <SelectTrigger className="h-10 mt-2">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -309,7 +365,7 @@ export default function AuditPage() {
                   value={filters.actionTypeFilter}
                   onValueChange={value => handleFilterChange("actionType", value)}
                 >
-                  <SelectTrigger className="h-10">
+                  <SelectTrigger className="h-10 mt-2">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
