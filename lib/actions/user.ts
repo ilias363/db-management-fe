@@ -12,7 +12,8 @@ import type {
     UserPageDto,
     UserStats,
     ActionState,
-    RolePageDto
+    RolePageDto,
+    AuditLogPageDto
 } from "../types";
 import { HttpError } from "../errors";
 import { createUserSchema, updateUserSchema } from "../schemas";
@@ -35,6 +36,18 @@ export interface UsersDataResponse {
 export interface ToggleUserStatusResponse {
     success: boolean;
     message: string;
+}
+
+export interface GetUserByIdResponse {
+    success: boolean;
+    data?: UserDto | null;
+    message?: string;
+}
+
+export interface GetUserAuditLogsResponse {
+    success: boolean;
+    data?: AuditLogPageDto | null;
+    message?: string;
 }
 
 export async function getUsersData(params: UsersDataParams = {}): Promise<UsersDataResponse> {
@@ -204,6 +217,66 @@ export async function toggleUserStatus(userId: number, currentStatus: boolean): 
             };
         }
         console.error('Unexpected error during user status toggle:', error);
+        return {
+            success: false,
+            message: "An unexpected error occurred"
+        };
+    }
+}
+
+export async function getUserById(userId: number): Promise<GetUserByIdResponse> {
+    try {
+        const response = await apiClient.users.getUserById(userId);
+
+        if (!response.success) {
+            return {
+                success: false,
+                message: response.message || "Failed to fetch user"
+            };
+        }
+
+        return {
+            success: true,
+            data: response.data
+        };
+    } catch (error) {
+        if (error instanceof HttpError) {
+            return {
+                success: false,
+                message: error.message
+            };
+        }
+        console.error('Unexpected error fetching user:', error);
+        return {
+            success: false,
+            message: "An unexpected error occurred"
+        };
+    }
+}
+
+export async function getUserAuditLogs(userId: number, params: PaginationParams = {}): Promise<GetUserAuditLogsResponse> {
+    try {
+        const response = await apiClient.audit.getAuditLogsByUserId(userId, params);
+
+        if (!response.success) {
+            return {
+                success: false,
+                message: response.message || "Failed to fetch user audit logs"
+            };
+        }
+
+        return {
+            success: true,
+            data: response.data
+        };
+    } catch (error) {
+        if (error instanceof HttpError) {
+            return {
+                success: false,
+                message: error.message
+            };
+        }
+        console.error('Unexpected error fetching user audit logs:', error);
         return {
             success: false,
             message: "An unexpected error occurred"
