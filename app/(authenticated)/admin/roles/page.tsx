@@ -8,11 +8,11 @@ import { Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 import type { RoleDto, RoleStats, SortDirection, PaginationParams } from "@/lib/types";
 
-import { RoleStatsCards } from "@/components/role-stats-cards";
-import { RoleTable } from "@/components/role-table";
-import { RoleDialog } from "@/components/role-dialog";
-import { ConfirmDialog } from "@/components/confirm-dialog";
-import { LastUpdated } from "@/components/last-updated";
+import { RoleStatsCards } from "@/components/role/role-stats-cards";
+import { RoleTable } from "@/components/role/role-table";
+import { RoleDialog } from "@/components/role/role-dialog";
+import { ConfirmDialog } from "@/components/common/confirm-dialog";
+import { LastUpdated } from "@/components/common/last-updated";
 import { Input } from "@/components/ui/input";
 import { getRolesData, deleteRole } from "@/lib/actions";
 

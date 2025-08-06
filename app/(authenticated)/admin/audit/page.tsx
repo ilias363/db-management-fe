@@ -8,11 +8,11 @@ import { Search, Calendar, CalendarDays, User, X } from "lucide-react";
 import { toast } from "sonner";
 import { AuditLogDto, AuditStats, SortDirection, ActionType } from "@/lib/types";
 
-import { AuditStatsCards } from "@/components/audit-stats-cards";
-import { AuditTable } from "@/components/audit-table";
-import { AuditDialog } from "@/components/audit-dialog";
-import { ConfirmDialog } from "@/components/confirm-dialog";
-import { LastUpdated } from "@/components/last-updated";
+import { AuditStatsCards } from "@/components/audit/audit-stats-cards";
+import { AuditTable } from "@/components/audit/audit-table";
+import { AuditDialog } from "@/components/audit/audit-dialog";
+import { ConfirmDialog } from "@/components/common/confirm-dialog";
+import { LastUpdated } from "@/components/common/last-updated";
 import {
   Select,
   SelectContent,

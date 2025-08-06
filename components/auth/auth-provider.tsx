@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/stores/auth-store";
-import { LoadingScreen } from "./loading-screen";
+import { LoadingScreen } from "@/components/common/loading-screen";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -11,7 +11,8 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const { initializeAuth, isInitialized, user, hasAttemptedAuth, isLoading, refreshAuth } = useAuth();
+  const { initializeAuth, isInitialized, user, hasAttemptedAuth, isLoading, refreshAuth } =
+    useAuth();
   const router = useRouter();
   const [isInitializing, setIsInitializing] = useState(false);
 

@@ -11,9 +11,9 @@ import {
   TrendingUp,
   Users,
 } from "lucide-react";
-import { Button } from "./ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
-import { LastUpdated } from "./last-updated";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { LastUpdated } from "@/components/common/last-updated";
 
 // Mock data
 const mockAdminData = {
@@ -65,7 +65,9 @@ export default function AdminDashboard() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight">Welcome back, {mockAdminData.admin.name}</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Welcome back, {mockAdminData.admin.name}
+          </h1>
           <p className="text-muted-foreground">System overview and management controls</p>
         </div>
         <LastUpdated />
@@ -133,7 +135,9 @@ export default function AdminDashboard() {
             <Database className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockAdminData.systemStats.totalDatabaseObjects}</div>
+            <div className="text-2xl font-bold">
+              {mockAdminData.systemStats.totalDatabaseObjects}
+            </div>
             <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">Tables and views</p>
             </div>
@@ -154,7 +158,9 @@ export default function AdminDashboard() {
             {mockAdminData.recentActivities.map((activity, i) => (
               <div key={i} className="flex items-center justify-between p-2 rounded border">
                 <div className="flex items-center gap-2">
-                  {activity.type === "success" && <CheckCircle className="h-4 w-4 text-green-500" />}
+                  {activity.type === "success" && (
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                  )}
                   {activity.type === "failure" && <CircleX className="h-4 w-4 text-red-500" />}
                   <div>
                     <p className="text-sm font-medium">{activity.action}</p>

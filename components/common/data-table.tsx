@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ArrowUpDown, ArrowUp, ArrowDown, MoreHorizontal } from "lucide-react";
-import { TablePagination } from "@/components/table-pagination";
+import { TablePagination } from "@/components/common/table-pagination";
 
 export interface ColumnDef<T> {
   key: string;

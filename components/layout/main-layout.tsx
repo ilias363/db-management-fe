@@ -1,5 +1,5 @@
-import { AppSidebar } from "./app-sidebar";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "./ui/sidebar";
+import { AppSidebar } from "@/components/layout/app-sidebar";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   return (

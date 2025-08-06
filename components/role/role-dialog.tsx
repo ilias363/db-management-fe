@@ -15,11 +15,11 @@ import type { RoleDto, PermissionDetailDto } from "@/lib/types";
 import { PermissionType } from "@/lib/types";
 import { createRole, updateRole } from "@/lib/actions";
 import { useActionState } from "react";
-import ErrorMessage from "./error-message";
+import ErrorMessage from "@/components/common/error-message";
 import { usePermissions } from "@/lib/hooks/use-permissions";
-import { PermissionForm } from "./permission-form";
-import { ConfirmDialog } from "./confirm-dialog";
-import { PermissionBadge } from "./permission-badge";
+import { PermissionForm } from "@/components/common/permission-form";
+import { ConfirmDialog } from "@/components/common/confirm-dialog";
+import { PermissionBadge } from "@/components/common/permission-badge";
 import { getStateFieldErrors, getStateGeneralErrors } from "@/lib/utils";
 
 interface RoleDialogProps {

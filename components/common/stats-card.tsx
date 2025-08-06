@@ -9,12 +9,12 @@ interface StatsCardProps {
   iconColor?: string;
 }
 
-export function StatsCard({ 
-  title, 
-  value, 
-  description, 
-  icon: Icon, 
-  iconColor = "text-muted-foreground" 
+export function StatsCard({
+  title,
+  value,
+  description,
+  icon: Icon,
+  iconColor = "text-muted-foreground",
 }: StatsCardProps) {
   return (
     <Card>

@@ -9,12 +9,12 @@ import { ArrowLeft, Shield, Users, Edit, Trash2, Eye } from "lucide-react";
 import { toast } from "sonner";
 import type { RoleDto, UserDto, SortDirection } from "@/lib/types";
 import { getRoleById, getUsersByRole, deleteRole } from "@/lib/actions/role";
-import { LastUpdated } from "@/components/last-updated";
-import { PermissionBadge } from "@/components/permission-badge";
+import { LastUpdated } from "@/components/common/last-updated";
+import { PermissionBadge } from "@/components/common/permission-badge";
 import { Separator } from "@/components/ui/separator";
-import { RoleDialog } from "@/components/role-dialog";
-import { ConfirmDialog } from "@/components/confirm-dialog";
-import { DataTable, ColumnDef, ActionButton } from "@/components/data-table";
+import { RoleDialog } from "@/components/role/role-dialog";
+import { ConfirmDialog } from "@/components/common/confirm-dialog";
+import { DataTable, ColumnDef, ActionButton } from "@/components/common/data-table";
 import Link from "next/link";
 
 export default function RoleDetailsPage() {
@@ -30,7 +30,7 @@ export default function RoleDetailsPage() {
   const [usersSortBy, setUsersSortBy] = useState<string>("username");
   const [usersSortDirection, setUsersSortDirection] = useState<SortDirection>("ASC");
   const [totalUsers, setTotalUsers] = useState(0);
-  
+
   const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [resetTrigger, setResetTrigger] = useState(0);
@@ -178,7 +178,7 @@ export default function RoleDetailsPage() {
       title: "Roles Count",
       sortable: false,
       render: (user: UserDto) => <span>{user.roles?.length || 0}</span>,
-      className: "text-center"
+      className: "text-center",
     },
   ];
 

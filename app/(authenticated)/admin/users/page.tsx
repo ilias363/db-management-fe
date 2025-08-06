@@ -8,11 +8,11 @@ import { Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 import type { UserDto, RoleDto, UserStats, SortDirection, PaginationParams } from "@/lib/types";
 
-import { UserStatsCards } from "@/components/user-stats-cards";
-import { UserTable } from "@/components/user-table";
-import { UserDialog } from "@/components/user-dialog";
-import { ConfirmDialog } from "@/components/confirm-dialog";
-import { LastUpdated } from "@/components/last-updated";
+import { UserStatsCards } from "@/components/user/user-stats-cards";
+import { UserTable } from "@/components/user/user-table";
+import { UserDialog } from "@/components/user/user-dialog";
+import { ConfirmDialog } from "@/components/common/confirm-dialog";
+import { LastUpdated } from "@/components/common/last-updated";
 import {
   Select,
   SelectContent,

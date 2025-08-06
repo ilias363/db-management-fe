@@ -2,12 +2,12 @@
 
 import { login } from "@/lib/actions/auth";
 import { useActionState } from "react";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-import { Button } from "./ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useFormStatus } from "react-dom";
-import ErrorMessage from "./error-message";
+import ErrorMessage from "@/components/common/error-message";
 
 export function LoginForm() {
   const [state, loginAction] = useActionState(login, undefined);

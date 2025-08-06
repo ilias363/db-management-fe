@@ -2,9 +2,9 @@ import { PermissionDetailDto, PermissionType } from "@/lib/types";
 import { AlertTriangle, Plus } from "lucide-react";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { Label } from "./ui/label";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const PERMISSION_TYPES = Object.values(PermissionType);
 

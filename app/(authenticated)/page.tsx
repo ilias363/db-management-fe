@@ -1,7 +1,7 @@
 "use client";
 
-import AdminDashboard from "@/components/admin-dashboard";
-import UserDashboard from "@/components/user-dashboard";
+import AdminDashboard from "@/components/layout/admin-dashboard";
+import UserDashboard from "@/components/layout/user-dashboard";
 import { useAuth } from "@/lib/stores/auth-store";
 
 export default function Dashboard() {

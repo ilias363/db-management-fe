@@ -10,12 +10,12 @@ import { toast } from "sonner";
 import type { UserDto, AuditLogDto, SortDirection, RoleDto } from "@/lib/types";
 import { getUserById, getUserAuditLogs } from "@/lib/actions/user";
 import { getAllRoles } from "@/lib/actions";
-import { AuditTable } from "@/components/audit-table";
-import { AuditDialog } from "@/components/audit-dialog";
-import { LastUpdated } from "@/components/last-updated";
-import { PermissionBadge } from "@/components/permission-badge";
+import { AuditTable } from "@/components/audit/audit-table";
+import { AuditDialog } from "@/components/audit/audit-dialog";
+import { LastUpdated } from "@/components/common/last-updated";
+import { PermissionBadge } from "@/components/common/permission-badge";
 import { Separator } from "@/components/ui/separator";
-import { UserDialog } from "@/components/user-dialog";
+import { UserDialog } from "@/components/user/user-dialog";
 import Link from "next/link";
 
 export default function UserDetailsPage() {

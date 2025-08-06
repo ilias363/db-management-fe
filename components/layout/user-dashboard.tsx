@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Database, Activity, BarChart3, Clock, Shield } from "lucide-react";
-import { LastUpdated } from "./last-updated";
+import { LastUpdated } from "@/components/common/last-updated";
 
 // Mock data
 const mockUserData = {
@@ -68,7 +68,9 @@ export default function UserDashboard() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight">Welcome back, {mockUserData.user.name}</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Welcome back, {mockUserData.user.name}
+          </h1>
           <p className="text-muted-foreground">Your database access and recent activity</p>
         </div>
         <LastUpdated />

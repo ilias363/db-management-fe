@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/stores/auth-store";
 import { useLogout } from "@/lib/hooks/use-logout";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import {
   Sidebar,
   SidebarContent,
@@ -36,7 +36,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 
 interface NavItem {

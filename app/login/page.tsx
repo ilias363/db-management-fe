@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Database } from "lucide-react";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { LoginForm } from "@/components/login-form";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { LoginForm } from "@/components/auth/login-form";
 
 export default function LoginPage() {
   return (
