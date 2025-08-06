@@ -154,6 +154,11 @@ class ApiClientImpl implements ApiClient {
 
     getRoleById: (id: number): Promise<RoleResponse> => this.request(`/roles/${id}`),
 
+    getUsersByRole: (roleId: number, params?: PaginationParams): Promise<UserPageResponse> => {
+      const query = params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : ""
+      return this.request(`/roles/${roleId}/users${query}`)
+    },
+
     createRole: (role: NewRoleDto): Promise<RoleResponse> =>
       this.request("/roles", {
         method: "POST",

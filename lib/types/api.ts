@@ -88,6 +88,7 @@ export interface ApiClient {
   roles: {
     getAllRoles: () => Promise<RolesResponse>
     getAllRolesPaginated: (params?: PaginationParams & { search?: string }) => Promise<RolePageResponse>
+    getUsersByRole: (roleId: number, params?: PaginationParams) => Promise<UserPageResponse>
     getRoleById: (id: number) => Promise<RoleResponse>
     createRole: (role: NewRoleDto) => Promise<RoleResponse>
     updateRole: (role: UpdateRoleDto) => Promise<RoleResponse>
