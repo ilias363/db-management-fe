@@ -10,9 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { X } from "lucide-react";
 import type { RoleDto, PermissionDetailDto } from "@/lib/types";
 import { PermissionType } from "@/lib/types";
 import { createRole, updateRole } from "@/lib/actions";
@@ -21,6 +19,7 @@ import ErrorMessage from "./error-message";
 import { usePermissions } from "@/lib/hooks/use-permissions";
 import { PermissionForm } from "./permission-form";
 import { ConfirmDialog } from "./confirm-dialog";
+import { PermissionBadge } from "./permission-badge";
 import { getStateFieldErrors, getStateGeneralErrors } from "@/lib/utils";
 
 interface RoleDialogProps {
@@ -60,16 +59,6 @@ export function RoleDialog({ open, onOpenChange, role, isCreateMode, onSuccess }
 
   const actionFn = isCreateMode ? createRole : updateRole;
   const [state, action, pending] = useActionState(actionFn, undefined);
-
-  const getPermissionLabel = useCallback((permission: PermissionDetailDto) => {
-    const targets = [
-      permission.schemaName && `Schema: ${permission.schemaName}`,
-      permission.tableName && `Table: ${permission.tableName}`,
-      permission.viewName && `View: ${permission.viewName}`,
-    ].filter(Boolean);
-
-    return `${permission.permissionType} on ${targets.join(", ") || "All"}`;
-  }, []);
 
   // Check if form has unsaved changes
   const checkForChanges = useCallback(() => {
@@ -197,18 +186,15 @@ export function RoleDialog({ open, onOpenChange, role, isCreateMode, onSuccess }
   const permissionBadges = useMemo(
     () =>
       permissions.map((permission, index) => (
-        <Badge key={index} variant="secondary" className="gap-2">
-          {getPermissionLabel(permission)}
-          <button
-            type="button"
-            onClick={() => handleRemovePermission(index)}
-            className="ml-1 hover:bg-destructive hover:text-destructive-foreground rounded-full p-0.5 transition-colors"
-          >
-            <X className="h-3 w-3" />
-          </button>
-        </Badge>
+        <PermissionBadge
+          key={index}
+          permission={permission}
+          onRemove={() => handleRemovePermission(index)}
+          showRemove={true}
+          variant="secondary"
+        />
       )),
-    [permissions, getPermissionLabel, handleRemovePermission]
+    [permissions, handleRemovePermission]
   );
 
   return (
