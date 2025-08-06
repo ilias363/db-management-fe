@@ -6,12 +6,7 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 
-const PERMISSION_TYPES: PermissionType[] = [
-  PermissionType.READ,
-  PermissionType.WRITE,
-  PermissionType.CREATE,
-  PermissionType.DELETE,
-];
+const PERMISSION_TYPES = Object.values(PermissionType);
 
 interface PermissionFormProps {
   newPermission: PermissionDetailDto;
