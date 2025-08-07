@@ -84,7 +84,7 @@ export async function getRolesData(params: RolesDataParams = {}): Promise<RolesD
             console.error('Failed to fetch roles data:', error);
             return {
                 success: false,
-                message: "Failed to load users data",
+                message: "Failed to load roles data",
             };
         }
     });
@@ -113,7 +113,7 @@ export async function getAllRoles(): Promise<AllRolesResponse> {
             console.error('Failed to fetch all roles:', error);
             return {
                 success: false,
-                message: "Failed to load users data",
+                message: "Failed to load roles data",
             };
         }
     });
