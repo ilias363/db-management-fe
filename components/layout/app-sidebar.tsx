@@ -149,7 +149,7 @@ export function AppSidebar() {
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
                       asChild
-                      isActive={pathname === item.href}
+                      isActive={pathname.startsWith(item.href)}
                       className={cn(item.comingSoon && "cursor-not-allowed opacity-60")}
                     >
                       <Link href={item.comingSoon ? "#" : item.href}>
@@ -181,7 +181,7 @@ export function AppSidebar() {
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
                     asChild
-                    isActive={pathname === item.href}
+                    isActive={pathname.startsWith(item.href)}
                     className={cn(item.comingSoon && "cursor-not-allowed opacity-60")}
                   >
                     <Link href={item.comingSoon ? "#" : item.href}>
