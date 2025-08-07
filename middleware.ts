@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthTokens } from './lib/session';
-import { refreshAuthTokens, validateAccessToken, getIsSystemAdmin } from './lib/actions';
+import { getIsSystemAdmin } from './lib/actions';
 
 export async function middleware(request: NextRequest) {
 	try {
@@ -13,47 +13,20 @@ export async function middleware(request: NextRequest) {
 		const isProtectedRoute = !isPublicRoute;
 		const isAdminRoute = pathname.startsWith('/admin');
 
-		if (accessToken) {
-			// If user has access token, validate it
-			const isValid = await validateAccessToken();
-			if (isValid) {
-				if (isAuthRoute) {
-					return NextResponse.redirect(new URL('/', request.nextUrl));
-				}
-				// Check for admin route access
-				if (isAdminRoute) {
-					const isSystemAdmin = await getIsSystemAdmin();
-					if (!isSystemAdmin) {
-						return NextResponse.redirect(new URL('/', request.nextUrl));
-					}
-				}
-				return NextResponse.next();
-			}
+		// If user is trying to access auth routes but has tokens, redirect to home
+		if (isAuthRoute && (accessToken || refreshToken)) {
+			return NextResponse.redirect(new URL('/', request.nextUrl));
 		}
 
-		if (refreshToken) {
-			// If user has a refresh token but no access token, try to refresh the token
-			const refreshed = await refreshAuthTokens();
-			if (refreshed) {
-				if (isAuthRoute) {
-					return NextResponse.redirect(new URL('/', request.nextUrl));
-				}
-				// Check for admin route access after refresh
-				if (isAdminRoute) {
-					const isSystemAdmin = await getIsSystemAdmin();
-					if (!isSystemAdmin) {
-						return NextResponse.redirect(new URL('/', request.nextUrl));
-					}
-				}
-				return NextResponse.next();
-			}
-			// If refresh fails, redirect to login
+		// If user is trying to access protected routes but has no tokens, redirect to login
+		if (isProtectedRoute && !accessToken && !refreshToken) {
 			return NextResponse.redirect(new URL('/login', request.nextUrl));
 		}
 
-		if (isProtectedRoute) {
-			// If user has no tokens and tries to access protected route
-			return NextResponse.redirect(new URL('/login', request.nextUrl));
+		const isAdmin = await getIsSystemAdmin();
+		// If user is not an admin and try to access admin routes, redirect to home
+		if (isAdminRoute && !isAdmin) {
+			return NextResponse.redirect(new URL('/', request.nextUrl));
 		}
 
 		return NextResponse.next();
