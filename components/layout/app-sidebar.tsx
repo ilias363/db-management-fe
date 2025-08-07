@@ -29,6 +29,10 @@ import {
   ChevronUp,
   User2,
   User,
+  Table,
+  View,
+  FolderTree,
+  Server,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -75,10 +79,29 @@ const adminMenuItems: NavItem[] = [
 
 const globalMenuItems: NavItem[] = [
   {
-    title: "Database Explorer",
+    title: "Database Management",
     href: "/database",
+    icon: Server,
+  },
+  {
+    title: "Database Explorer",
+    href: "/database/explorer",
+    icon: FolderTree,
+  },
+  {
+    title: "Schema Management",
+    href: "/database/schemas",
     icon: Database,
-    comingSoon: true,
+  },
+  {
+    title: "Table Management",
+    href: "/database/tables",
+    icon: Table,
+  },
+  {
+    title: "View Management",
+    href: "/database/views",
+    icon: View,
   },
 ];
 
@@ -174,14 +197,18 @@ export function AppSidebar() {
           </SidebarGroup>
         )}
         <SidebarGroup>
-          <SidebarGroupLabel>Database</SidebarGroupLabel>
+          <SidebarGroupLabel>Database Management</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {globalMenuItems.map(item => (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
                     asChild
-                    isActive={pathname.startsWith(item.href)}
+                    isActive={
+                      item.href === "/database"
+                        ? pathname === item.href
+                        : pathname.startsWith(item.href)
+                    }
                     className={cn(item.comingSoon && "cursor-not-allowed opacity-60")}
                   >
                     <Link href={item.comingSoon ? "#" : item.href}>
