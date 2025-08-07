@@ -20,20 +20,22 @@ export async function middleware(request: NextRequest) {
 
 		// If user is trying to access protected routes but has no tokens, redirect to login
 		if (isProtectedRoute && !accessToken && !refreshToken) {
-			return NextResponse.redirect(new URL('/login', request.nextUrl));
+			return NextResponse.redirect(new URL('/login?expiredsession=true', request.nextUrl));
 		}
 
-		const isAdmin = await getIsSystemAdmin();
 		// If user is not an admin and try to access admin routes, redirect to home
-		if (isAdminRoute && !isAdmin) {
-			return NextResponse.redirect(new URL('/', request.nextUrl));
+		if (isAdminRoute) {
+			const isAdmin = await getIsSystemAdmin();
+			if (!isAdmin) {
+				return NextResponse.redirect(new URL('/', request.nextUrl));
+			}
 		}
 
 		return NextResponse.next();
 	} catch (error) {
 		console.error('Middleware error:', error);
 		// Redirect to login on error for security
-		return NextResponse.redirect(new URL('/login', request.nextUrl));
+		return NextResponse.redirect(new URL('/login?expiredsession=true', request.nextUrl));
 	}
 }
 export const config = {

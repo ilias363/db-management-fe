@@ -16,6 +16,7 @@ import type {
 } from "@/lib/types";
 import { HttpError } from "../errors";
 import { createRoleSchema, updateRoleSchema } from "../schemas";
+import { withAuth } from "./auth-utils";
 
 export interface DeleteRoleResponse {
     success: boolean;
@@ -53,7 +54,7 @@ export interface RoleUsersResponse {
     message?: string;
 }
 
-export async function getRolesData(params: RolesDataParams = {}): Promise<RolesDataResponse> {
+export const getRolesData = await withAuth(async (params: RolesDataParams = {}): Promise<RolesDataResponse> => {
     try {
         const queryParams: Record<string, string> = {
             page: (params.page || 0).toString(),
@@ -85,9 +86,9 @@ export async function getRolesData(params: RolesDataParams = {}): Promise<RolesD
             message: "Failed to load users data",
         };
     }
-}
+});
 
-export async function getAllRoles(): Promise<AllRolesResponse> {
+export const getAllRoles = await withAuth(async (): Promise<AllRolesResponse> => {
     try {
         const response = await apiClient.roles.getAllRoles();
 
@@ -110,9 +111,9 @@ export async function getAllRoles(): Promise<AllRolesResponse> {
             message: "Failed to load users data",
         };
     }
-}
+});
 
-export async function getRoleById(roleId: number): Promise<RoleByIdResponse> {
+export const getRoleById = await withAuth(async (roleId: number): Promise<RoleByIdResponse> => {
     try {
         const response = await apiClient.roles.getRoleById(roleId);
 
@@ -135,9 +136,9 @@ export async function getRoleById(roleId: number): Promise<RoleByIdResponse> {
             message: "Failed to load role data",
         };
     }
-}
+});
 
-export async function getUsersByRole(roleId: number, params: PaginationParams = {}): Promise<RoleUsersResponse> {
+export const getUsersByRole = await withAuth(async (roleId: number, params: PaginationParams = {}): Promise<RoleUsersResponse> => {
     try {
         const queryParams: Record<string, string> = {
             page: (params.page || 0).toString(),
@@ -167,9 +168,9 @@ export async function getUsersByRole(roleId: number, params: PaginationParams = 
             message: "Failed to load users for role",
         };
     }
-}
+});
 
-export async function createRole(prevState: ActionState<RoleDto> | undefined, formData: FormData): Promise<ActionState<RoleDto>> {
+export const createRole = await withAuth(async (prevState: ActionState<RoleDto> | undefined, formData: FormData): Promise<ActionState<RoleDto>> => {
     const formObject = Object.fromEntries(formData);
 
     const permissions = formData.getAll("permissions").map((perm) => {
@@ -237,9 +238,9 @@ export async function createRole(prevState: ActionState<RoleDto> | undefined, fo
             errors: { general: ["An unexpected error occurred"] }
         };
     }
-}
+});
 
-export async function updateRole(prevState: ActionState<RoleDto> | undefined, formData: FormData): Promise<ActionState<RoleDto>> {
+export const updateRole = await withAuth(async (prevState: ActionState<RoleDto> | undefined, formData: FormData): Promise<ActionState<RoleDto>> => {
     const formObject = Object.fromEntries(formData);
 
     const permissions = formData.getAll("permissions").map((perm) => {
@@ -308,9 +309,9 @@ export async function updateRole(prevState: ActionState<RoleDto> | undefined, fo
             errors: { general: ["An unexpected error occurred"] }
         };
     }
-}
+});
 
-export async function deleteRole(roleId: number): Promise<DeleteRoleResponse> {
+export const deleteRole = await withAuth(async (roleId: number): Promise<DeleteRoleResponse> => {
     try {
         const response = await apiClient.roles.deleteRole(roleId);
 
@@ -339,4 +340,4 @@ export async function deleteRole(roleId: number): Promise<DeleteRoleResponse> {
             message: "An unexpected error occurred"
         };
     }
-}
+});

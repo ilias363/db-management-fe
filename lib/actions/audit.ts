@@ -9,6 +9,7 @@ import type {
     AuditStats,
 } from "../types";
 import { HttpError } from "../errors";
+import { withAuth } from "./auth-utils";
 
 export interface AuditDataParams extends PaginationParams {
     search?: string;
@@ -33,7 +34,7 @@ export interface DeleteAuditLogResponse {
     message: string;
 }
 
-export async function getAuditData(params: AuditDataParams = {}): Promise<AuditDataResponse> {
+export const getAuditData = await withAuth(async (params: AuditDataParams = {}): Promise<AuditDataResponse> => {
     try {
         const queryParams: Record<string, string> = {
             page: (params.page || 0).toString(),
@@ -82,9 +83,9 @@ export async function getAuditData(params: AuditDataParams = {}): Promise<AuditD
             message: "An unexpected error occurred while fetching audit data",
         };
     }
-}
+});
 
-export async function deleteAuditLog(id: number): Promise<DeleteAuditLogResponse> {
+export const deleteAuditLog = await withAuth(async (id: number): Promise<DeleteAuditLogResponse> => {
     try {
         const response = await apiClient.audit.deleteAuditLog(id);
 
@@ -114,4 +115,4 @@ export async function deleteAuditLog(id: number): Promise<DeleteAuditLogResponse
             message: "An unexpected error occurred while deleting the audit log",
         };
     }
-}
+});

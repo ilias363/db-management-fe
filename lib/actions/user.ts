@@ -17,6 +17,7 @@ import type {
 } from "../types";
 import { HttpError } from "../errors";
 import { createUserSchema, updateUserSchema } from "../schemas";
+import { withAuth } from "./auth-utils";
 
 export interface UsersDataParams extends PaginationParams {
     search?: string;
@@ -50,7 +51,7 @@ export interface GetUserAuditLogsResponse {
     message?: string;
 }
 
-export async function getUsersData(params: UsersDataParams = {}): Promise<UsersDataResponse> {
+export const getUsersData = await withAuth(async (params: UsersDataParams = {}): Promise<UsersDataResponse> => {
     try {
         const queryParams: Record<string, string> = {
             page: (params.page || 0).toString(),
@@ -87,9 +88,9 @@ export async function getUsersData(params: UsersDataParams = {}): Promise<UsersD
             message: "Failed to load users data"
         };
     }
-}
+});
 
-export async function createUser(prevState: ActionState<UserDto> | undefined, formData: FormData): Promise<ActionState<UserDto>> {
+export const createUser = await withAuth(async (prevState: ActionState<UserDto> | undefined, formData: FormData): Promise<ActionState<UserDto>> => {
     const formObject = Object.fromEntries(formData);
 
     const roleIds = formData.getAll("roleIds").map(id => parseInt(id as string, 10));
@@ -138,9 +139,9 @@ export async function createUser(prevState: ActionState<UserDto> | undefined, fo
             errors: { general: ["An unexpected error occurred"] }
         };
     }
-}
+});
 
-export async function updateUser(prevState: ActionState<UserDto> | undefined, formData: FormData): Promise<ActionState<UserDto>> {
+export const updateUser = await withAuth(async (prevState: ActionState<UserDto> | undefined, formData: FormData): Promise<ActionState<UserDto>> => {
     const formObject = Object.fromEntries(formData);
 
     const roleIds = formData.getAll("roleIds");
@@ -188,9 +189,9 @@ export async function updateUser(prevState: ActionState<UserDto> | undefined, fo
             errors: { general: ["An unexpected error occurred"] }
         };
     }
-}
+});
 
-export async function toggleUserStatus(userId: number, currentStatus: boolean): Promise<ToggleUserStatusResponse> {
+export const toggleUserStatus = await withAuth(async (userId: number, currentStatus: boolean): Promise<ToggleUserStatusResponse> => {
     try {
         const response = currentStatus
             ? await apiClient.users.deactivateUser(userId)
@@ -221,9 +222,9 @@ export async function toggleUserStatus(userId: number, currentStatus: boolean): 
             message: "An unexpected error occurred"
         };
     }
-}
+});
 
-export async function getUserById(userId: number): Promise<GetUserByIdResponse> {
+export const getUserById = await withAuth(async (userId: number): Promise<GetUserByIdResponse> => {
     try {
         const response = await apiClient.users.getUserById(userId);
 
@@ -251,9 +252,9 @@ export async function getUserById(userId: number): Promise<GetUserByIdResponse> 
             message: "An unexpected error occurred"
         };
     }
-}
+});
 
-export async function getUserAuditLogs(userId: number, params: PaginationParams = {}): Promise<GetUserAuditLogsResponse> {
+export const getUserAuditLogs = await withAuth(async (userId: number, params: PaginationParams = {}): Promise<GetUserAuditLogsResponse> => {
     try {
         const response = await apiClient.audit.getAuditLogsByUserId(userId, params);
 
@@ -281,4 +282,4 @@ export async function getUserAuditLogs(userId: number, params: PaginationParams 
             message: "An unexpected error occurred"
         };
     }
-}
+});

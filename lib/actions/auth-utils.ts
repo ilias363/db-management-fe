@@ -68,6 +68,11 @@ export async function withAuth<T extends unknown[], R>(
 }
 
 export async function getIsSystemAdmin(): Promise<boolean> {
+    const isAuthenticated = await ensureAuthenticated();
+    if (!isAuthenticated) {
+        return false;
+    }
+
     try {
         const response = await apiClient.auth.getIsCurrentUserSystemAdmin();
         return response.success && response.data?.isSystemAdmin === true;
