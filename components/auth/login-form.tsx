@@ -5,15 +5,30 @@ import { useActionState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 import { useFormStatus } from "react-dom";
 import ErrorMessage from "@/components/common/error-message";
+import { useSearchParams } from "next/navigation";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export function LoginForm() {
+  const searchParams = useSearchParams();
+  const sessionExpired = searchParams.get("expiredsession") === "true";
   const [state, loginAction] = useActionState(login, undefined);
 
   return (
     <form action={loginAction} className="space-y-4">
+      {sessionExpired && (
+        <Alert
+          variant="destructive"
+          className="flex items-center border-destructive/50 bg-destructive/10"
+        >
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className="font-medium">
+            Your session has expired. Please sign in again to continue.
+          </AlertDescription>
+        </Alert>
+      )}
       <div className="space-y-2">
         <Label htmlFor="username">Username</Label>
         <Input
