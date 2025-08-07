@@ -47,28 +47,36 @@ export async function logout() {
     await clearSession();
 }
 
-export const getCurrentUser = await withAuth(async (): Promise<UserDto | null> => {
-    try {
-        const response = await apiClient.auth.getCurrentUser();
-        if (!response.success || !response.data) {
+export async function getCurrentUser(): Promise<UserDto | null> {
+    const authAction = await withAuth(async (): Promise<UserDto | null> => {
+        try {
+            const response = await apiClient.auth.getCurrentUser();
+            if (!response.success || !response.data) {
+                return null;
+            }
+            return response.data;
+        } catch (error) {
+            console.error('Failed to get current user:', error);
             return null;
         }
-        return response.data;
-    } catch (error) {
-        console.error('Failed to get current user:', error);
-        return null;
-    }
-});
+    });
 
-export const getCurrentUserPermissions = await withAuth(async (): Promise<UserPermissions | null> => {
-    try {
-        const response = await apiClient.auth.getCurrentUserPermissions();
-        if (!response.success || !response.data) {
+    return authAction();
+}
+
+export async function getCurrentUserPermissions(): Promise<UserPermissions | null> {
+    const authAction = await withAuth(async (): Promise<UserPermissions | null> => {
+        try {
+            const response = await apiClient.auth.getCurrentUserPermissions();
+            if (!response.success || !response.data) {
+                return null;
+            }
+            return response.data;
+        } catch (error) {
+            console.error('Failed to get user permissions:', error);
             return null;
         }
-        return response.data;
-    } catch (error) {
-        console.error('Failed to get user permissions:', error);
-        return null;
-    }
-});
+    });
+
+    return authAction();
+}

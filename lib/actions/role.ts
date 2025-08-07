@@ -54,290 +54,318 @@ export interface RoleUsersResponse {
     message?: string;
 }
 
-export const getRolesData = await withAuth(async (params: RolesDataParams = {}): Promise<RolesDataResponse> => {
-    try {
-        const queryParams: Record<string, string> = {
-            page: (params.page || 0).toString(),
-            size: (params.size || 10).toString(),
-            sortBy: params.sortBy || "name",
-            sortDirection: params.sortDirection || "ASC",
-        };
+export async function getRolesData(params: RolesDataParams = {}): Promise<RolesDataResponse> {
+    const authAction = await withAuth(async (params: RolesDataParams = {}): Promise<RolesDataResponse> => {
+        try {
+            const queryParams: Record<string, string> = {
+                page: (params.page || 0).toString(),
+                size: (params.size || 10).toString(),
+                sortBy: params.sortBy || "name",
+                sortDirection: params.sortDirection || "ASC",
+            };
 
-        if (params.search) {
-            queryParams.search = params.search;
-        }
-
-        const [rolesResponse, statsResponse] = await Promise.all([
-            apiClient.roles.getAllRolesPaginated(queryParams),
-            apiClient.roles.getRoleStats(),
-        ]);
-
-        return {
-            success: true,
-            data: {
-                roles: rolesResponse.success ? rolesResponse.data : null,
-                stats: statsResponse.success ? statsResponse.data : null,
+            if (params.search) {
+                queryParams.search = params.search;
             }
-        };
-    } catch (error) {
-        console.error('Failed to fetch roles data:', error);
-        return {
-            success: false,
-            message: "Failed to load users data",
-        };
-    }
-});
 
-export const getAllRoles = await withAuth(async (): Promise<AllRolesResponse> => {
-    try {
-        const response = await apiClient.roles.getAllRoles();
+            const [rolesResponse, statsResponse] = await Promise.all([
+                apiClient.roles.getAllRolesPaginated(queryParams),
+                apiClient.roles.getRoleStats(),
+            ]);
 
-        if (!response.success) {
+            return {
+                success: true,
+                data: {
+                    roles: rolesResponse.success ? rolesResponse.data : null,
+                    stats: statsResponse.success ? statsResponse.data : null,
+                }
+            };
+        } catch (error) {
+            console.error('Failed to fetch roles data:', error);
             return {
                 success: false,
-                message: response.message || "Failed to fetch roles",
+                message: "Failed to load users data",
             };
         }
-
-        return {
-            success: true,
-            data: response.data || [],
-            message: "Roles fetched successfully"
-        };
-    } catch (error) {
-        console.error('Failed to fetch all roles:', error);
-        return {
-            success: false,
-            message: "Failed to load users data",
-        };
-    }
-});
-
-export const getRoleById = await withAuth(async (roleId: number): Promise<RoleByIdResponse> => {
-    try {
-        const response = await apiClient.roles.getRoleById(roleId);
-
-        if (!response.success) {
-            return {
-                success: false,
-                message: response.message || "Failed to fetch role",
-            };
-        }
-
-        return {
-            success: true,
-            data: response.data,
-            message: "Role fetched successfully"
-        };
-    } catch (error) {
-        console.error('Failed to fetch role by ID:', error);
-        return {
-            success: false,
-            message: "Failed to load role data",
-        };
-    }
-});
-
-export const getUsersByRole = await withAuth(async (roleId: number, params: PaginationParams = {}): Promise<RoleUsersResponse> => {
-    try {
-        const queryParams: Record<string, string> = {
-            page: (params.page || 0).toString(),
-            size: (params.size || 5).toString(),
-            sortBy: params.sortBy || "username",
-            sortDirection: params.sortDirection || "ASC",
-        };
-
-        const response = await apiClient.roles.getUsersByRole(roleId, queryParams);
-
-        if (!response.success) {
-            return {
-                success: false,
-                message: response.message || "Failed to fetch users for role",
-            };
-        }
-
-        return {
-            success: true,
-            data: response.data,
-            message: "Users for role fetched successfully"
-        };
-    } catch (error) {
-        console.error('Failed to fetch users by role:', error);
-        return {
-            success: false,
-            message: "Failed to load users for role",
-        };
-    }
-});
-
-export const createRole = await withAuth(async (prevState: ActionState<RoleDto> | undefined, formData: FormData): Promise<ActionState<RoleDto>> => {
-    const formObject = Object.fromEntries(formData);
-
-    const permissions = formData.getAll("permissions").map((perm) => {
-        const parsed = JSON.parse(perm as string);
-        return {
-            schemaName: parsed.schemaName || null,
-            tableName: parsed.tableName || null,
-            viewName: parsed.viewName || null,
-            permissionType: parsed.permissionType,
-        } as PermissionDetailDto;
     });
 
-    const roleData: NewRoleDto = {
-        name: formObject.name as string,
-        description: formObject.description as string,
-        permissions: permissions,
-    };
+    return authAction(params);
+}
 
-    const result = createRoleSchema.safeParse(roleData);
+export async function getAllRoles(): Promise<AllRolesResponse> {
+    const authAction = await withAuth(async (): Promise<AllRolesResponse> => {
+        try {
+            const response = await apiClient.roles.getAllRoles();
 
-    if (!result.success) {
-        return {
-            success: false,
-            errors: z.flattenError(result.error).fieldErrors
-        };
-    }
+            if (!response.success) {
+                return {
+                    success: false,
+                    message: response.message || "Failed to fetch roles",
+                };
+            }
 
-    try {
-        // Transform schema result to match API expectations (undefined -> null)
-        const transformedData: NewRoleDto = {
-            ...result.data,
-            permissions: result.data.permissions.map(p => ({
-                schemaName: p.schemaName ?? null,
-                tableName: p.tableName ?? null,
-                viewName: p.viewName ?? null,
-                permissionType: p.permissionType,
-            }))
-        };
-
-        const response = await apiClient.roles.createRole(transformedData);
-
-        if (!response.success) {
+            return {
+                success: true,
+                data: response.data || [],
+                message: "Roles fetched successfully"
+            };
+        } catch (error) {
+            console.error('Failed to fetch all roles:', error);
             return {
                 success: false,
-                errors: { general: response.message.split("\n") }
+                message: "Failed to load users data",
             };
         }
-
-        revalidatePath("/admin/roles");
-        return {
-            success: true,
-            message: "Role created successfully",
-            data: response.data
-        };
-    } catch (error) {
-        if (error instanceof HttpError) {
-            return {
-                success: false,
-                errors: { general: [error.message] }
-            };
-        }
-        console.error('Unexpected error during role creation:', error);
-        return {
-            success: false,
-            errors: { general: ["An unexpected error occurred"] }
-        };
-    }
-});
-
-export const updateRole = await withAuth(async (prevState: ActionState<RoleDto> | undefined, formData: FormData): Promise<ActionState<RoleDto>> => {
-    const formObject = Object.fromEntries(formData);
-
-    const permissions = formData.getAll("permissions").map((perm) => {
-        const parsed = JSON.parse(perm as string);
-        return {
-            schemaName: parsed.schemaName || null,
-            tableName: parsed.tableName || null,
-            viewName: parsed.viewName || null,
-            permissionType: parsed.permissionType,
-        } as PermissionDetailDto;
     });
 
-    const roleData: UpdateRoleDto = {
-        id: parseInt(formObject.id as string, 10),
-        name: formObject.name as string,
-        description: formObject.description as string,
-        permissions: permissions,
-    };
+    return authAction();
+}
 
-    const result = updateRoleSchema.safeParse(roleData);
+export async function getRoleById(roleId: number): Promise<RoleByIdResponse> {
+    const authAction = await withAuth(async (roleId: number): Promise<RoleByIdResponse> => {
+        try {
+            const response = await apiClient.roles.getRoleById(roleId);
 
-    if (!result.success) {
-        return {
-            success: false,
-            errors: z.flattenError(result.error).fieldErrors
-        };
-    }
+            if (!response.success) {
+                return {
+                    success: false,
+                    message: response.message || "Failed to fetch role",
+                };
+            }
 
-    try {
-        // Transform schema result to match API expectations (undefined -> null)
-        const transformedData: UpdateRoleDto = {
-            ...result.data,
-            permissions: result.data.permissions.map(p => ({
-                schemaName: p.schemaName ?? null,
-                tableName: p.tableName ?? null,
-                viewName: p.viewName ?? null,
-                permissionType: p.permissionType,
-            }))
-        };
-
-        const response = await apiClient.roles.updateRole(transformedData);
-
-        if (!response.success) {
+            return {
+                success: true,
+                data: response.data,
+                message: "Role fetched successfully"
+            };
+        } catch (error) {
+            console.error('Failed to fetch role by ID:', error);
             return {
                 success: false,
-                errors: { general: response.message.split("\n") }
+                message: "Failed to load role data",
+            };
+        }
+    });
+
+    return authAction(roleId);
+}
+
+export async function getUsersByRole(roleId: number, params: PaginationParams = {}): Promise<RoleUsersResponse> {
+    const authAction = await withAuth(async (roleId: number, params: PaginationParams = {}): Promise<RoleUsersResponse> => {
+        try {
+            const queryParams: Record<string, string> = {
+                page: (params.page || 0).toString(),
+                size: (params.size || 5).toString(),
+                sortBy: params.sortBy || "username",
+                sortDirection: params.sortDirection || "ASC",
+            };
+
+            const response = await apiClient.roles.getUsersByRole(roleId, queryParams);
+
+            if (!response.success) {
+                return {
+                    success: false,
+                    message: response.message || "Failed to fetch users for role",
+                };
+            }
+
+            return {
+                success: true,
+                data: response.data,
+                message: "Users for role fetched successfully"
+            };
+        } catch (error) {
+            console.error('Failed to fetch users by role:', error);
+            return {
+                success: false,
+                message: "Failed to load users for role",
+            };
+        }
+    });
+
+    return authAction(roleId, params);
+}
+
+export async function createRole(prevState: ActionState<RoleDto> | undefined, formData: FormData): Promise<ActionState<RoleDto>> {
+    const authAction = await withAuth(async (prevState: ActionState<RoleDto> | undefined, formData: FormData): Promise<ActionState<RoleDto>> => {
+        const formObject = Object.fromEntries(formData);
+
+        const permissions = formData.getAll("permissions").map((perm) => {
+            const parsed = JSON.parse(perm as string);
+            return {
+                schemaName: parsed.schemaName || null,
+                tableName: parsed.tableName || null,
+                viewName: parsed.viewName || null,
+                permissionType: parsed.permissionType,
+            } as PermissionDetailDto;
+        });
+
+        const roleData: NewRoleDto = {
+            name: formObject.name as string,
+            description: formObject.description as string,
+            permissions: permissions,
+        };
+
+        const result = createRoleSchema.safeParse(roleData);
+
+        if (!result.success) {
+            return {
+                success: false,
+                errors: z.flattenError(result.error).fieldErrors
             };
         }
 
-        revalidatePath("/admin/roles");
-        return {
-            success: true,
-            message: "Role updated successfully",
-            data: response.data
-        };
-    } catch (error) {
-        if (error instanceof HttpError) {
+        try {
+            // Transform schema result to match API expectations (undefined -> null)
+            const transformedData: NewRoleDto = {
+                ...result.data,
+                permissions: result.data.permissions.map(p => ({
+                    schemaName: p.schemaName ?? null,
+                    tableName: p.tableName ?? null,
+                    viewName: p.viewName ?? null,
+                    permissionType: p.permissionType,
+                }))
+            };
+
+            const response = await apiClient.roles.createRole(transformedData);
+
+            if (!response.success) {
+                return {
+                    success: false,
+                    errors: { general: response.message.split("\n") }
+                };
+            }
+
+            revalidatePath("/admin/roles");
+            return {
+                success: true,
+                message: "Role created successfully",
+                data: response.data
+            };
+        } catch (error) {
+            if (error instanceof HttpError) {
+                return {
+                    success: false,
+                    errors: { general: [error.message] }
+                };
+            }
+            console.error('Unexpected error during role creation:', error);
             return {
                 success: false,
-                errors: { general: [error.message] }
+                errors: { general: ["An unexpected error occurred"] }
             };
         }
-        console.error('Unexpected error during role update:', error);
-        return {
-            success: false,
-            errors: { general: ["An unexpected error occurred"] }
+    });
+
+    return authAction(prevState, formData);
+}
+
+export async function updateRole(prevState: ActionState<RoleDto> | undefined, formData: FormData): Promise<ActionState<RoleDto>> {
+    const authAction = await withAuth(async (prevState: ActionState<RoleDto> | undefined, formData: FormData): Promise<ActionState<RoleDto>> => {
+        const formObject = Object.fromEntries(formData);
+
+        const permissions = formData.getAll("permissions").map((perm) => {
+            const parsed = JSON.parse(perm as string);
+            return {
+                schemaName: parsed.schemaName || null,
+                tableName: parsed.tableName || null,
+                viewName: parsed.viewName || null,
+                permissionType: parsed.permissionType,
+            } as PermissionDetailDto;
+        });
+
+        const roleData: UpdateRoleDto = {
+            id: parseInt(formObject.id as string, 10),
+            name: formObject.name as string,
+            description: formObject.description as string,
+            permissions: permissions,
         };
-    }
-});
 
-export const deleteRole = await withAuth(async (roleId: number): Promise<DeleteRoleResponse> => {
-    try {
-        const response = await apiClient.roles.deleteRole(roleId);
+        const result = updateRoleSchema.safeParse(roleData);
 
-        if (!response.success) {
+        if (!result.success) {
             return {
                 success: false,
-                message: response.message || "Failed to delete role"
+                errors: z.flattenError(result.error).fieldErrors
             };
         }
 
-        revalidatePath("/admin/roles");
-        return {
-            success: true,
-            message: "Role deleted successfully"
-        };
-    } catch (error) {
-        if (error instanceof HttpError) {
+        try {
+            // Transform schema result to match API expectations (undefined -> null)
+            const transformedData: UpdateRoleDto = {
+                ...result.data,
+                permissions: result.data.permissions.map(p => ({
+                    schemaName: p.schemaName ?? null,
+                    tableName: p.tableName ?? null,
+                    viewName: p.viewName ?? null,
+                    permissionType: p.permissionType,
+                }))
+            };
+
+            const response = await apiClient.roles.updateRole(transformedData);
+
+            if (!response.success) {
+                return {
+                    success: false,
+                    errors: { general: response.message.split("\n") }
+                };
+            }
+
+            revalidatePath("/admin/roles");
+            return {
+                success: true,
+                message: "Role updated successfully",
+                data: response.data
+            };
+        } catch (error) {
+            if (error instanceof HttpError) {
+                return {
+                    success: false,
+                    errors: { general: [error.message] }
+                };
+            }
+            console.error('Unexpected error during role update:', error);
             return {
                 success: false,
-                message: error.message
+                errors: { general: ["An unexpected error occurred"] }
             };
         }
-        console.error('Unexpected error during role deletion:', error);
-        return {
-            success: false,
-            message: "An unexpected error occurred"
-        };
-    }
-});
+    });
+
+    return authAction(prevState, formData);
+}
+
+export async function deleteRole(roleId: number): Promise<DeleteRoleResponse> {
+    const authAction = await withAuth(async (roleId: number): Promise<DeleteRoleResponse> => {
+        try {
+            const response = await apiClient.roles.deleteRole(roleId);
+
+            if (!response.success) {
+                return {
+                    success: false,
+                    message: response.message || "Failed to delete role"
+                };
+            }
+
+            revalidatePath("/admin/roles");
+            return {
+                success: true,
+                message: "Role deleted successfully"
+            };
+        } catch (error) {
+            if (error instanceof HttpError) {
+                return {
+                    success: false,
+                    message: error.message
+                };
+            }
+            console.error('Unexpected error during role deletion:', error);
+            return {
+                success: false,
+                message: "An unexpected error occurred"
+            };
+        }
+    });
+
+    return authAction(roleId);
+}
