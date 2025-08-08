@@ -31,7 +31,6 @@ import {
   User,
   Table,
   View,
-  FolderTree,
   Server,
 } from "lucide-react";
 import {
@@ -79,14 +78,9 @@ const adminMenuItems: NavItem[] = [
 
 const globalMenuItems: NavItem[] = [
   {
-    title: "Database Management",
+    title: "Database",
     href: "/database",
     icon: Server,
-  },
-  {
-    title: "Database Explorer",
-    href: "/database/explorer",
-    icon: FolderTree,
   },
   {
     title: "Schema Management",

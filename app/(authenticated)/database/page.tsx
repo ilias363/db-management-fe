@@ -2,20 +2,12 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Database, Table, View, FolderTree, Shield } from "lucide-react";
+import { Database, Table, View, Shield } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/lib/stores/auth-store";
 import { DatabaseStatsCards } from "@/components/database/database-stats-cards";
 
 const QUICK_ACTIONS = [
-  {
-    title: "Explore Database",
-    description: "Browse schemas, tables, and views in a hierarchical view",
-    icon: FolderTree,
-    href: "/database/explorer",
-    color: "text-blue-500",
-    bgColor: "bg-blue-100 dark:bg-blue-900/20",
-  },
   {
     title: "Manage Schemas",
     description: "Create, modify, and organize database schemas",
