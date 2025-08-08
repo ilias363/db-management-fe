@@ -28,6 +28,8 @@ import type {
   RoleStatsResponse,
   ActionType,
   RolesResponse,
+  DatabaseTypeResponse,
+  DatabaseStatsResponse,
 } from "./types"
 import { cookies } from "next/headers";
 import { HttpError } from "./errors";
@@ -199,6 +201,12 @@ class ApiClientImpl implements ApiClient {
     deleteAuditLog: (id: number): Promise<VoidResponse> => this.request(`/audit-logs/${id}`, { method: "DELETE" }),
 
     getAuditStats: (): Promise<AuditStatsResponse> => this.request("/audit-logs/stats"),
+  }
+
+  database = {
+    getDatabaseType: (): Promise<DatabaseTypeResponse> => this.request("/database/type"),
+    getDatabaseStats: (includeSystem: boolean):
+      Promise<DatabaseStatsResponse> => this.request(`/database/stats?includeSystem=${includeSystem}`),
   }
 
   schema = {

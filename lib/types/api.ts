@@ -62,6 +62,8 @@ import type {
   ValidateTokenResponse,
   ActionType,
   RolesResponse,
+  DatabaseTypeResponse,
+  DatabaseStatsResponse,
 } from "./index"
 
 export interface ApiClient {
@@ -108,6 +110,10 @@ export interface ApiClient {
     getAuditLogById: (id: number) => Promise<AuditLogResponse>
     deleteAuditLog: (id: number) => Promise<VoidResponse>
     getAuditStats: () => Promise<AuditStatsResponse>
+  }
+  database: {
+    getDatabaseType(): Promise<DatabaseTypeResponse>;
+    getDatabaseStats(includeSystem: boolean): Promise<DatabaseStatsResponse>;
   }
   schema: {
     getAllSchemas(includeSystem: boolean): Promise<SchemasResponse>;
