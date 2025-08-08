@@ -1,5 +1,5 @@
 import { DataType } from '../index';
-import { SchemaMetadataDto, BaseColumnMetadataDto } from './index';
+import { SchemaMetadataDto } from './index';
 
 export interface ViewMetadataDto {
     viewName: string;
@@ -9,7 +9,7 @@ export interface ViewMetadataDto {
     charachterSet?: string;
     collation?: string;
     schema: Omit<SchemaMetadataDto, 'views' | 'tables'>;
-    columns: Omit<BaseColumnMetadataDto, 'table'>[];
+    columns: Omit<ViewColumnDto, 'table'>[];
 }
 
 export interface UpdateViewDto {
