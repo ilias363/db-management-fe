@@ -5,4 +5,4 @@ export * from './column';
 export * from './column-new';
 export * from './column-update';
 export * from './index-meta';
-export * from './stats';
+export * from './database';

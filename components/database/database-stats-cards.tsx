@@ -1,5 +1,5 @@
 import { StatsCard } from "@/components/common/stats-card";
-import { DatabaseStats } from "@/lib/types/database/stats";
+import { DatabaseStats } from "@/lib/types/database";
 import { Database, FileText, Table, View } from "lucide-react";
 
 interface DatabaseStatsCardsProps {
