@@ -6,6 +6,7 @@ import { Database, Table, View, Shield } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/lib/stores/auth-store";
 import { DatabaseStatsCards } from "@/components/database/database-stats-cards";
+import { LastUpdated } from "@/components/common/last-updated";
 
 const QUICK_ACTIONS = [
   {
@@ -40,12 +41,15 @@ export default function DatabasePage() {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <h2 className="text-2xl font-bold tracking-tight">Welcome to Database Management</h2>
-        <p className="text-muted-foreground">
-          Manage your database schemas, tables, views, and data with permission-based access
-          control.
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Welcome to Database Management</h1>
+          <p className="text-muted-foreground">
+            Manage your database schemas, tables, views, and data with permission-based access
+            control.
+          </p>
+        </div>
+        <LastUpdated />
       </div>
 
       <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/20">
