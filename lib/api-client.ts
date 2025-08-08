@@ -203,7 +203,6 @@ class ApiClientImpl implements ApiClient {
 
   schema = {
     getAllSchemas: () => Promise.reject(new Error("Not implemented")),
-    getAllSchemasIncludingSystem: () => Promise.reject(new Error("Not implemented")),
     getSchemaByName: () => Promise.reject(new Error("Not implemented")),
     createSchema: () => Promise.reject(new Error("Not implemented")),
     deleteSchema: () => Promise.reject(new Error("Not implemented")),

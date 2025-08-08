@@ -110,8 +110,7 @@ export interface ApiClient {
     getAuditStats: () => Promise<AuditStatsResponse>
   }
   schema: {
-    getAllSchemas(): Promise<SchemasResponse>;
-    getAllSchemasIncludingSystem(): Promise<SchemasResponse>;
+    getAllSchemas(includeSystem: boolean): Promise<SchemasResponse>;
     getSchemaByName(schemaName: string): Promise<SchemaResponse>;
     createSchema(schema: NewSchemaDto): Promise<SchemaResponse>;
     deleteSchema(schemaName: string): Promise<VoidResponse>;
