@@ -64,3 +64,47 @@ export async function withAuth<T extends unknown[], R>(
         return action(...args);
     };
 }
+
+export async function ensureAdminAccessWithAuth(): Promise<boolean> {
+    try {
+        const isAuthenticated = await ensureAuthenticated();
+        if (!isAuthenticated) {
+            return false;
+        }
+
+        const response = await apiClient.auth.getIsCurrentUserSystemAdmin();
+        return response.success && response.data?.isSystemAdmin === true;
+    } catch (error) {
+        console.error('Admin access check failed:', error);
+        return false;
+    }
+}
+
+export async function ensureAdminAccess(): Promise<boolean> {
+    try {
+        const response = await apiClient.auth.getIsCurrentUserSystemAdmin();
+        return response.success && response.data?.isSystemAdmin === true;
+    } catch (error) {
+        console.error('Admin access check failed:', error);
+        return false;
+    }
+}
+
+export async function withAdminAuth<T extends unknown[], R>(
+    action: (...args: T) => Promise<R>
+): Promise<(...args: T) => Promise<R>> {
+    return async (...args: T) => {
+        const isAuthenticated = await ensureAuthenticated();
+        if (!isAuthenticated) {
+            await clearSession();
+            redirect("/login?expiredsession=true");
+        }
+
+        const isAdmin = await ensureAdminAccess();
+        if (!isAdmin) {
+            redirect("/");
+        }
+
+        return action(...args);
+    };
+}

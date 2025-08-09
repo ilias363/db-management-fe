@@ -9,7 +9,7 @@ import type {
     AuditStats,
 } from "../types";
 import { HttpError } from "../errors";
-import { withAuth } from "./auth-utils";
+import { withAdminAuth } from "./auth-utils";
 
 export interface AuditDataParams extends PaginationParams {
     search?: string;
@@ -35,7 +35,7 @@ export interface DeleteAuditLogResponse {
 }
 
 export async function getAuditData(params: AuditDataParams = {}): Promise<AuditDataResponse> {
-    const authAction = await withAuth(async (params: AuditDataParams = {}): Promise<AuditDataResponse> => {
+    const authAction = await withAdminAuth(async (params: AuditDataParams = {}): Promise<AuditDataResponse> => {
         try {
             const queryParams: Record<string, string> = {
                 page: (params.page || 0).toString(),
@@ -90,7 +90,7 @@ export async function getAuditData(params: AuditDataParams = {}): Promise<AuditD
 }
 
 export async function deleteAuditLog(id: number): Promise<DeleteAuditLogResponse> {
-    const authAction = await withAuth(async (id: number): Promise<DeleteAuditLogResponse> => {
+    const authAction = await withAdminAuth(async (id: number): Promise<DeleteAuditLogResponse> => {
         try {
             const response = await apiClient.audit.deleteAuditLog(id);
 

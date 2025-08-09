@@ -16,7 +16,7 @@ import type {
 } from "@/lib/types";
 import { HttpError } from "../errors";
 import { createRoleSchema, updateRoleSchema } from "../schemas";
-import { withAuth } from "./auth-utils";
+import { withAdminAuth } from "./auth-utils";
 
 export interface DeleteRoleResponse {
     success: boolean;
@@ -55,7 +55,7 @@ export interface RoleUsersResponse {
 }
 
 export async function getRolesData(params: RolesDataParams = {}): Promise<RolesDataResponse> {
-    const authAction = await withAuth(async (params: RolesDataParams = {}): Promise<RolesDataResponse> => {
+    const authAction = await withAdminAuth(async (params: RolesDataParams = {}): Promise<RolesDataResponse> => {
         try {
             const queryParams: Record<string, string> = {
                 page: (params.page || 0).toString(),
@@ -93,7 +93,7 @@ export async function getRolesData(params: RolesDataParams = {}): Promise<RolesD
 }
 
 export async function getAllRoles(): Promise<AllRolesResponse> {
-    const authAction = await withAuth(async (): Promise<AllRolesResponse> => {
+    const authAction = await withAdminAuth(async (): Promise<AllRolesResponse> => {
         try {
             const response = await apiClient.roles.getAllRoles();
 
@@ -122,7 +122,7 @@ export async function getAllRoles(): Promise<AllRolesResponse> {
 }
 
 export async function getRoleById(roleId: number): Promise<RoleByIdResponse> {
-    const authAction = await withAuth(async (roleId: number): Promise<RoleByIdResponse> => {
+    const authAction = await withAdminAuth(async (roleId: number): Promise<RoleByIdResponse> => {
         try {
             const response = await apiClient.roles.getRoleById(roleId);
 
@@ -151,7 +151,7 @@ export async function getRoleById(roleId: number): Promise<RoleByIdResponse> {
 }
 
 export async function getUsersByRole(roleId: number, params: PaginationParams = {}): Promise<RoleUsersResponse> {
-    const authAction = await withAuth(async (roleId: number, params: PaginationParams = {}): Promise<RoleUsersResponse> => {
+    const authAction = await withAdminAuth(async (roleId: number, params: PaginationParams = {}): Promise<RoleUsersResponse> => {
         try {
             const queryParams: Record<string, string> = {
                 page: (params.page || 0).toString(),
@@ -187,7 +187,7 @@ export async function getUsersByRole(roleId: number, params: PaginationParams = 
 }
 
 export async function createRole(prevState: ActionState<RoleDto> | undefined, formData: FormData): Promise<ActionState<RoleDto>> {
-    const authAction = await withAuth(async (prevState: ActionState<RoleDto> | undefined, formData: FormData): Promise<ActionState<RoleDto>> => {
+    const authAction = await withAdminAuth(async (prevState: ActionState<RoleDto> | undefined, formData: FormData): Promise<ActionState<RoleDto>> => {
         const formObject = Object.fromEntries(formData);
 
         const permissions = formData.getAll("permissions").map((perm) => {
@@ -261,7 +261,7 @@ export async function createRole(prevState: ActionState<RoleDto> | undefined, fo
 }
 
 export async function updateRole(prevState: ActionState<RoleDto> | undefined, formData: FormData): Promise<ActionState<RoleDto>> {
-    const authAction = await withAuth(async (prevState: ActionState<RoleDto> | undefined, formData: FormData): Promise<ActionState<RoleDto>> => {
+    const authAction = await withAdminAuth(async (prevState: ActionState<RoleDto> | undefined, formData: FormData): Promise<ActionState<RoleDto>> => {
         const formObject = Object.fromEntries(formData);
 
         const permissions = formData.getAll("permissions").map((perm) => {
@@ -336,7 +336,7 @@ export async function updateRole(prevState: ActionState<RoleDto> | undefined, fo
 }
 
 export async function deleteRole(roleId: number): Promise<DeleteRoleResponse> {
-    const authAction = await withAuth(async (roleId: number): Promise<DeleteRoleResponse> => {
+    const authAction = await withAdminAuth(async (roleId: number): Promise<DeleteRoleResponse> => {
         try {
             const response = await apiClient.roles.deleteRole(roleId);
 
