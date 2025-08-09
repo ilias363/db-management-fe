@@ -10,10 +10,9 @@ interface DatabaseStatsCardsProps {
 }
 
 export function DatabaseStatsCards({ includeSystem = true }: DatabaseStatsCardsProps) {
-  const { data: stats, isFetching, isError, error } = useDatabaseStats(includeSystem);
+  const { data: stats, isFetching, error } = useDatabaseStats(includeSystem);
 
-  // Show global error state if error and no cached data
-  if (isError) {
+  if (error && !stats) {
     toast.error("Failed to load database stats.", {
       description: error?.message || "An unexpected error occurred.",
     });
