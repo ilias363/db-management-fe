@@ -1,6 +1,6 @@
 // Record/data management related interfaces
 
-import { ApiResponse, PageDto, SortDirection } from './common';
+import { ApiResponse, PageDto, SortDirection } from '../index';
 
 export interface RecordDto {
     schemaName: string;

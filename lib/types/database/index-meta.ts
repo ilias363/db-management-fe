@@ -1,5 +1,5 @@
 import { TableMetadataDto } from './index';
-import { SortDirection, IndexType } from '../index';
+import { SortDirection, IndexType, ApiResponse } from '../index';
 
 export interface IndexColumnMetadataDto {
     columnName: string;
@@ -28,3 +28,6 @@ export interface NewIndexDto {
     indexType: IndexType;
     indexColumns: NewIndexCOlumnDto[];
 }
+
+export type IndexResponse = ApiResponse<IndexMetadataDto>;
+export type IndexesResponse = ApiResponse<IndexMetadataDto[]>;

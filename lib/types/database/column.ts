@@ -1,5 +1,5 @@
 import { TableMetadataDto } from './index';
-import { DataType, ColumnType, FKOnAction } from '../index';
+import { DataType, ColumnType, FKOnAction, ApiResponse } from '../index';
 
 export interface BaseColumnMetadataDto {
     columnName: string;
@@ -41,3 +41,6 @@ export interface PrimaryKeyForeignKeyColumnMetadataDto extends BaseColumnMetadat
     onDeleteAction: FKOnAction;
     columnType: ColumnType.PRIMARY_KEY_FOREIGN_KEY;
 }
+
+export type ColumnResponse = ApiResponse<BaseColumnMetadataDto>;
+export type ColumnsResponse = ApiResponse<BaseColumnMetadataDto[]>;

@@ -1,3 +1,4 @@
+import { ApiResponse } from "../index";
 import {
     SchemaMetadataDto,
     BaseColumnMetadataDto,
@@ -26,3 +27,6 @@ export interface UpdateTableDto {
     tableName: string;
     updatedTableName: string;
 }
+
+export type TableResponse = ApiResponse<TableMetadataDto>;
+export type TablesResponse = ApiResponse<Omit<TableMetadataDto, "schema" | "columns" | "indexes">[]>;

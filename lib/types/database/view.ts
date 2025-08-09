@@ -1,4 +1,4 @@
-import { DataType } from '../index';
+import { ApiResponse, DataType } from '../index';
 import { SchemaMetadataDto } from './index';
 
 export interface ViewMetadataDto {
@@ -31,3 +31,6 @@ export interface ViewColumnDto {
     columnDefault?: string;
     view: Omit<ViewMetadataDto, 'columns'>;
 }
+
+export type ViewResponse = ApiResponse<ViewMetadataDto>;
+export type ViewsResponse = ApiResponse<Omit<ViewMetadataDto, "schema" | "columns">[]>;

@@ -28,9 +28,8 @@ import type {
   RoleStatsResponse,
   ActionType,
   RolesResponse,
-  DatabaseTypeResponse,
-  DatabaseStatsResponse,
 } from "./types"
+import type { DatabaseStatsResponse, DatabaseTypeResponse } from "./types/database";
 import { cookies } from "next/headers";
 import { HttpError } from "./errors";
 

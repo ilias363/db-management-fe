@@ -1,3 +1,4 @@
+
 import type {
   LoginRequestDto,
   LoginResponse,
@@ -18,6 +19,15 @@ import type {
   AuditLogResponse,
   AuditStatsResponse,
   PaginationParams,
+  UserStatsResponse,
+  RoleStatsResponse,
+  RefreshTokenResponse,
+  ValidateTokenResponse,
+  ActionType,
+  RolesResponse,
+} from "./index"
+
+import type {
   SchemasResponse,
   SchemaResponse,
   NewSchemaDto,
@@ -56,15 +66,9 @@ import type {
   BatchDeleteRecordsByValuesDto,
   RecordAdvancedSearchDto,
   RecordAdvancedSearchResponseDto,
-  UserStatsResponse,
-  RoleStatsResponse,
-  RefreshTokenResponse,
-  ValidateTokenResponse,
-  ActionType,
-  RolesResponse,
   DatabaseTypeResponse,
   DatabaseStatsResponse,
-} from "./index"
+} from "./database"
 
 export interface ApiClient {
   auth: {

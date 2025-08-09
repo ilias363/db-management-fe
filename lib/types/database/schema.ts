@@ -1,3 +1,4 @@
+import { ApiResponse } from '../index';
 import type { TableMetadataDto, ViewMetadataDto } from './index';
 
 export interface SchemaMetadataDto {
@@ -11,3 +12,6 @@ export interface SchemaMetadataDto {
 export interface NewSchemaDto {
     schemaName: string;
 }
+
+export type SchemaResponse = ApiResponse<SchemaMetadataDto>;
+export type SchemasResponse = ApiResponse<Omit<SchemaMetadataDto, "tables" | "views">[]>;
