@@ -1,12 +1,10 @@
-"use client";
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Database, Table, View, Shield } from "lucide-react";
+import { Database, Table, View } from "lucide-react";
 import Link from "next/link";
-import { useAuth } from "@/lib/stores/auth-store";
 import { DatabaseStatsCards } from "@/components/database/database-stats-cards";
 import { LastUpdated } from "@/components/common/last-updated";
+import { PermissionAccessInfoCard } from "@/components/database/permission-access-info-card";
 
 const QUICK_ACTIONS = [
   {
@@ -36,9 +34,6 @@ const QUICK_ACTIONS = [
 ];
 
 export default function DatabasePage() {
-  const { user } = useAuth();
-  const isAdmin = user?.roles?.some(role => role.name === "ADMIN");
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -52,22 +47,7 @@ export default function DatabasePage() {
         <LastUpdated />
       </div>
 
-      <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/20">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-amber-600" />
-            <CardTitle className="text-amber-800 dark:text-amber-200">
-              Permission-Based Access
-            </CardTitle>
-          </div>
-          <CardDescription className="text-amber-700 dark:text-amber-300">
-            Your access to database operations is controlled by your assigned permissions. You can
-            only view and modify databases, schemas, tables, and data that you have explicit
-            permissions for.
-            {isAdmin && " As an admin, you have elevated access to system functions."}
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      <PermissionAccessInfoCard />
 
       <DatabaseStatsCards
         stats={{
