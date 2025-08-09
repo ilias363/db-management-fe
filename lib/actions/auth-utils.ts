@@ -22,7 +22,6 @@ export async function ensureAuthenticated(): Promise<boolean> {
                 }
             } catch {
                 if (!refreshToken) {
-                    await clearSession();
                     return false;
                 }
             }
@@ -46,11 +45,9 @@ export async function ensureAuthenticated(): Promise<boolean> {
             }
         }
 
-        await clearSession();
         return false;
     } catch (error) {
         console.error('Authentication check failed:', error);
-        await clearSession();
         return false;
     }
 }
@@ -61,23 +58,9 @@ export async function withAuth<T extends unknown[], R>(
     return async (...args: T) => {
         const isAuthenticated = await ensureAuthenticated();
         if (!isAuthenticated) {
+            await clearSession();
             redirect("/login?expiredsession=true");
         }
         return action(...args);
     };
 }
-
-export async function getIsSystemAdmin(): Promise<boolean> {
-    const isAuthenticated = await ensureAuthenticated();
-    if (!isAuthenticated) {
-        return false;
-    }
-
-    try {
-        const response = await apiClient.auth.getIsCurrentUserSystemAdmin();
-        return response.success && response.data?.isSystemAdmin === true;
-    } catch (error) {
-        console.error('Failed to check if current user is system admin:', error);
-        return false;
-    }
-};
