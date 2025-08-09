@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthTokens } from './lib/session';
-import { getIsSystemAdmin } from './lib/actions';
 
 export async function middleware(request: NextRequest) {
 	try {
@@ -11,7 +10,6 @@ export async function middleware(request: NextRequest) {
 		const isAuthRoute = ["/login"].includes(pathname);
 		const isPublicRoute = ["/login"].includes(pathname);
 		const isProtectedRoute = !isPublicRoute;
-		const isAdminRoute = pathname.startsWith('/admin');
 
 		// If user is trying to access auth routes but has tokens, redirect to home
 		if (isAuthRoute && (accessToken || refreshToken)) {
@@ -21,14 +19,6 @@ export async function middleware(request: NextRequest) {
 		// If user is trying to access protected routes but has no tokens, redirect to login
 		if (isProtectedRoute && !accessToken && !refreshToken) {
 			return NextResponse.redirect(new URL('/login?expiredsession=true', request.nextUrl));
-		}
-
-		// If user is not an admin and try to access admin routes, redirect to home
-		if (isAdminRoute) {
-			const isAdmin = await getIsSystemAdmin();
-			if (!isAdmin) {
-				return NextResponse.redirect(new URL('/', request.nextUrl));
-			}
 		}
 
 		return NextResponse.next();
