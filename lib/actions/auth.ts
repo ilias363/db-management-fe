@@ -80,3 +80,17 @@ export async function getCurrentUserPermissions(): Promise<UserPermissions | nul
 
     return authAction();
 }
+
+export async function getIsSystemAdmin(): Promise<boolean | null> {
+    const authAction = await withAuth(async (): Promise<boolean | null> => {
+        try {
+            const response = await apiClient.auth.getIsCurrentUserSystemAdmin();
+            return response.success && response.data?.isSystemAdmin === true;
+        } catch (error) {
+            console.error('Failed to check if current user is system admin:', error);
+            return null;
+        }
+    });
+
+    return authAction();
+}
