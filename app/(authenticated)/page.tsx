@@ -1,12 +1,14 @@
-"use client";
-
 import AdminDashboard from "@/components/layout/admin-dashboard";
 import UserDashboard from "@/components/layout/user-dashboard";
-import { useAuth } from "@/lib/stores/auth-store";
+import { getIsSystemAdmin } from "@/lib/actions";
 
-export default function Dashboard() {
-  const { user } = useAuth();
-  const isAdmin = user?.roles?.some(role => role.name === "ADMIN");
+export default async function Dashboard() {
+  let isAdmin;
+  try {
+    isAdmin = await getIsSystemAdmin();
+  } catch {
+    isAdmin = false;
+  }
 
   if (isAdmin) {
     return <AdminDashboard />;
