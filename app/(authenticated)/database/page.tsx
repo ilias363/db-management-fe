@@ -3,6 +3,8 @@ import { getQueryClient } from "@/components/react-query/get-query-client";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import DatabasePageContent from "@/components/database/database-page-content";
 
+export const dynamic = "force-dynamic";
+
 export default async function DatabasePage() {
   const queryClient = getQueryClient();
 
