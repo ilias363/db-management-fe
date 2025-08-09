@@ -23,14 +23,16 @@ export function StatsCard({
 }: StatsCardProps) {
   if (error) {
     return (
-      <Card className="border-red-200 bg-red-50">
+      <Card className="border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-red-800">{title}</CardTitle>
-          <AlertCircle className="h-5 w-5 text-red-500" />
+          <CardTitle className="text-sm font-medium text-red-800 dark:text-red-300">
+            {title}
+          </CardTitle>
+          <AlertCircle className="h-5 w-5 text-red-500 dark:text-red-400" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-red-600">Error</div>
-          <p className="text-xs text-red-600">Failed to load data</p>
+          <div className="text-2xl font-bold text-red-600 dark:text-red-400">Error</div>
+          <p className="text-xs text-red-600 dark:text-red-400">Failed to load data</p>
         </CardContent>
       </Card>
     );
