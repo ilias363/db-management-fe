@@ -47,14 +47,14 @@ export interface DetailedPermissions {
         hasDbReadAccess: boolean;
         hasDbWriteAccess: boolean;
     };
-    granularPermissions?: {
+    granularPermissions: {
         canRead: boolean;
         canWrite: boolean;
         canCreate: boolean;
         canDelete: boolean;
     };
-    targetSchema?: string;
-    targetTable?: string;
+    targetSchema: string;
+    targetTable: string;
 }
 
 export type LoginResponse = ApiResponse<LoginResponseDto>;
