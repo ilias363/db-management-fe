@@ -25,7 +25,7 @@ export const authQueries = {
     detailedPermissions: () => [...authQueries.all(), "detailedPermissions"] as const,
     detailedPermissionsQuery: (schemaName?: string, tableName?: string) =>
         queryOptions({
-            queryKey: authQueries.detailedPermissions(),
+            queryKey: [...authQueries.detailedPermissions(), schemaName, tableName],
             queryFn: () => getDetailedPermissions(schemaName, tableName),
             staleTime: 5 * 60 * 1000,
             retry: 2,
