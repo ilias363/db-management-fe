@@ -5,7 +5,7 @@ import z from "zod";
 
 import { apiClient } from "../api-client";
 import { loginSchema } from "../schemas";
-import type { UserDto, UserPermissions } from "../types";
+import type { DetailedPermissions, UserDto, UserPermissions } from "../types";
 import { clearSession, saveSession } from "../session";
 import { HttpError } from "../errors";
 import { withAuth } from "./auth-utils";
@@ -74,6 +74,24 @@ export async function getCurrentUserPermissions(): Promise<UserPermissions | nul
             return response.data;
         } catch (error) {
             console.error('Failed to get user permissions:', error);
+            return null;
+        }
+    });
+
+    return authAction();
+}
+
+export async function getDetailedPermissions(
+    schemaName?: string, tableName?: string): Promise<DetailedPermissions | null> {
+    const authAction = await withAuth(async (): Promise<DetailedPermissions | null> => {
+        try {
+            const response = await apiClient.auth.getDetailedPermissions(schemaName, tableName);
+            if (!response.success || !response.data) {
+                return null;
+            }
+            return response.data;
+        } catch (error) {
+            console.error('Failed to get user detailed permissions:', error);
             return null;
         }
     });
