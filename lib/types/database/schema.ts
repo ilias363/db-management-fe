@@ -13,5 +13,9 @@ export interface NewSchemaDto {
     schemaName: string;
 }
 
+export interface SchemaListDto {
+    schemas: Omit<SchemaMetadataDto, 'tables' | 'views'>[];
+}
+
 export type SchemaResponse = ApiResponse<SchemaMetadataDto>;
-export type SchemasResponse = ApiResponse<Omit<SchemaMetadataDto, "tables" | "views">[]>;
+export type SchemasResponse = ApiResponse<SchemaListDto>;

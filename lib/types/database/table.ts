@@ -28,5 +28,9 @@ export interface UpdateTableDto {
     updatedTableName: string;
 }
 
+export interface TableListDto {
+    tables: Omit<TableMetadataDto, "schema" | "columns" | "indexes">[];
+}
+
 export type TableResponse = ApiResponse<TableMetadataDto>;
-export type TablesResponse = ApiResponse<Omit<TableMetadataDto, "schema" | "columns" | "indexes">[]>;
+export type TablesResponse = ApiResponse<TableListDto>;

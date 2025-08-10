@@ -2,10 +2,10 @@
 
 import { apiClient } from "@/lib/api-client";
 import { withAuth } from "../auth-utils";
-import { SchemaMetadataDto } from "@/lib/types/database";
+import { SchemaListDto, SchemaMetadataDto } from "@/lib/types/database";
 
-export async function getAllSchemas(includeSystem: boolean): Promise<Omit<SchemaMetadataDto, "tables" | "views">[] | null> {
-    const authAction = await withAuth(async (): Promise<Omit<SchemaMetadataDto, "tables" | "views">[] | null> => {
+export async function getAllSchemas(includeSystem: boolean): Promise<SchemaListDto | null> {
+    const authAction = await withAuth(async (): Promise<SchemaListDto | null> => {
         try {
             const response = await apiClient.schema.getAllSchemas(includeSystem);
             if (!response.success || !response.data) {

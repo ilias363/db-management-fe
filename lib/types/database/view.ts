@@ -32,5 +32,9 @@ export interface ViewColumnDto {
     view: Omit<ViewMetadataDto, 'columns'>;
 }
 
+export interface ViewListDto {
+    views: Omit<ViewMetadataDto, "schema" | "columns">[];
+}
+
 export type ViewResponse = ApiResponse<ViewMetadataDto>;
-export type ViewsResponse = ApiResponse<Omit<ViewMetadataDto, "schema" | "columns">[]>;
+export type ViewsResponse = ApiResponse<ViewListDto>;
