@@ -48,14 +48,22 @@ export function SchemaDialog({ open, onOpenChange, onSuccess }: SchemaDialogProp
     setHasChanges(checkForChanges());
   }, [checkForChanges]);
 
+  // Track if success has already been handled to prevent duplicate toasts
+  const successHandledRef = useRef(false);
+
   useEffect(() => {
-    if (state?.success) {
+    if (state?.success && !successHandledRef.current) {
       toast.success(state.message || "Schema created successfully");
       setHasChanges(false);
       onOpenChange(false);
       onSuccess();
+      successHandledRef.current = true;
     }
-  }, [state, onOpenChange, onSuccess]);
+    // Reset ref when dialog opens
+    if (open && successHandledRef.current) {
+      successHandledRef.current = false;
+    }
+  }, [state, onOpenChange, onSuccess, open]);
 
   // Initialize form data when dialog opens
   useEffect(() => {
