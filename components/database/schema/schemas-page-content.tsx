@@ -7,13 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Database, Plus, Search, Shield } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDbPermissions, useSchemas, useDetailedPermissions } from "@/lib/hooks";
-import { SchemaCard } from "@/components/database";
+import { SchemaCard, SchemaDialog } from "@/components/database";
 import { LastUpdated } from "@/components/common";
 
 export function SchemasPageContent() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showSystemSchemas, setShowSystemSchemas] = useState(false);
   const [fetchTrigger, setFetchTrigger] = useState(0);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const prevFetchingRef = useRef(false);
 
   const { data: perms, isLoading: permsLoading, isError: permsError } = useDbPermissions();
@@ -48,6 +49,10 @@ export function SchemasPageContent() {
   });
 
   const handleRefresh = () => {
+    refetchSchemas();
+  };
+
+  const handleCreateSuccess = () => {
     refetchSchemas();
   };
 
@@ -87,7 +92,12 @@ export function SchemasPageContent() {
           </p>
         </div>
         <div className="flex items-center gap-4">
-          <Button size="sm" className="gap-2" disabled={!canCreateSchema}>
+          <Button
+            size="sm"
+            className="gap-2"
+            disabled={!canCreateSchema}
+            onClick={() => setIsCreateDialogOpen(true)}
+          >
             <Plus className="h-4 w-4" />
             Create Schema
           </Button>
@@ -186,6 +196,12 @@ export function SchemasPageContent() {
           ))}
         </div>
       )}
+
+      <SchemaDialog
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        onSuccess={handleCreateSuccess}
+      />
     </div>
   );
 }
