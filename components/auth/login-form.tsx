@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { useFormStatus } from "react-dom";
-import ErrorMessage from "@/components/common/error-message";
+import { ErrorMessage } from "@/components/common";
 import { useSearchParams } from "next/navigation";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 

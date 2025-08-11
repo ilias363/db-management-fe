@@ -1,7 +1,7 @@
 import { schemaQueries, authQueries } from "@/lib/queries";
 import { getQueryClient } from "@/components/react-query/get-query-client";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
-import SchemaDetailsPageContent from "@/components/database/schema-details-page-content";
+import { SchemaDetailsPageContent } from "@/components/database";
 
 export const dynamic = "force-dynamic";
 

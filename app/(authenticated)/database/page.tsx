@@ -1,7 +1,7 @@
 import { databaseQueries } from "@/lib/queries";
 import { getQueryClient } from "@/components/react-query/get-query-client";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
-import DatabasePageContent from "@/components/database/database-page-content";
+import DatabasePageContent from "@/components/database/database/database-page-content";
 
 export const dynamic = "force-dynamic";
 

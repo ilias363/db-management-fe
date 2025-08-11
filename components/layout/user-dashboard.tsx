@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Database, Activity, BarChart3, Clock, Shield } from "lucide-react";
-import { LastUpdated } from "@/components/common/last-updated";
+import { LastUpdated } from "@/components/common";
 
 // Mock data
 const mockUserData = {

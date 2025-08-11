@@ -7,10 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Database, Plus, Search, Shield } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDbPermissions, useSchemas, useDetailedPermissions } from "@/lib/hooks";
-import { SchemaCard } from "@/components/database/schema-card";
-import { LastUpdated } from "@/components/common/last-updated";
+import { SchemaCard } from "@/components/database";
+import { LastUpdated } from "@/components/common";
 
-export default function SchemasPageContent() {
+export function SchemasPageContent() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showSystemSchemas, setShowSystemSchemas] = useState(false);
   const [fetchTrigger, setFetchTrigger] = useState(0);

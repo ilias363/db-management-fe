@@ -1,4 +1,4 @@
-import { StatsCard } from "@/components/common/stats-card";
+import { StatsCard } from "@/components/common";
 import { UserStats } from "@/lib/types";
 import { Users } from "lucide-react";
 

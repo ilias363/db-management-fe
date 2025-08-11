@@ -1,4 +1,4 @@
-import { StatsCard } from "@/components/common/stats-card";
+import { StatsCard } from "@/components/common";
 import { AuditStats } from "@/lib/types";
 import { FileText, AlertTriangle, Activity, Clock } from "lucide-react";
 

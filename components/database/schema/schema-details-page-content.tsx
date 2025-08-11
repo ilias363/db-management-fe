@@ -18,16 +18,16 @@ import {
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSchema, useDetailedPermissions } from "@/lib/hooks";
-import { ConfirmDialog } from "@/components/common/confirm-dialog";
-import ErrorMessage from "@/components/common/error-message";
+import { ConfirmDialog } from "@/components/common";
+import { ErrorMessage } from "@/components/common";
 import { toast } from "sonner";
-import { LastUpdated } from "../common/last-updated";
+import { LastUpdated } from "@/components/common";
 
 interface SchemaDetailsPageContentProps {
   schemaName: string;
 }
 
-export default function SchemaDetailsPageContent({ schemaName }: SchemaDetailsPageContentProps) {
+export function SchemaDetailsPageContent({ schemaName }: SchemaDetailsPageContentProps) {
   const router = useRouter();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [fetchTrigger, setFetchTrigger] = useState(0);

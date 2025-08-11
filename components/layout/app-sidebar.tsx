@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/stores/auth-store";
 import { useLogout } from "@/lib/hooks/use-logout";
-import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { ThemeToggle } from "@/components/theme";
 import {
   Sidebar,
   SidebarContent,

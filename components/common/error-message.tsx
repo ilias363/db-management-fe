@@ -1,4 +1,4 @@
-export default function ErrorMessage({ error }: { error?: string | string[] }) {
+export function ErrorMessage({ error }: { error?: string | string[] }) {
   if (!error) return null;
   if (Array.isArray(error)) {
     return (

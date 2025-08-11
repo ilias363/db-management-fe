@@ -1,4 +1,4 @@
-import { StatsCard } from "@/components/common/stats-card";
+import { StatsCard } from "@/components/common";
 import { Shield } from "lucide-react";
 import type { RoleStats } from "@/lib/types";
 

@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Users, Power, PowerOff, Edit, Eye, Trash2 } from "lucide-react";
 import type { SortDirection, UserDto } from "@/lib/types";
-import { DataTable, type ColumnDef, type ActionButton } from "@/components/common/data-table";
+import { DataTable, type ColumnDef, type ActionButton } from "@/components/common";
 import Link from "next/link";
 
 interface UserTableProps {

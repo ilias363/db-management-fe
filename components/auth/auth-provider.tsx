@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/stores/auth-store";
-import { LoadingScreen } from "@/components/common/loading-screen";
+import { LoadingScreen } from "@/components/common";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 

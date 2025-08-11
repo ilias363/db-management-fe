@@ -1,6 +1,6 @@
 "use client";
 
-import { StatsCard } from "@/components/common/stats-card";
+import { StatsCard } from "@/components/common";
 import { useDatabaseStats } from "@/lib/hooks";
 import { Database, FileText, Table, View } from "lucide-react";
 import { toast } from "sonner";

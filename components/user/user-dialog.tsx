@@ -16,8 +16,8 @@ import { toast } from "sonner";
 import type { UserDto, RoleDto } from "@/lib/types";
 import { useActionState } from "react";
 import { createUser, updateUser } from "@/lib/actions/user";
-import ErrorMessage from "@/components/common/error-message";
-import { ConfirmDialog } from "@/components/common/confirm-dialog";
+import { ErrorMessage } from "@/components/common";
+import { ConfirmDialog } from "@/components/common";
 import { getStateFieldErrors, getStateGeneralErrors } from "@/lib/utils";
 
 interface UserDialogProps {

@@ -1,9 +1,9 @@
 "use client";
 
-import { DatabaseStatsCards } from "@/components/database/database-stats-cards";
-import { PermissionAccessInfoCard } from "@/components/database/permission-access-info-card";
-import { DatabaseQuickActions } from "@/components/database/database-quick-actions";
-import { LastUpdated } from "../common/last-updated";
+import { DatabaseStatsCards } from "@/components/database";
+import { PermissionAccessInfoCard } from "@/components/database";
+import { DatabaseQuickActions } from "@/components/database";
+import { LastUpdated } from "@/components/common";
 import { useDatabaseStats } from "@/lib/hooks";
 import { useState } from "react";
 import { Switch } from "@/components/ui/switch";
