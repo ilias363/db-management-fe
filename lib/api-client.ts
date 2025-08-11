@@ -29,7 +29,17 @@ import type {
   ActionType,
   RolesResponse,
 } from "./types"
-import type { DatabaseStatsResponse, DatabaseTypeResponse, SchemasResponse, SchemaResponse, NewSchemaDto } from "./types/database";
+import type {
+  DatabaseStatsResponse,
+  DatabaseTypeResponse,
+  SchemasResponse,
+  SchemaResponse,
+  NewSchemaDto,
+  TableResponse,
+  TablesResponse,
+  NewTableDto,
+  UpdateTableDto
+} from "./types/database";
 import { cookies } from "next/headers";
 import { HttpError } from "./errors";
 
@@ -223,11 +233,24 @@ class ApiClientImpl implements ApiClient {
   }
 
   table = {
-    getTable: () => Promise.reject(new Error("Not implemented")),
-    getAllTablesInSchema: () => Promise.reject(new Error("Not implemented")),
-    createTable: () => Promise.reject(new Error("Not implemented")),
-    renameTable: () => Promise.reject(new Error("Not implemented")),
-    deleteTable: () => Promise.reject(new Error("Not implemented")),
+    getTable: (schemaName: string, tableName: string): Promise<TableResponse> =>
+      this.request(`/tables/${schemaName}/${tableName}`),
+    getAllTablesInSchema: (schemaName: string): Promise<TablesResponse> =>
+      this.request(`/tables/${schemaName}`),
+    createTable: (table: NewTableDto): Promise<TableResponse> =>
+      this.request("/tables", {
+        method: "POST",
+        body: JSON.stringify(table),
+      }),
+    renameTable: (table: UpdateTableDto): Promise<TableResponse> =>
+      this.request(`/tables`, {
+        method: "PUT",
+        body: JSON.stringify(table),
+      }),
+    deleteTable: (schemaName: string, tableName: string, force?: boolean): Promise<VoidResponse> =>
+      this.request(`/tables/${schemaName}/${tableName}${force ? '?force=true' : ''}`, {
+        method: "DELETE"
+      }),
   }
 
   view = {
