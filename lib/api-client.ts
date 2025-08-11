@@ -29,7 +29,7 @@ import type {
   ActionType,
   RolesResponse,
 } from "./types"
-import type { DatabaseStatsResponse, DatabaseTypeResponse, SchemasResponse, SchemaResponse } from "./types/database";
+import type { DatabaseStatsResponse, DatabaseTypeResponse, SchemasResponse, SchemaResponse, NewSchemaDto } from "./types/database";
 import { cookies } from "next/headers";
 import { HttpError } from "./errors";
 
@@ -213,8 +213,13 @@ class ApiClientImpl implements ApiClient {
       this.request(`/schemas?includeSystem=${includeSystem}`),
     getSchemaByName: (schemaName: string): Promise<SchemaResponse> =>
       this.request(`/schemas/${schemaName}`),
-    createSchema: () => Promise.reject(new Error("Not implemented")),
-    deleteSchema: () => Promise.reject(new Error("Not implemented")),
+    createSchema: (schema: NewSchemaDto): Promise<SchemaResponse> =>
+      this.request("/schemas", {
+        method: "POST",
+        body: JSON.stringify(schema),
+      }),
+    deleteSchema: (schemaName: string): Promise<VoidResponse> =>
+      this.request(`/schemas/${schemaName}`, { method: "DELETE" }),
   }
 
   table = {
