@@ -22,6 +22,7 @@ import { ConfirmDialog } from "@/components/common";
 import { ErrorMessage } from "@/components/common";
 import { toast } from "sonner";
 import { LastUpdated } from "@/components/common";
+import { deleteSchema } from "@/lib/actions/database";
 
 interface SchemaDetailsPageContentProps {
   schemaName: string;
@@ -97,16 +98,19 @@ export function SchemaDetailsPageContent({ schemaName }: SchemaDetailsPageConten
     if (!schema || !canDeleteSchema) return;
 
     try {
-      // TODO: Implement actual delete API call
-      // await deleteSchema(schemaName);
+      const result = await deleteSchema(schemaName);
 
-      // For now, just show a success message
-      toast.success(`Schema "${schemaName}" would be deleted (API not implemented yet)`);
-      setIsDeleteDialogOpen(false);
-      router.push("/database/schemas");
+      if (result.success) {
+        toast.success(result.message);
+        router.push("/database/schemas");
+      } else {
+        toast.error(result.message);
+      }
     } catch (error) {
       console.error("Error deleting schema:", error);
       toast.error("Failed to delete schema");
+    } finally {
+      setIsDeleteDialogOpen(false);
     }
   };
 
