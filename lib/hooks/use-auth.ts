@@ -1,10 +1,13 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { authQueries } from "@/lib/queries";
 
-export function useCurrentUser() {
+export function useCurrentUser(options?: { enabled?: boolean }) {
     const queryClient = useQueryClient();
 
-    const query = useQuery(authQueries.currentUserQuery());
+    const query = useQuery({
+        ...authQueries.currentUserQuery(),
+        enabled: options?.enabled ?? true,
+    });
 
     return {
         ...query,
@@ -14,10 +17,13 @@ export function useCurrentUser() {
     };
 }
 
-export function useDbPermissions() {
+export function useDbPermissions(options?: { enabled?: boolean }) {
     const queryClient = useQueryClient();
 
-    const query = useQuery(authQueries.permissionsQuery());
+    const query = useQuery({
+        ...authQueries.permissionsQuery(),
+        enabled: options?.enabled ?? true,
+    });
 
     return {
         ...query,
@@ -27,10 +33,13 @@ export function useDbPermissions() {
     };
 }
 
-export function useDetailedPermissions(schemaName?: string, tableName?: string) {
+export function useDetailedPermissions(schemaName?: string, tableName?: string, options?: { enabled?: boolean }) {
     const queryClient = useQueryClient();
 
-    const query = useQuery(authQueries.detailedPermissionsQuery(schemaName, tableName));
+    const query = useQuery({
+        ...authQueries.detailedPermissionsQuery(schemaName, tableName),
+        enabled: options?.enabled ?? true,
+    });
 
     return {
         ...query,
@@ -40,10 +49,13 @@ export function useDetailedPermissions(schemaName?: string, tableName?: string) 
     };
 }
 
-export function useIsSystemAdmin() {
+export function useIsSystemAdmin(options?: { enabled?: boolean }) {
     const queryClient = useQueryClient();
 
-    const query = useQuery(authQueries.isSystemAdminQuery());
+    const query = useQuery({
+        ...authQueries.isSystemAdminQuery(),
+        enabled: options?.enabled ?? true,
+    });
 
     return {
         ...query,
