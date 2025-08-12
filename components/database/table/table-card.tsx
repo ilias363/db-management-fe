@@ -243,13 +243,16 @@ export function TableCard({ schemaName, tableName, isSystemSchema }: TableCardPr
 
         <div className="pt-2 border-t space-y-2">
           <Button asChild variant="outline" size="sm" className="w-full">
+            <Link href={`/database/tables/${schemaName}/${tableName}/data`}>
+              <BarChart3 className="h-4 w-4 mr-2 rotate-90" />
+              Browse Table Data
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="sm" className="w-full">
             <Link href={`/database/tables/${schemaName}/${tableName}`}>
               <ExternalLink className="h-4 w-4 mr-2" />
               View Table Details
             </Link>
-          </Button>
-          <Button asChild variant="ghost" size="sm" className="w-full">
-            <Link href={`/database/tables/${schemaName}/${tableName}/data`}>Browse Table Data</Link>
           </Button>
         </div>
       </CardContent>
