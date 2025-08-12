@@ -8,14 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, User, Shield, History, Filter, ExternalLink, Edit } from "lucide-react";
 import { toast } from "sonner";
 import type { UserDto, AuditLogDto, SortDirection, RoleDto } from "@/lib/types";
-import { getUserById, getUserAuditLogs } from "@/lib/actions/user";
-import { getAllRoles } from "@/lib/actions";
-import { AuditTable } from "@/components/audit/audit-table";
-import { AuditDialog } from "@/components/audit/audit-dialog";
-import { LastUpdated } from "@/components/common/last-updated";
-import { PermissionBadge } from "@/components/common/permission-badge";
+import { getUserById, getUserAuditLogs, getAllRoles } from "@/lib/actions";
+import { AuditTable, AuditDetailsDialog } from "@/components/audit";
+import { LastUpdated, PermissionBadge } from "@/components/common";
 import { Separator } from "@/components/ui/separator";
-import { UserDialog } from "@/components/user/user-dialog";
+import { UserDialog } from "@/components/user";
 import Link from "next/link";
 
 export default function UserDetailsPage() {
@@ -330,7 +327,7 @@ export default function UserDetailsPage() {
         onSuccess={loadUserData}
       />
 
-      <AuditDialog
+      <AuditDetailsDialog
         audit={viewingAudit}
         isOpen={isAuditDialogOpen}
         onClose={() => {

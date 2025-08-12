@@ -8,11 +8,8 @@ import { Search, Calendar, CalendarDays, User, X } from "lucide-react";
 import { toast } from "sonner";
 import { AuditLogDto, AuditStats, SortDirection, ActionType } from "@/lib/types";
 
-import { AuditStatsCards } from "@/components/audit/audit-stats-cards";
-import { AuditTable } from "@/components/audit/audit-table";
-import { AuditDialog } from "@/components/audit/audit-dialog";
-import { ConfirmDialog } from "@/components/common/confirm-dialog";
-import { LastUpdated } from "@/components/common/last-updated";
+import { AuditStatsCards, AuditTable, AuditDetailsDialog } from "@/components/audit";
+import { ConfirmDialog, LastUpdated } from "@/components/common";
 import {
   Select,
   SelectContent,
@@ -23,7 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { getAuditData, deleteAuditLog, type AuditDataParams } from "@/lib/actions";
-import { useAuditFilters } from "@/lib/hooks/use-audit-filters";
+import { useAuditFilters } from "@/lib/hooks";
 
 const ACTION_TYPES = Object.values(ActionType);
 
@@ -431,7 +428,7 @@ export default function AuditPage() {
         </CardContent>
       </Card>
 
-      <AuditDialog
+      <AuditDetailsDialog
         audit={viewingAudit}
         isOpen={isDialogOpen}
         onClose={() => {

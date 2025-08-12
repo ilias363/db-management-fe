@@ -10,13 +10,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, User, Target, AlertCircle, CheckCircle2, FileText } from "lucide-react";
 import type { AuditLogDto } from "@/lib/types";
 
-interface AuditDialogProps {
+interface AuditDetailsDialogProps {
   audit: AuditLogDto | null;
   isOpen: boolean;
   onClose: () => void;
 }
 
-export function AuditDialog({ audit, isOpen, onClose }: AuditDialogProps) {
+export function AuditDetailsDialog({ audit, isOpen, onClose }: AuditDetailsDialogProps) {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString();
   };
