@@ -239,13 +239,14 @@ export function TablesPageContent() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="columns-1 md:columns-2 lg:columns-3 gap-6">
           {filteredTables.map(table => (
             <TableCard
               key={table.tableName}
               schemaName={selectedSchema}
               tableName={table.tableName}
               isSystemSchema={selectedSchemaData?.isSystemSchema || false}
+              className="mb-6 break-inside-avoid"
             />
           ))}
         </div>

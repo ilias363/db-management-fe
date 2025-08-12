@@ -22,15 +22,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useTable } from "@/lib/hooks";
 import { ColumnType } from "@/lib/types";
 import { TableDetailsDialog } from "@/components/database";
-import { formatBytes } from "@/lib/utils";
+import { cn, formatBytes } from "@/lib/utils";
 
 interface TableCardProps {
   schemaName: string;
   tableName: string;
   isSystemSchema: boolean;
+  className?: string;
 }
 
-export function TableCard({ schemaName, tableName, isSystemSchema }: TableCardProps) {
+export function TableCard({ schemaName, tableName, isSystemSchema, className }: TableCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -49,7 +50,7 @@ export function TableCard({ schemaName, tableName, isSystemSchema }: TableCardPr
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card className={cn("hover:shadow-md transition-shadow", className)}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">

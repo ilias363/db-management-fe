@@ -20,12 +20,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useSchema } from "@/lib/hooks";
 import { SchemaMetadataDto } from "@/lib/types/database";
 import { SchemaDetailsDialog } from "./schema-details-dialog";
+import { cn } from "@/lib/utils";
 
 interface SchemaCardProps {
   schema: Omit<SchemaMetadataDto, "tables" | "views">;
+  className?: string;
 }
 
-export function SchemaCard({ schema }: SchemaCardProps) {
+export function SchemaCard({ schema, className }: SchemaCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -48,7 +50,7 @@ export function SchemaCard({ schema }: SchemaCardProps) {
   const views = detailedSchema?.views || [];
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card className={cn("hover:shadow-md transition-shadow", className)}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
