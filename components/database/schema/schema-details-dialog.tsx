@@ -36,14 +36,14 @@ export function SchemaDetailsDialog({ schema, open, onOpenChange }: SchemaDetail
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <div
-              className={`w-6 h-6 rounded-lg flex items-center justify-center ${
+              className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                 schema.isSystemSchema
                   ? "bg-orange-50 dark:bg-orange-950/20"
                   : "bg-blue-50 dark:bg-blue-950/20"
               }`}
             >
               <Database
-                className={`h-3 w-3 ${schema.isSystemSchema ? "text-orange-600" : "text-blue-600"}`}
+                className={`h-5 w-5 ${schema.isSystemSchema ? "text-orange-600" : "text-blue-600"}`}
               />
             </div>
             <span className="truncate" title={schema.schemaName}>
