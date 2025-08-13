@@ -9,3 +9,5 @@ export const createSchemaSchema = z.object({
             message: "Schema name must start with a letter and contain only letters, numbers, and underscores",
         }),
 });
+
+export type CreateSchemaSchema = z.infer<typeof createSchemaSchema>;
