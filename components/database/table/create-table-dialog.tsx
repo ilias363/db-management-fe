@@ -110,6 +110,17 @@ export function CreateTableDialog({
   const foreignKeyColumnsLength = form.watch("foreignKeyColumns").length;
   const primaryKeyForeignKeyColumnsLength = form.watch("primaryKeyForeignKeyColumns").length;
 
+  // Trigger validation when columns change
+  useEffect(() => {
+    form.trigger();
+  }, [
+    form,
+    standardColumnsLength,
+    primaryKeyColumnsLength,
+    foreignKeyColumnsLength,
+    primaryKeyForeignKeyColumnsLength,
+  ]);
+
   const getColumnTypeBadgeVariant = (columnType: ColumnType) => {
     switch (columnType) {
       case ColumnType.STANDARD:
@@ -153,7 +164,7 @@ export function CreateTableDialog({
 
           <Form {...form}>
             <form onSubmit={handleSubmit(submitTable)} className="space-y-6">
-              {(errors.root || submitError) && (
+              {(errors.root?.message || submitError) && (
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>{errors.root?.message || submitError}</AlertDescription>
@@ -340,7 +351,7 @@ export function CreateTableDialog({
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
-                    Please ensure all required fields are filled and at least one column is added.
+                    Please ensure there are no validation errors and at least one column is added.
                   </AlertDescription>
                 </Alert>
               )}
