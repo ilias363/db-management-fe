@@ -50,6 +50,7 @@ export async function createTable(prevState: ActionState<TableMetadataDto> | und
         if (!result.success) {
             return {
                 success: false,
+                message: "Please correct the validation errors",
                 errors: z.flattenError(result.error).fieldErrors
             };
         }
@@ -71,7 +72,7 @@ export async function createTable(prevState: ActionState<TableMetadataDto> | und
             if (!response.success) {
                 return {
                     success: false,
-                    errors: { general: response.message.split("\n") }
+                    errors: { root: response.message.split("\n") }
                 };
             }
 
@@ -80,20 +81,26 @@ export async function createTable(prevState: ActionState<TableMetadataDto> | und
 
             return {
                 success: true,
-                message: "Table created successfully",
+                message: `Table "${result.data.tableName}" created successfully in schema "${result.data.schemaName}"`,
                 data: response.data
             };
         } catch (error) {
             if (error instanceof HttpError) {
                 return {
                     success: false,
-                    errors: { general: [error.message] }
+                    message: "Table creation failed",
+                    errors: {
+                        root: [error.message || "Server error occurred"]
+                    }
                 };
             }
-            console.error('Unexpected error during table creation:', error);
+
             return {
                 success: false,
-                errors: { general: ["An unexpected error occurred"] }
+                message: "Table creation failed",
+                errors: {
+                    root: ["An unexpected error occurred. Please try again."]
+                }
             };
         }
     });
