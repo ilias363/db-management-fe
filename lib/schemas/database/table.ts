@@ -25,10 +25,10 @@ export const createTableSchema = z
                 "Table name must start with a letter and contain only alphanumeric characters and underscores"
             ),
 
-        standardColumns: z.array(standardColumnSchema).default([]),
-        primaryKeyColumns: z.array(primaryKeyColumnSchema).default([]),
-        foreignKeyColumns: z.array(foreignKeyColumnSchema).default([]),
-        primaryKeyForeignKeyColumns: z.array(primaryKeyForeignKeyColumnSchema).default([]),
+        standardColumns: z.array(standardColumnSchema),
+        primaryKeyColumns: z.array(primaryKeyColumnSchema),
+        foreignKeyColumns: z.array(foreignKeyColumnSchema),
+        primaryKeyForeignKeyColumns: z.array(primaryKeyForeignKeyColumnSchema),
     })
     .refine(
         data => {
@@ -41,8 +41,8 @@ export const createTableSchema = z
             return totalColumns > 0;
         },
         {
-            message: "At least one column is required",
-            path: ["tableName"],
+            message: "Table must have at least one column. Please add columns using the tabs above.",
+            path: ["root"],
         }
     )
     .refine(
@@ -58,8 +58,8 @@ export const createTableSchema = z
             return allColumnNames.length === uniqueNames.size;
         },
         {
-            message: "Column names must be unique within the table",
-            path: ["standardColumns"],
+            message: "All column names must be unique within the table. Please check for duplicate column names.",
+            path: ["root"],
         }
     )
     .refine(
@@ -67,17 +67,10 @@ export const createTableSchema = z
             const totalPrimaryKeys =
                 data.primaryKeyColumns.length + data.primaryKeyForeignKeyColumns.length;
 
-            if (totalPrimaryKeys > 1) {
-                const hasAutoIncrement = data.primaryKeyColumns.some(col => col.autoIncrement);
-                if (hasAutoIncrement) {
-                    return false;
-                }
-            }
-
-            return true;
+            return totalPrimaryKeys <= 1 || data.primaryKeyColumns.every(col => !col.autoIncrement);
         },
         {
-            message: "Auto-increment can only be used with single primary key columns",
+            message: "Auto-increment can only be used with a single primary key column. Remove auto-increment from composite primary keys.",
             path: ["primaryKeyColumns"],
         }
     );
