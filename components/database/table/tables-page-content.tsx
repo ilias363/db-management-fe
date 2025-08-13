@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Table, Plus, Search, Database } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDbPermissions, useSchemas, useDetailedPermissions, useTables } from "@/lib/hooks";
-import { TableCard } from "@/components/database";
+import { CreateTableDialog, TableCard } from "@/components/database";
 import { LastUpdated } from "@/components/common";
 import {
   Select,
@@ -21,6 +21,7 @@ import {
 export function TablesPageContent() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSchema, setSelectedSchema] = useState<string>("");
+  const [isCreateTableOpen, setIsCreateTableOpen] = useState(false);
   const [fetchTrigger, setFetchTrigger] = useState(0);
   const prevFetchingRef = useRef(false);
 
@@ -103,7 +104,12 @@ export function TablesPageContent() {
           <p className="text-muted-foreground">Manage database tables, columns, and data</p>
         </div>
         <div className="flex items-center gap-4">
-          <Button size="sm" className="gap-2" disabled={!canCreateTable || !selectedSchema}>
+          <Button
+            size="sm"
+            className="gap-2"
+            disabled={!canCreateTable || !selectedSchema}
+            onClick={() => setIsCreateTableOpen(true)}
+          >
             <Plus className="h-4 w-4" />
             Create Table
           </Button>
@@ -251,6 +257,16 @@ export function TablesPageContent() {
           ))}
         </div>
       )}
+
+      <CreateTableDialog
+        open={isCreateTableOpen}
+        onOpenChange={setIsCreateTableOpen}
+        selectedSchemaName={selectedSchema}
+        onSuccess={() => {
+          refetchTables();
+          refetchSchemas();
+        }}
+      />
     </div>
   );
 }
