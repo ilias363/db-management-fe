@@ -322,7 +322,7 @@ function PrimaryKeyForeignKeyColumnForm({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>On Delete Action</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select action" />
@@ -347,7 +347,7 @@ function PrimaryKeyForeignKeyColumnForm({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>On Update Action</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select action" />

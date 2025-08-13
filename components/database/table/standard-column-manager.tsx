@@ -300,6 +300,7 @@ function StandardColumnForm({ column, onSave, onCancel }: StandardColumnFormProp
                       placeholder={getCompatibleDefaultValuePattern(dataType)}
                       disabled={dataType === DataType.TEXT}
                       {...field}
+                      value={field.value || ""}
                     />
                   </FormControl>
                   {dataType === DataType.TEXT && (
