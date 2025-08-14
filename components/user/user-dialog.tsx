@@ -158,7 +158,7 @@ export function UserDialog({
                     control={form.control}
                     name="active"
                     render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                      <FormItem className="flex flex-row items-center space-x-2 space-y-0">
                         <FormControl>
                           <Checkbox
                             checked={field.value}
@@ -213,7 +213,7 @@ export function UserDialog({
                                       return (
                                         <FormItem
                                           key={role.id}
-                                          className="flex flex-row items-start space-x-3 space-y-0 p-2 border rounded-lg"
+                                          className="flex flex-row items-center space-x-2 space-y-0 p-2 border rounded-lg"
                                         >
                                           <FormControl>
                                             <Checkbox
