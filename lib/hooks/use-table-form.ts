@@ -13,7 +13,7 @@ interface UseCreateTableProps {
     onError?: (error: string) => void;
 }
 
-export function useCreateTable({ onSuccess, onError }: UseCreateTableProps = {}) {
+export function useCreateTableForm({ onSuccess, onError }: UseCreateTableProps = {}) {
     const [isPending, startTransition] = useTransition();
     const [submitError, setSubmitError] = useState<string | null>(null);
 

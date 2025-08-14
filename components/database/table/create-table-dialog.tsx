@@ -47,7 +47,7 @@ import {
 } from "@/components/database";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
-import { useCreateTable } from "@/lib/hooks/use-create-table";
+import { useCreateTableForm } from "@/lib/hooks/use-table-form";
 
 interface CreateTableDialogProps {
   open: boolean;
@@ -73,7 +73,7 @@ export function CreateTableDialog({
     resetForm,
     getColumnSummary,
     errors,
-  } = useCreateTable({
+  } = useCreateTableForm({
     onSuccess: table => {
       onSuccess?.(table);
       onOpenChange(false);

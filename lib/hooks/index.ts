@@ -5,4 +5,4 @@ export * from "./use-permissions";
 export * from "./use-schemas";
 export * from "./use-auth";
 export * from "./use-tables";
-export * from "./use-create-table";
+export * from "./use-table-form";
