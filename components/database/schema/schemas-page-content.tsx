@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Database, Plus, Search, Shield } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDbPermissions, useSchemas, useDetailedPermissions } from "@/lib/hooks";
-import { SchemaCard, SchemaDialog } from "@/components/database";
+import { SchemaCard, CreateSchemaDialog } from "@/components/database";
 import { LastUpdated } from "@/components/common";
 
 export function SchemasPageContent() {
@@ -201,7 +201,7 @@ export function SchemasPageContent() {
         </div>
       )}
 
-      <SchemaDialog
+      <CreateSchemaDialog
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
         onSuccess={handleCreateSuccess}

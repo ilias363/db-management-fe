@@ -2,9 +2,9 @@
 
 import { apiClient } from "@/lib/api-client";
 import { withAuth } from "../auth-utils";
-import { NewSchemaDto, SchemaListDto, SchemaMetadataDto } from "@/lib/types/database";
+import { SchemaListDto, SchemaMetadataDto } from "@/lib/types/database";
 import { ActionState } from "@/lib/types";
-import { createSchemaSchema } from "@/lib/schemas/database";
+import { CreateSchemaSchema, createSchemaSchema } from "@/lib/schemas/database";
 import z from "zod";
 import { HttpError } from "@/lib/errors";
 
@@ -47,14 +47,9 @@ export async function getSchema(schemaName: string): Promise<SchemaMetadataDto |
     return authAction();
 }
 
-export async function createSchema(prevState: ActionState<SchemaMetadataDto> | undefined, formData: FormData): Promise<ActionState<SchemaMetadataDto>> {
-    const authAction = await withAuth(async (prevState: ActionState<SchemaMetadataDto> | undefined, formData: FormData): Promise<ActionState<SchemaMetadataDto>> => {
-        const schema: NewSchemaDto = {
-            schemaName: formData.get("schemaName") as string,
-        };
-
-        const result = createSchemaSchema.safeParse(schema);
-
+export async function createSchema(prevState: ActionState<SchemaMetadataDto> | undefined, formData: CreateSchemaSchema): Promise<ActionState<SchemaMetadataDto>> {
+    const authAction = await withAuth(async (prevState: ActionState<SchemaMetadataDto> | undefined, formData: CreateSchemaSchema): Promise<ActionState<SchemaMetadataDto>> => {
+        const result = createSchemaSchema.safeParse(formData);
 
         if (!result.success) {
             return {
@@ -64,11 +59,11 @@ export async function createSchema(prevState: ActionState<SchemaMetadataDto> | u
         }
 
         try {
-            const response = await apiClient.schema.createSchema(schema);
+            const response = await apiClient.schema.createSchema(formData);
             if (!response.success) {
                 return {
                     success: false,
-                    errors: { general: response.message.split('\n') },
+                    errors: { root: response.message.split('\n') },
                 };
             }
 
@@ -81,13 +76,13 @@ export async function createSchema(prevState: ActionState<SchemaMetadataDto> | u
             if (error instanceof HttpError) {
                 return {
                     success: false,
-                    errors: { general: [error.message] },
+                    errors: { root: [error.message] },
                 };
             }
             console.error('Failed to create schema:', error);
             return {
                 success: false,
-                errors: { general: ["An unexpected error occurred while creating the schema."] }
+                errors: { root: ["An unexpected error occurred while creating the schema."] }
             };
         }
     });
