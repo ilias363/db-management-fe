@@ -256,7 +256,6 @@ class ApiClientImpl implements ApiClient {
   view = {
     getView: () => Promise.reject(new Error("Not implemented")),
     getAllViewsInSchema: () => Promise.reject(new Error("Not implemented")),
-    getViewRecords: () => Promise.reject(new Error("Not implemented")),
     renameView: () => Promise.reject(new Error("Not implemented")),
     deleteView: () => Promise.reject(new Error("Not implemented")),
   }
@@ -287,12 +286,12 @@ class ApiClientImpl implements ApiClient {
 
   record = {
     getRecords: () => Promise.reject(new Error("Not implemented")),
-    getRecord: () => Promise.reject(new Error("Not implemented")),
+    getViewRecords: () => Promise.reject(new Error("Not implemented")),
     createRecord: () => Promise.reject(new Error("Not implemented")),
     updateRecord: () => Promise.reject(new Error("Not implemented")),
     deleteRecord: () => Promise.reject(new Error("Not implemented")),
-    getRecordByValues: () => Promise.reject(new Error("Not implemented")),
     getRecordsByValues: () => Promise.reject(new Error("Not implemented")),
+    getViewRecordsByValues: () => Promise.reject(new Error("Not implemented")),
     updateRecordByValues: () => Promise.reject(new Error("Not implemented")),
     deleteRecordByValues: () => Promise.reject(new Error("Not implemented")),
     createRecords: () => Promise.reject(new Error("Not implemented")),
@@ -301,7 +300,9 @@ class ApiClientImpl implements ApiClient {
     updateRecordsByValues: () => Promise.reject(new Error("Not implemented")),
     deleteRecordsByValues: () => Promise.reject(new Error("Not implemented")),
     advancedSearch: () => Promise.reject(new Error("Not implemented")),
+    advancedSearchView: () => Promise.reject(new Error("Not implemented")),
     getRecordCount: () => Promise.reject(new Error("Not implemented")),
+    getViewRecordCount: () => Promise.reject(new Error("Not implemented")),
   }
 }
 

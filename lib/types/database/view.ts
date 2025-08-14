@@ -1,5 +1,5 @@
-import { ApiResponse, DataType } from '../index';
-import { SchemaMetadataDto } from './index';
+import { ApiResponse } from '../index';
+import { BaseColumnMetadataDto, SchemaMetadataDto } from './index';
 
 export interface ViewMetadataDto {
     viewName: string;
@@ -18,17 +18,7 @@ export interface UpdateViewDto {
     updatedViewName: string;
 }
 
-export interface ViewColumnDto {
-    columnName: string;
-    ordinalPosition: number;
-    dataType: DataType;
-    characterMaxLength?: number;
-    numericPrecision?: number;
-    numericScale?: number;
-    isNullable: boolean;
-    isUnique: boolean;
-    autoIncrement: boolean;
-    columnDefault?: string;
+export interface ViewColumnDto extends BaseColumnMetadataDto {
     view: Omit<ViewMetadataDto, 'columns'>;
 }
 

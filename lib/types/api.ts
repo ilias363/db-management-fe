@@ -135,7 +135,6 @@ export interface ApiClient {
   view: {
     getView(schemaName: string, viewName: string): Promise<ViewResponse>;
     getAllViewsInSchema(schemaName: string): Promise<ViewsResponse>;
-    getViewRecords(schemaName: string, viewName: string, params?: PaginationParams): Promise<ViewRecordPageResponse>;
     renameView(View: UpdateViewDto): Promise<ViewResponse>;
     deleteView(schemaName: string, viewName: string): Promise<VoidResponse>;
   }
@@ -163,12 +162,13 @@ export interface ApiClient {
   }
   record: {
     getRecords(schemaName: string, tableName: string, params?: PaginationParams): Promise<RecordPageResponse>;
-    getRecord(schemaName: string, tableName: string, primaryKeyValues: Record<string, unknown>): Promise<RecordResponse>;
+    getViewRecords(schemaName: string, viewName: string, params?: PaginationParams): Promise<ViewRecordPageResponse>;
     createRecord(record: NewRecordDto): Promise<RecordResponse>;
     updateRecord(upcateRecord: UpdateRecordDto): Promise<RecordResponse>;
     deleteRecord(deleteRecord: DeleteRecordDto): Promise<RecordResponse>;
-    getRecordByValues(schemaName: string, tableName: string, identifyingValues: Record<string, unknown>): Promise<RecordResponse>;
     getRecordsByValues(schemaName: string, tableName: string,
+      identifyingValues: Record<string, unknown>, paginationParams?: PaginationParams): Promise<RecordPageResponse>;
+    getViewRecordsByValues(schemaName: string, viewName: string,
       identifyingValues: Record<string, unknown>, paginationParams?: PaginationParams): Promise<RecordPageResponse>;
     updateRecordByValues(updateData: UpdateRecordByValuesDto): Promise<RecordsResponse>;
     deleteRecordByValues(deleteData: DeleteRecordByValuesDto): Promise<CountResponse>;
@@ -178,6 +178,8 @@ export interface ApiClient {
     updateRecordsByValues(updateData: BatchUpdateRecordsByValuesDto): Promise<RecordsResponse>;
     deleteRecordsByValues(deleteData: BatchDeleteRecordsByValuesDto): Promise<CountResponse>;
     advancedSearch(search: RecordAdvancedSearchDto): Promise<RecordAdvancedSearchResponseDto>;
+    advancedSearchView(search: RecordAdvancedSearchDto): Promise<RecordAdvancedSearchResponseDto>;
     getRecordCount(schemaName: string, tableName: string): Promise<CountResponse>;
+    getViewRecordCount(schemaName: string, viewName: string): Promise<CountResponse>;
   }
 }

@@ -112,7 +112,7 @@ export interface RecordSortCriteriaDto {
 
 export interface RecordAdvancedSearchDto {
     schemaName: string;
-    tableName: string;
+    objectName: string;
     page?: number;
     size?: number;
     sorts?: RecordSortCriteriaDto[];
@@ -132,7 +132,7 @@ export interface RecordAdvancedSearchResponseDto {
     pageSize: number;
     totalPages: number;
     schemaName: string;
-    tableName: string;
+    objectName: string;
 
     hasfilters: boolean;
     hasSort: boolean;

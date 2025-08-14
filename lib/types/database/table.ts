@@ -1,7 +1,7 @@
 import { ApiResponse } from "../index";
 import {
     SchemaMetadataDto,
-    BaseColumnMetadataDto,
+    BaseTableColumnMetadataDto,
     IndexMetadataDto,
     BaseNewColumnDto,
 } from "./index";
@@ -12,7 +12,7 @@ export interface TableMetadataDto {
     rowCount: number;
     sizeInBytes: number;
     schema: Omit<SchemaMetadataDto, "tables" | "views">;
-    columns: Omit<BaseColumnMetadataDto, "table">[];
+    columns: Omit<BaseTableColumnMetadataDto, "table">[];
     indexes: Omit<IndexMetadataDto, "table">[];
 }
 

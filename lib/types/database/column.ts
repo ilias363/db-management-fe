@@ -12,6 +12,9 @@ export interface BaseColumnMetadataDto {
     isUnique: boolean;
     autoIncrement: boolean;
     columnDefault?: string;
+}
+
+export interface BaseTableColumnMetadataDto extends BaseColumnMetadataDto {
     columnType: ColumnType;
     table: Omit<TableMetadataDto, 'columns' | 'indexes'>;
 }
