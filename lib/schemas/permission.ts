@@ -1,25 +1,33 @@
 import z from "zod";
 import { PermissionType } from "../types";
 
+const namePattern = /^[a-zA-Z][a-zA-Z0-9_]*$/
+
 export const permissionSchema = z.object({
     schemaName: z
         .string()
-        .regex(/^[a-zA-Z0-9_-]+$/,
-            { error: "Schema name can only contain letters, numbers, underscores, and hyphens" })
         .nullable()
-        .optional(),
+        .optional()
+        .refine(
+            (val) => !val || namePattern.test(val),
+            { message: "Schema name must start with a letter and contain only letters, numbers, and underscores" }
+        ),
     tableName: z
         .string()
-        .regex(/^[a-zA-Z0-9_-]+$/,
-            { error: "Table name can only contain letters, numbers, underscores, and hyphens" })
         .nullable()
-        .optional(),
+        .optional()
+        .refine(
+            (val) => !val || namePattern.test(val),
+            { message: "Table name must start with a letter and contain only letters, numbers, and underscores" }
+        ),
     viewName: z
         .string()
-        .regex(/^[a-zA-Z0-9_-]+$/,
-            { error: "View name can only contain letters, numbers, underscores, and hyphens" })
         .nullable()
-        .optional(),
+        .optional()
+        .refine(
+            (val) => !val || namePattern.test(val),
+            { message: "View name must start with a letter and contain only letters, numbers, and underscores" }
+        ),
     permissionType: z.enum(PermissionType, { error: "Invalid permission type" }),
 })
     .refine(
