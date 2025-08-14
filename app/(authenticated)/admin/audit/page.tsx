@@ -451,6 +451,7 @@ export default function AuditPage() {
             : ""
         }
         confirmText="Delete"
+        variant="destructive"
       />
     </div>
   );

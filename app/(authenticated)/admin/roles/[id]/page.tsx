@@ -350,6 +350,7 @@ export default function RoleDetailsPage() {
         onConfirm={handleDeleteRole}
         confirmText="Delete"
         cancelText="Cancel"
+        variant="destructive"
       />
     </div>
   );

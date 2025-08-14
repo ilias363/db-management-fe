@@ -265,6 +265,7 @@ export default function UsersPage() {
         }`}
         onConfirm={confirmToggleUserStatus}
         confirmText={userToToggle?.active ? "Deactivate" : "Activate"}
+        variant="destructive"
       />
     </div>
   );

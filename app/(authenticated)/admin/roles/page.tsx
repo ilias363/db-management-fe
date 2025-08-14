@@ -230,6 +230,7 @@ export default function RolesPage() {
         description={`Are you sure you want to delete the role "${roleToDelete?.name}"? This action cannot be undone and will remove all associated permissions.`}
         onConfirm={confirmDeleteRole}
         confirmText="Delete"
+        variant="destructive"
       />
     </div>
   );
