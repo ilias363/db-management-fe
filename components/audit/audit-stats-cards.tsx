@@ -19,7 +19,7 @@ export function AuditStatsCards({ stats }: AuditStatsCardsProps) {
       <StatsCard
         title="Failed Actions"
         value={stats.totalFailed}
-        description={`${stats.failedPercentage.toFixed(1)}% failure rate`}
+        description={`${stats.failedPercentage?.toFixed(1)}% failure rate`}
         icon={AlertTriangle}
         iconColor="text-red-500"
       />
@@ -34,7 +34,7 @@ export function AuditStatsCards({ stats }: AuditStatsCardsProps) {
 
       <StatsCard
         title="Avg Actions/Day"
-        value={Math.round(stats.averageActionsPerDay)}
+        value={stats.averageActionsPerDay && Math.round(stats.averageActionsPerDay)}
         description="Daily average"
         icon={Clock}
         iconColor="text-green-500"
