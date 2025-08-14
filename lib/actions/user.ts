@@ -6,8 +6,6 @@ import z from "zod";
 import { apiClient } from "../api-client";
 import type {
     UserDto,
-    NewUserDto,
-    UpdateUserDto,
     PaginationParams,
     UserPageDto,
     UserStats,
@@ -16,7 +14,7 @@ import type {
     RoleDto
 } from "../types";
 import { HttpError } from "../errors";
-import { createUserSchema, updateUserSchema } from "../schemas";
+import { CreateUserFormData, createUserSchema, UpdateUserFormData, updateUserSchema } from "../schemas";
 import { withAdminAuth } from "./auth-utils";
 
 export interface UsersDataParams extends PaginationParams {
@@ -94,19 +92,9 @@ export async function getUsersData(params: UsersDataParams = {}): Promise<UsersD
     return authAction(params);
 }
 
-export async function createUser(prevState: ActionState<UserDto> | undefined, formData: FormData): Promise<ActionState<UserDto>> {
-    const authAction = await withAdminAuth(async (prevState: ActionState<UserDto> | undefined, formData: FormData): Promise<ActionState<UserDto>> => {
-        const formObject = Object.fromEntries(formData);
-
-        const roleIds = formData.getAll("roleIds").map(id => parseInt(id as string, 10));
-        const userData: NewUserDto = {
-            username: formObject.username as string,
-            password: formObject.password as string,
-            roles: roleIds,
-            active: formObject.active === "true",
-        };
-
-        const result = createUserSchema.safeParse(userData);
+export async function createUser(prevState: ActionState<UserDto> | undefined, formData: CreateUserFormData): Promise<ActionState<UserDto>> {
+    const authAction = await withAdminAuth(async (prevState: ActionState<UserDto> | undefined, formData: CreateUserFormData): Promise<ActionState<UserDto>> => {
+        const result = createUserSchema.safeParse(formData);
 
         if (!result.success) {
             return {
@@ -121,7 +109,7 @@ export async function createUser(prevState: ActionState<UserDto> | undefined, fo
             if (!response.success) {
                 return {
                     success: false,
-                    errors: { general: response.message.split("\n") }
+                    errors: { root: response.message.split("\n") }
                 };
             }
 
@@ -135,13 +123,13 @@ export async function createUser(prevState: ActionState<UserDto> | undefined, fo
             if (error instanceof HttpError) {
                 return {
                     success: false,
-                    errors: { general: [error.message] }
+                    errors: { root: [error.message] }
                 };
             }
             console.error('Unexpected error during user creation:', error);
             return {
                 success: false,
-                errors: { general: ["An unexpected error occurred"] }
+                errors: { root: ["An unexpected error occurred"] }
             };
         }
     });
@@ -149,19 +137,9 @@ export async function createUser(prevState: ActionState<UserDto> | undefined, fo
     return authAction(prevState, formData);
 }
 
-export async function updateUser(prevState: ActionState<UserDto> | undefined, formData: FormData): Promise<ActionState<UserDto>> {
-    const authAction = await withAdminAuth(async (prevState: ActionState<UserDto> | undefined, formData: FormData): Promise<ActionState<UserDto>> => {
-        const formObject = Object.fromEntries(formData);
-
-        const roleIds = formData.getAll("roleIds");
-        const userData: UpdateUserDto = {
-            id: parseInt(formObject.id as string, 10),
-            username: formObject.username as string,
-            roles: roleIds.map(id => parseInt(id as string, 10)),
-            active: formObject.active === "true",
-        };
-
-        const result = updateUserSchema.safeParse(userData);
+export async function updateUser(prevState: ActionState<UserDto> | undefined, formData: UpdateUserFormData): Promise<ActionState<UserDto>> {
+    const authAction = await withAdminAuth(async (prevState: ActionState<UserDto> | undefined, formData: UpdateUserFormData): Promise<ActionState<UserDto>> => {
+        const result = updateUserSchema.safeParse(formData);
 
         if (!result.success) {
             return {
@@ -176,7 +154,7 @@ export async function updateUser(prevState: ActionState<UserDto> | undefined, fo
             if (!response.success) {
                 return {
                     success: false,
-                    errors: { general: response.message.split("\n") }
+                    errors: { root: response.message.split("\n") }
                 };
             }
 
@@ -189,13 +167,13 @@ export async function updateUser(prevState: ActionState<UserDto> | undefined, fo
             if (error instanceof HttpError) {
                 return {
                     success: false,
-                    errors: { general: [error.message] }
+                    errors: { root: [error.message] }
                 };
             }
             console.error('Unexpected error during user update:', error);
             return {
                 success: false,
-                errors: { general: ["An unexpected error occurred"] }
+                errors: { root: ["An unexpected error occurred"] }
             };
         }
     });
