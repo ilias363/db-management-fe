@@ -8,3 +8,4 @@ export * from "./use-table-form";
 export * from "./use-schema-form";
 export * from "./use-role-form";
 export * from "./use-user-form";
+export * from "./use-admin";
