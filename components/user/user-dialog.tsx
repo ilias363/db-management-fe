@@ -1,4 +1,6 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+"use client";
+
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -8,17 +10,24 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { toast } from "sonner";
 import type { UserDto, RoleDto } from "@/lib/types";
-import { useActionState } from "react";
-import { createUser, updateUser } from "@/lib/actions/user";
-import { ErrorMessage } from "@/components/common";
 import { ConfirmDialog } from "@/components/common";
-import { getStateFieldErrors, getStateGeneralErrors } from "@/lib/utils";
+import { useUserForm } from "@/lib/hooks";
+import { AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 
 interface UserDialogProps {
   open: boolean;
@@ -29,13 +38,6 @@ interface UserDialogProps {
   onSuccess: () => void;
 }
 
-interface FormData {
-  username: string;
-  password: string;
-  active: boolean;
-  selectedRoleIds: number[];
-}
-
 export function UserDialog({
   open,
   onOpenChange,
@@ -44,120 +46,40 @@ export function UserDialog({
   isCreateMode,
   onSuccess,
 }: UserDialogProps) {
-  const [formData, setFormData] = useState<FormData>({
-    username: "",
-    password: "",
-    active: true,
-    selectedRoleIds: [],
-  });
+  const [showDiscardDialog, setShowDiscardDialog] = useState(false);
 
-  const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
-  const [hasChanges, setHasChanges] = useState(false);
-  const usernameInputRef = useRef<HTMLInputElement>(null);
+  const { form, isPending, submitError, submitUser, resetForm, isDirty, errors } = useUserForm(
+    isCreateMode,
+    user || undefined,
+    () => {
+      onSuccess();
+      onOpenChange(false);
+    },
+    (error: string) => {
+      toast.error(error);
+    }
+  );
 
   const isSystemAdmin = user?.roles?.some(role => role.name.toUpperCase() === "ADMIN");
-  const actionFn = isCreateMode ? createUser : updateUser;
-  const [state, action, pending] = useActionState(actionFn, undefined);
 
-  const checkForChanges = useCallback(() => {
-    if (!user && isCreateMode) {
-      return (
-        formData.username !== "" ||
-        formData.password !== "" ||
-        formData.active !== true ||
-        formData.selectedRoleIds.length > 0
-      );
-    }
-
-    if (user && !isCreateMode) {
-      const currentRoleIds = user.roles?.map(r => r.id).sort() || [];
-      const selectedRoleIds = formData.selectedRoleIds.sort();
-
-      return (
-        formData.username !== user.username ||
-        formData.active !== user.active ||
-        JSON.stringify(currentRoleIds) !== JSON.stringify(selectedRoleIds)
-      );
-    }
-
-    return false;
-  }, [formData, user, isCreateMode]);
-
-  // Update hasChanges when form data changes
-  useEffect(() => {
-    setHasChanges(checkForChanges());
-  }, [checkForChanges]);
-
-  // Handle successful form submission
-  useEffect(() => {
-    if (state?.success) {
-      toast.success(state.message);
-      setHasChanges(false);
-      onOpenChange(false);
-      onSuccess();
-    }
-  }, [state, onOpenChange, onSuccess]);
-
-  // Initialize form data when dialog opens
   useEffect(() => {
     if (open) {
-      if (user && !isCreateMode) {
-        const initialData: FormData = {
-          username: user.username,
-          password: "",
-          active: user.active,
-          selectedRoleIds: user.roles?.map(r => r.id) || [],
-        };
-        setFormData(initialData);
-      } else {
-        const initialData: FormData = {
-          username: "",
-          password: "",
-          active: true,
-          selectedRoleIds: [],
-        };
-        setFormData(initialData);
-      }
-
-      setHasChanges(false);
-
-      // Auto-focus username input in create mode
-      if (isCreateMode) {
-        setTimeout(() => usernameInputRef.current?.focus(), 100);
-      }
+      resetForm();
     }
-  }, [user, isCreateMode, open]);
+  }, [open, resetForm]);
 
-  const getFieldErrors = useCallback((field: string) => getStateFieldErrors(field, state), [state]);
-
-  const getGeneralErrors = useCallback(() => getStateGeneralErrors(state), [state]);
-
-  // Role selection handlers
-  const handleRoleChange = useCallback((roleId: number, checked: boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      selectedRoleIds: checked
-        ? [...prev.selectedRoleIds, roleId]
-        : prev.selectedRoleIds.filter(id => id !== roleId),
-    }));
-  }, []);
-
-  // Dialog close handler with unsaved changes check
-  const handleClose = useCallback(() => {
-    if (hasChanges) {
-      setShowUnsavedWarning(true);
+  const handleClose = () => {
+    if (isDirty && !isPending) {
+      setShowDiscardDialog(true);
     } else {
       onOpenChange(false);
-      if (state?.errors) state.errors = undefined;
     }
-  }, [hasChanges, onOpenChange, state]);
+  };
 
-  const handleForceClose = useCallback(() => {
-    setShowUnsavedWarning(false);
-    setHasChanges(false);
+  const handleDiscardChanges = () => {
+    setShowDiscardDialog(false);
     onOpenChange(false);
-    if (state?.errors) state.errors = undefined;
-  }, [onOpenChange, state]);
+  };
 
   return (
     <>
@@ -174,158 +96,189 @@ export function UserDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <form action={action} className="flex flex-col flex-1 min-h-0">
-            <div className="flex-1 overflow-y-auto space-y-6 pr-2">
-              {getGeneralErrors() && <ErrorMessage error={getGeneralErrors()} />}
-
-              <div className="grid gap-4">
-                {!isCreateMode && user && (
-                  <Input id="id" name="id" defaultValue={user.id.toString()} hidden />
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(submitUser)} className="flex flex-col flex-1 min-h-0">
+              <div className="flex-1 overflow-y-auto space-y-6 pr-2">
+                {(errors.root?.message || submitError) && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{errors.root?.message || submitError}</AlertDescription>
+                  </Alert>
                 )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="username">Username *</Label>
-                  <Input
-                    ref={usernameInputRef}
-                    id="username"
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
                     name="username"
-                    value={formData.username}
-                    onChange={e => setFormData(prev => ({ ...prev, username: e.target.value }))}
-                    placeholder="Enter username"
-                    required
-                    disabled={isSystemAdmin}
-                    className={getFieldErrors("username") ? "border-red-500" : ""}
-                  />
-                  {getFieldErrors("username") && (
-                    <ErrorMessage error={getFieldErrors("username")} />
-                  )}
-                  {isSystemAdmin && (
-                    <p className="text-xs text-muted-foreground">
-                      System admin username cannot be modified
-                    </p>
-                  )}
-                </div>
-
-                {isCreateMode && (
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Password *</Label>
-                    <Input
-                      id="password"
-                      name="password"
-                      type="password"
-                      value={formData.password}
-                      onChange={e => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                      placeholder="Enter password"
-                      required
-                      className={getFieldErrors("password") ? "border-red-500" : ""}
-                    />
-                    {getFieldErrors("password") && (
-                      <ErrorMessage error={getFieldErrors("password")} />
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Username *</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Enter username"
+                            {...field}
+                            disabled={isPending || isSystemAdmin}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          {isSystemAdmin
+                            ? "System admin username cannot be modified"
+                            : "Username must be 3-20 characters and contain only letters, numbers, underscores, and hyphens"}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
                     )}
-                  </div>
-                )}
-
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="active"
-                    name="active"
-                    checked={formData.active}
-                    onCheckedChange={checked =>
-                      setFormData(prev => ({ ...prev, active: !!checked }))
-                    }
-                    value="true"
-                    disabled={isSystemAdmin}
                   />
-                  <Label htmlFor="active">Active User</Label>
-                  {isSystemAdmin && (
-                    <span className="text-xs text-muted-foreground ml-2">
-                      (System admin status cannot be changed)
-                    </span>
+
+                  {isCreateMode && (
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Password *</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="password"
+                              placeholder="Enter password"
+                              {...field}
+                              disabled={isPending}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Password must be at least 8 characters long
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   )}
+
+                  <FormField
+                    control={form.control}
+                    name="active"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            disabled={isPending || isSystemAdmin}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>Active User</FormLabel>
+                          <FormDescription>
+                            {isSystemAdmin
+                              ? "System admin status cannot be changed"
+                              : "Inactive users cannot log into the system"}
+                          </FormDescription>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
                 </div>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Role Assignment</CardTitle>
+                    <CardDescription>
+                      Select the roles to assign to this user. Roles determine what actions the user
+                      can perform.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <FormField
+                      control={form.control}
+                      name="roles"
+                      render={() => (
+                        <FormItem>
+                          <div className="grid gap-2">
+                            {roles
+                              .sort((r1, r2) => r1.id - r2.id)
+                              .map(role => {
+                                const isSystemRole =
+                                  role.name.toUpperCase() === "ADMIN" ||
+                                  role.name.toUpperCase() === "VIEWER";
+                                const isCurrentlyAdmin =
+                                  role.name.toUpperCase() === "ADMIN" && isSystemAdmin;
+
+                                return (
+                                  <FormField
+                                    key={role.id}
+                                    control={form.control}
+                                    name="roles"
+                                    render={({ field }) => {
+                                      const isSelected = field.value?.includes(role.id) || false;
+                                      return (
+                                        <FormItem
+                                          key={role.id}
+                                          className="flex flex-row items-start space-x-3 space-y-0 p-2 border rounded-lg"
+                                        >
+                                          <FormControl>
+                                            <Checkbox
+                                              checked={isSelected}
+                                              onCheckedChange={checked => {
+                                                const updatedRoles = checked
+                                                  ? [...(field.value || []), role.id]
+                                                  : (field.value || []).filter(
+                                                      value => value !== role.id
+                                                    );
+                                                field.onChange(updatedRoles);
+                                              }}
+                                              disabled={isPending || isCurrentlyAdmin}
+                                            />
+                                          </FormControl>
+                                          <div className="grid gap-1.5 leading-none flex-1">
+                                            <FormLabel className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2">
+                                              {role.name}
+                                              {isSystemRole && (
+                                                <span className="text-xs bg-muted px-2 py-1 rounded-full">
+                                                  System Role
+                                                </span>
+                                              )}
+                                            </FormLabel>
+                                            <FormDescription className="text-xs">
+                                              {role.description || "No description"}
+                                            </FormDescription>
+                                          </div>
+                                        </FormItem>
+                                      );
+                                    }}
+                                  />
+                                );
+                              })}
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </CardContent>
+                </Card>
               </div>
 
-              {/* Hidden inputs for form submission */}
-              {formData.selectedRoleIds.map(roleId => (
-                <input key={roleId} type="hidden" name="roleIds" value={roleId} />
-              ))}
-
-              <Card className="py-3">
-                <CardHeader>
-                  <CardTitle className="text-lg">Role Assignment</CardTitle>
-                  <CardDescription>
-                    Select the roles to assign to this user. Roles determine what actions the user
-                    can perform.
-                  </CardDescription>
-                  {getFieldErrors("roles") && <ErrorMessage error={getFieldErrors("roles")} />}
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-2">
-                    {roles
-                      .sort((r1, r2) => r1.id - r2.id)
-                      .map(role => {
-                        const isSystemRole =
-                          role.name.toUpperCase() === "ADMIN" ||
-                          role.name.toUpperCase() === "VIEWER";
-                        const isCurrentlyAdmin =
-                          role.name.toUpperCase() === "ADMIN" && isSystemAdmin;
-                        const isSelected = formData.selectedRoleIds.includes(role.id);
-
-                        return (
-                          <div
-                            key={role.id}
-                            className="flex items-center space-x-3 p-2 border rounded-lg"
-                          >
-                            <Checkbox
-                              id={`role-${role.id}`}
-                              checked={isSelected}
-                              onCheckedChange={checked => handleRoleChange(role.id, !!checked)}
-                              disabled={isCurrentlyAdmin}
-                            />
-                            <div className="grid gap-1.5 leading-none flex-1">
-                              <label
-                                htmlFor={`role-${role.id}`}
-                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2"
-                              >
-                                {role.name}
-                                {isSystemRole && (
-                                  <span className="text-xs bg-muted px-2 py-1 rounded-full">
-                                    System Role
-                                  </span>
-                                )}
-                              </label>
-                              <p className="text-xs text-muted-foreground">
-                                {role.description || "No description"}
-                              </p>
-                            </div>
-                          </div>
-                        );
-                      })}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            <DialogFooter className="gap-2 flex-shrink-0 border-t pt-4 mt-4">
-              <Button type="button" variant="outline" onClick={handleClose} disabled={pending}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={pending}>
-                {pending ? "Saving..." : isCreateMode ? "Create User" : "Save Changes"}
-              </Button>
-            </DialogFooter>
-          </form>
+              <DialogFooter className="gap-2 flex-shrink-0 border-t pt-4 mt-4">
+                <Button type="button" variant="outline" onClick={handleClose} disabled={isPending}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isPending}>
+                  {isPending ? "Saving..." : isCreateMode ? "Create User" : "Save Changes"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
         </DialogContent>
       </Dialog>
 
       <ConfirmDialog
         title="Unsaved Changes"
         description="You have unsaved changes. Are you sure you want to close this dialog? All changes will be lost."
-        open={showUnsavedWarning}
-        onOpenChange={setShowUnsavedWarning}
-        onConfirm={handleForceClose}
+        open={showDiscardDialog}
+        onOpenChange={setShowDiscardDialog}
+        onConfirm={handleDiscardChanges}
         confirmText="Discard Changes"
         cancelText="Continue Editing"
+        variant="destructive"
       />
     </>
   );
