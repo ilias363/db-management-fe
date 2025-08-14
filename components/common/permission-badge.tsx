@@ -31,11 +31,11 @@ export function PermissionBadge({
     }
 
     if (permission.viewName && !permission.tableName) {
-      return `${permission.permissionType} on View: ${permission.schemaName}.${permission.tableName}`;
+      return `${permission.permissionType} on View: ${permission.schemaName}.${permission.viewName}`;
     }
 
     // fallback for cases where both table and view are present (should not happen)
-    return `${permission.permissionType}}`;
+    return `${permission.permissionType}`;
   };
 
   return (
