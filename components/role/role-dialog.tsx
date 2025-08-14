@@ -23,7 +23,7 @@ import { ErrorMessage } from "@/components/common";
 import { PermissionForm } from "@/components/common";
 import { ConfirmDialog } from "@/components/common";
 import { PermissionBadge } from "@/components/common";
-import { useRoleForm } from "@/lib/hooks/use-role-form";
+import { useRoleForm } from "@/lib/hooks";
 
 interface RoleDialogProps {
   open: boolean;
