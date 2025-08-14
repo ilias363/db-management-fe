@@ -11,11 +11,10 @@ import type {
     PaginationParams,
     RolePageDto,
     RoleStats,
-    PermissionDetailDto,
     ActionState
 } from "@/lib/types";
 import { HttpError } from "../errors";
-import { createRoleSchema, updateRoleSchema } from "../schemas";
+import { CreateRoleFormData, createRoleSchema, UpdateRoleFormData, updateRoleSchema } from "../schemas";
 import { withAdminAuth } from "./auth-utils";
 
 export interface DeleteRoleResponse {
@@ -186,27 +185,9 @@ export async function getUsersByRole(roleId: number, params: PaginationParams = 
     return authAction(roleId, params);
 }
 
-export async function createRole(prevState: ActionState<RoleDto> | undefined, formData: FormData): Promise<ActionState<RoleDto>> {
-    const authAction = await withAdminAuth(async (prevState: ActionState<RoleDto> | undefined, formData: FormData): Promise<ActionState<RoleDto>> => {
-        const formObject = Object.fromEntries(formData);
-
-        const permissions = formData.getAll("permissions").map((perm) => {
-            const parsed = JSON.parse(perm as string);
-            return {
-                schemaName: parsed.schemaName || null,
-                tableName: parsed.tableName || null,
-                viewName: parsed.viewName || null,
-                permissionType: parsed.permissionType,
-            } as PermissionDetailDto;
-        });
-
-        const roleData: NewRoleDto = {
-            name: formObject.name as string,
-            description: formObject.description as string,
-            permissions: permissions,
-        };
-
-        const result = createRoleSchema.safeParse(roleData);
+export async function createRole(prevState: ActionState<RoleDto> | undefined, formData: CreateRoleFormData): Promise<ActionState<RoleDto>> {
+    const authAction = await withAdminAuth(async (prevState: ActionState<RoleDto> | undefined, formData: CreateRoleFormData): Promise<ActionState<RoleDto>> => {
+        const result = createRoleSchema.safeParse(formData);
 
         if (!result.success) {
             return {
@@ -232,7 +213,7 @@ export async function createRole(prevState: ActionState<RoleDto> | undefined, fo
             if (!response.success) {
                 return {
                     success: false,
-                    errors: { general: response.message.split("\n") }
+                    errors: { root: response.message.split("\n") }
                 };
             }
 
@@ -246,13 +227,13 @@ export async function createRole(prevState: ActionState<RoleDto> | undefined, fo
             if (error instanceof HttpError) {
                 return {
                     success: false,
-                    errors: { general: [error.message] }
+                    errors: { root: [error.message] }
                 };
             }
             console.error('Unexpected error during role creation:', error);
             return {
                 success: false,
-                errors: { general: ["An unexpected error occurred"] }
+                errors: { root: ["An unexpected error occurred"] }
             };
         }
     });
@@ -260,28 +241,9 @@ export async function createRole(prevState: ActionState<RoleDto> | undefined, fo
     return authAction(prevState, formData);
 }
 
-export async function updateRole(prevState: ActionState<RoleDto> | undefined, formData: FormData): Promise<ActionState<RoleDto>> {
-    const authAction = await withAdminAuth(async (prevState: ActionState<RoleDto> | undefined, formData: FormData): Promise<ActionState<RoleDto>> => {
-        const formObject = Object.fromEntries(formData);
-
-        const permissions = formData.getAll("permissions").map((perm) => {
-            const parsed = JSON.parse(perm as string);
-            return {
-                schemaName: parsed.schemaName || null,
-                tableName: parsed.tableName || null,
-                viewName: parsed.viewName || null,
-                permissionType: parsed.permissionType,
-            } as PermissionDetailDto;
-        });
-
-        const roleData: UpdateRoleDto = {
-            id: parseInt(formObject.id as string, 10),
-            name: formObject.name as string,
-            description: formObject.description as string,
-            permissions: permissions,
-        };
-
-        const result = updateRoleSchema.safeParse(roleData);
+export async function updateRole(prevState: ActionState<RoleDto> | undefined, formData: UpdateRoleFormData): Promise<ActionState<RoleDto>> {
+    const authAction = await withAdminAuth(async (prevState: ActionState<RoleDto> | undefined, formData: UpdateRoleFormData): Promise<ActionState<RoleDto>> => {
+        const result = updateRoleSchema.safeParse(formData);
 
         if (!result.success) {
             return {
@@ -307,7 +269,7 @@ export async function updateRole(prevState: ActionState<RoleDto> | undefined, fo
             if (!response.success) {
                 return {
                     success: false,
-                    errors: { general: response.message.split("\n") }
+                    errors: { root: response.message.split("\n") }
                 };
             }
 
@@ -321,13 +283,13 @@ export async function updateRole(prevState: ActionState<RoleDto> | undefined, fo
             if (error instanceof HttpError) {
                 return {
                     success: false,
-                    errors: { general: [error.message] }
+                    errors: { root: [error.message] }
                 };
             }
             console.error('Unexpected error during role update:', error);
             return {
                 success: false,
-                errors: { general: ["An unexpected error occurred"] }
+                errors: { root: ["An unexpected error occurred"] }
             };
         }
     });
