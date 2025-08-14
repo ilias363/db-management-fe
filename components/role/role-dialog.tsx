@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -19,11 +19,12 @@ import {
 } from "@/components/ui/form";
 import { toast } from "sonner";
 import type { RoleDto, PermissionDetailDto } from "@/lib/types";
-import { ErrorMessage } from "@/components/common";
 import { PermissionForm } from "@/components/common";
 import { ConfirmDialog } from "@/components/common";
 import { PermissionBadge } from "@/components/common";
 import { useRoleForm } from "@/lib/hooks";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 interface RoleDialogProps {
   open: boolean;
@@ -36,7 +37,7 @@ interface RoleDialogProps {
 export function RoleDialog({ open, onOpenChange, role, isCreateMode, onSuccess }: RoleDialogProps) {
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
 
-  const { form, isPending, submitError, submitRole, resetForm, isDirty } = useRoleForm(
+  const { form, isPending, submitError, submitRole, resetForm, isDirty, errors } = useRoleForm(
     isCreateMode,
     role || undefined,
     () => {
@@ -47,6 +48,12 @@ export function RoleDialog({ open, onOpenChange, role, isCreateMode, onSuccess }
       toast.error(error);
     }
   );
+
+  useEffect(() => {
+    if (open) {
+      resetForm();
+    }
+  }, [open, resetForm]);
 
   const handleAddPermission = (permission: PermissionDetailDto) => {
     const currentPermissions = form.getValues("permissions");
@@ -84,7 +91,7 @@ export function RoleDialog({ open, onOpenChange, role, isCreateMode, onSuccess }
   );
 
   const handleClose = () => {
-    if (isDirty) {
+    if (isDirty && !isPending) {
       setShowUnsavedWarning(true);
     } else {
       onOpenChange(false);
@@ -94,7 +101,6 @@ export function RoleDialog({ open, onOpenChange, role, isCreateMode, onSuccess }
   const handleForceClose = () => {
     setShowUnsavedWarning(false);
     onOpenChange(false);
-    resetForm();
   };
 
   return (
@@ -114,7 +120,12 @@ export function RoleDialog({ open, onOpenChange, role, isCreateMode, onSuccess }
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(submitRole)} className="space-y-6">
-              {submitError && <ErrorMessage error={submitError} />}
+              {(errors.root?.message || submitError) && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{errors.root?.message || submitError}</AlertDescription>
+                </Alert>
+              )}
 
               <div className="grid gap-4">
                 <FormField

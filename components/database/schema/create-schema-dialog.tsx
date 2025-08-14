@@ -20,9 +20,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "sonner";
-import { ErrorMessage } from "@/components/common";
 import { ConfirmDialog } from "@/components/common";
 import { useCreateSchemaForm } from "@/lib/hooks";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 interface SchemaDialogProps {
   open: boolean;
@@ -33,15 +34,16 @@ interface SchemaDialogProps {
 export function CreateSchemaDialog({ open, onOpenChange, onSuccess }: SchemaDialogProps) {
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
 
-  const { form, isPending, submitError, submitSchema, resetForm, isDirty } = useCreateSchemaForm(
-    () => {
-      onOpenChange(false);
-      onSuccess();
-    },
-    (error: string) => {
-      toast.error(error);
-    }
-  );
+  const { form, isPending, submitError, submitSchema, resetForm, isDirty, errors } =
+    useCreateSchemaForm(
+      () => {
+        onOpenChange(false);
+        onSuccess();
+      },
+      (error: string) => {
+        toast.error(error);
+      }
+    );
 
   useEffect(() => {
     if (open) {
@@ -60,7 +62,6 @@ export function CreateSchemaDialog({ open, onOpenChange, onSuccess }: SchemaDial
   const handleForceClose = () => {
     setShowUnsavedWarning(false);
     onOpenChange(false);
-    resetForm();
   };
 
   return (
@@ -76,7 +77,12 @@ export function CreateSchemaDialog({ open, onOpenChange, onSuccess }: SchemaDial
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(submitSchema)} className="space-y-6">
-              {submitError && <ErrorMessage error={submitError} />}
+              {(errors.root?.message || submitError) && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{errors.root?.message || submitError}</AlertDescription>
+                </Alert>
+              )}
 
               <div className="space-y-4">
                 <FormField
