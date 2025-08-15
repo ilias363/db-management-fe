@@ -1,44 +1,41 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useAuth } from "@/lib/stores/auth-store";
+import { useEffect } from "react";
+import { AuthProvider as AuthContextProvider, useAuth } from "@/lib/auth";
 import { LoadingScreen } from "@/components/common";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { usePathname, useRouter } from "next/navigation";
 
 interface AuthProviderProps {
   children: React.ReactNode;
 }
 
-export function AuthProvider({ children }: AuthProviderProps) {
-  const { initializeAuth, isInitialized, user, hasAttemptedAuth, isLoading, refreshAuth } =
-    useAuth();
+function AuthWrapper({ children }: AuthProviderProps) {
+  const { user, isLoading } = useAuth();
   const router = useRouter();
-  const [isInitializing, setIsInitializing] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
-    if (!isInitialized) {
-      setIsInitializing(true);
-      initializeAuth().finally(() => setIsInitializing(false));
-    } else if (!user && !hasAttemptedAuth) {
-      refreshAuth();
+    if (!isLoading && !user && pathname !== "/login") {
+      const callbackUrl = pathname !== "/" ? `?callbackUrl=${encodeURIComponent(pathname)}` : "";
+      router.push(`/login${callbackUrl}`);
     }
-  }, [initializeAuth, isInitialized, user, hasAttemptedAuth, refreshAuth]);
+  }, [isLoading, user, router, pathname]);
 
-  if (isInitializing || isLoading) {
-    return <LoadingScreen message="Refreshing user authentication..." />;
+  if (isLoading) {
+    return <LoadingScreen message="Loading user data..." />;
   }
 
-  if (isInitialized && !user && hasAttemptedAuth) {
-    toast.error("An error occurred while fetching user data. Please log in again.");
-
-    router.push("/login");
-    return null;
+  if (!user) {
+    return <LoadingScreen message="Redirecting to login..." />;
   }
 
-  if (user) {
-    return <>{children}</>;
-  }
+  return <>{children}</>;
+}
 
-  return <LoadingScreen message="Loading user data..." />;
+export function AuthProvider({ children }: AuthProviderProps) {
+  return (
+    <AuthContextProvider>
+      <AuthWrapper>{children}</AuthWrapper>
+    </AuthContextProvider>
+  );
 }
