@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { loginSchema } from "@/lib/schemas";
-import { createSession, deleteSession, getSession, updateSession } from "./session";
+import { createSession, deleteSession, getSession, updateSession, type SessionData } from "./session";
 import type { UserDto, UserPermissions, DetailedPermissions } from "@/lib/types";
 import { apiClient } from "../api-client";
 
@@ -135,28 +135,55 @@ export async function getIsSystemAdmin(): Promise<boolean> {
     }
 }
 
-async function validateAndRefreshSession() {
-    const session = await getSession();
-    if (!session) return null;
+interface SessionValidationResult {
+    session: SessionData | null;
+    needsRefresh: boolean;
+    needsRedirect: boolean;
+}
 
-    // Check if access token is expired
-    const now = Date.now() + 1000; // Add 1 second buffer
-    if (now < session.accessTokenExpiry) {
-        return session;
+async function checkSessionStatus(): Promise<SessionValidationResult> {
+    const session = await getSession();
+    if (!session) {
+        return { session: null, needsRefresh: false, needsRedirect: true };
     }
 
-    // Check if refresh token is expired
-    if (now >= session.refreshTokenExpiry) {
-        await deleteSession();
+    try {
+        const response = await apiClient.auth.validateToken(session.accessToken);
+        if (response.success && response.data?.isValid) {
+            return { session, needsRefresh: false, needsRedirect: false };
+        }
+    } catch { }
+
+    // Access token is invalid but refresh token is still valid
+    return { session, needsRefresh: true, needsRedirect: false };
+}
+
+async function validateAndRefreshSession() {
+    const status = await checkSessionStatus();
+
+    if (status.needsRedirect) {
+        try {
+            await deleteSession();
+        } catch (error) {
+            console.error("Failed to delete session:", error);
+        }
         return null;
+    }
+
+    if (!status.needsRefresh) {
+        return status.session;
     }
 
     // Try to refresh the token
     try {
-        const response = await apiClient.auth.refreshToken(session.refreshToken);
+        const response = await apiClient.auth.refreshToken(status.session!.refreshToken);
 
         if (!response.success || !response.data) {
-            await deleteSession();
+            try {
+                await deleteSession();
+            } catch (error) {
+                console.error("Failed to delete session:", error);
+            }
             return null;
         }
 
@@ -170,7 +197,11 @@ async function validateAndRefreshSession() {
         return updatedSession;
     } catch (error) {
         console.error("Failed to refresh token:", error);
-        await deleteSession();
+        try {
+            await deleteSession();
+        } catch (deleteError) {
+            console.error("Failed to delete session:", deleteError);
+        }
         return null;
     }
 }
