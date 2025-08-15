@@ -1,5 +1,5 @@
 export * from "./session";
-export * from "./index";
+export * from "./actions";
 export * from "./utils";
 export * from "./auth-context";
 export * from "./hooks";

@@ -1,6 +1,6 @@
 import AdminDashboard from "@/components/layout/admin-dashboard";
 import UserDashboard from "@/components/layout/user-dashboard";
-import { getIsSystemAdmin } from "@/lib/actions";
+import { getIsSystemAdmin } from "@/lib/auth";
 
 export default async function Dashboard() {
   let isAdmin;
