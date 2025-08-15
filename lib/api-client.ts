@@ -28,7 +28,7 @@ import type {
   RoleStatsResponse,
   ActionType,
   RolesResponse,
-} from "./types"
+} from "./types";
 import type {
   DatabaseStatsResponse,
   DatabaseTypeResponse,
@@ -38,43 +38,56 @@ import type {
   TableResponse,
   TablesResponse,
   NewTableDto,
-  UpdateTableDto
+  UpdateTableDto,
 } from "./types/database";
-import { cookies } from "next/headers";
 import { HttpError } from "./errors";
 
 class ApiClientImpl implements ApiClient {
-  private baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api"
+  private baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
 
-  private async getAuthHeaders(): Promise<Record<string, string>> {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("access_token")?.value;
+  private async getAuthHeaders(accessToken?: string): Promise<Record<string, string>> {
+    if (accessToken) {
+      return {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      };
+    }
+
+    // If no access token is provided, fetch the session to get the token
+    const { getSession } = await import("./auth/session");
+    const session = await getSession();
+    const token = session?.accessToken;
 
     return {
       "Content-Type": "application/json",
-      ...(token && { "Authorization": `Bearer ${token}` }),
+      ...(token && { Authorization: `Bearer ${token}` }),
     };
   }
 
-  private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
-    const url = `${this.baseUrl}${endpoint}`
-    const authHeaders = await this.getAuthHeaders();
+  private async request<T>(
+    endpoint: string,
+    options?: RequestInit & { accessToken?: string }
+  ): Promise<T> {
+    const { accessToken, ...fetchOptions } = options || {};
+    const url = `${this.baseUrl}${endpoint}`;
+    const authHeaders = await this.getAuthHeaders(accessToken);
 
     const response = await fetch(url, {
+      credentials: "include",
+      ...fetchOptions,
       headers: {
         ...authHeaders,
-        ...options?.headers,
+        ...fetchOptions.headers,
       },
-      ...options,
-    })
+    });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: "An error occurred" }))
-      console.error(`API Error for ${url}:`, errorData)
-      throw new HttpError(response.status, errorData.message || `HTTP ${response.status}: ${response.statusText}`)
+      const errorData = await response.json().catch(() => ({ message: "An error occurred" }));
+      console.error(`API Error for ${url}:`, errorData);
+      throw new HttpError(response.status, errorData.message || `HTTP ${response.status}`);
     }
 
-    return response.json()
+    return response.json();
   }
 
   auth = {
@@ -82,59 +95,72 @@ class ApiClientImpl implements ApiClient {
       const response = await this.request<LoginResponse>("/auth/login", {
         method: "POST",
         body: JSON.stringify(credentials),
-      })
+      });
 
-      return response
+      return response;
     },
 
-    logout: async (): Promise<LogoutResponse> => {
-      const response = await this.request<LogoutResponse>("/auth/logout", { method: "POST" })
-      return response
+    logout: async (accessToken?: string): Promise<LogoutResponse> => {
+      const response = await this.request<LogoutResponse>("/auth/logout", { method: "POST", accessToken });
+      return response;
     },
 
     refreshToken: async (refreshToken: string): Promise<RefreshTokenResponse> => {
       const response = await this.request<RefreshTokenResponse>("/auth/refresh", {
         method: "POST",
         body: JSON.stringify({ refreshToken }),
-      })
-      return response
+      });
+      return response;
     },
 
-    validateToken: async (): Promise<ValidateTokenResponse> => {
-      const response = await this.request<ValidateTokenResponse>("/auth/validate")
-      return response
+    validateToken: async (accessToken?: string): Promise<ValidateTokenResponse> => {
+      const response = await this.request<ValidateTokenResponse>("/auth/validate", { accessToken });
+      return response;
     },
 
-    getCurrentUser: (): Promise<CurrentUserResponse> => this.request("/auth/current-user"),
+    getCurrentUser: (accessToken?: string): Promise<CurrentUserResponse> =>
+      this.request("/auth/current-user", { accessToken }),
 
-    getIsCurrentUserSystemAdmin: (): Promise<isSystemAdminResponse> =>
-      this.request("/auth/current-user/is-system-admin"),
+    getIsCurrentUserSystemAdmin: (accessToken?: string): Promise<isSystemAdminResponse> =>
+      this.request("/auth/current-user/is-system-admin", { accessToken }),
 
-    getCurrentUserPermissions: (): Promise<UserPermissionsResponse> => this.request("/auth/current-user/permissions"),
+    getCurrentUserPermissions: (accessToken?: string): Promise<UserPermissionsResponse> =>
+      this.request("/auth/current-user/permissions", { accessToken }),
 
-    getDetailedPermissions: (schemaName?: string, tableName?: string): Promise<DetailedPermissionsResponse> => {
-      const params = new URLSearchParams()
-      if (schemaName) params.append("schemaName", schemaName)
-      if (tableName) params.append("tableName", tableName)
-      const query = params.toString() ? `?${params.toString()}` : ""
-      return this.request(`/auth/current-user/detailed-permissions${query}`)
+    getDetailedPermissions: (
+      schemaName?: string,
+      tableName?: string,
+      accessToken?: string
+    ): Promise<DetailedPermissionsResponse> => {
+      const params = new URLSearchParams();
+      if (schemaName) params.append("schemaName", schemaName);
+      if (tableName) params.append("tableName", tableName);
+      const query = params.toString() ? `?${params.toString()}` : "";
+      return this.request(`/auth/current-user/detailed-permissions${query}`, { accessToken });
     },
-  }
+  };
 
   users = {
     getAllUsers: (params?: PaginationParams & { search?: string }): Promise<UserPageResponse> => {
-      const query = params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : ""
-      return this.request(`/users${query}`)
+      const query = params
+        ? `?${new URLSearchParams(params as Record<string, string>).toString()}`
+        : "";
+      return this.request(`/users${query}`);
     },
 
-    getAllActiveUsers: (params?: PaginationParams & { search?: string }): Promise<UserPageResponse> => {
-      const query = params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : ""
-      return this.request(`/users/active${query}`)
+    getAllActiveUsers: (
+      params?: PaginationParams & { search?: string }
+    ): Promise<UserPageResponse> => {
+      const query = params
+        ? `?${new URLSearchParams(params as Record<string, string>).toString()}`
+        : "";
+      return this.request(`/users/active${query}`);
     },
 
     getUserById: (id: number): Promise<UserResponse> => this.request(`/users/${id}`),
 
-    getUserByUsername: (username: string): Promise<UserResponse> => this.request(`/users/username/${username}`),
+    getUserByUsername: (username: string): Promise<UserResponse> =>
+      this.request(`/users/username/${username}`),
 
     createUser: (user: NewUserDto): Promise<UserResponse> =>
       this.request("/users", {
@@ -148,26 +174,34 @@ class ApiClientImpl implements ApiClient {
         body: JSON.stringify(user),
       }),
 
-    deactivateUser: (id: number): Promise<VoidResponse> => this.request(`/users/${id}/deactivate`, { method: "PUT" }),
+    deactivateUser: (id: number): Promise<VoidResponse> =>
+      this.request(`/users/${id}/deactivate`, { method: "PUT" }),
 
-    activateUser: (id: number): Promise<VoidResponse> => this.request(`/users/${id}/activate`, { method: "PUT" }),
+    activateUser: (id: number): Promise<VoidResponse> =>
+      this.request(`/users/${id}/activate`, { method: "PUT" }),
 
     getUserStats: (): Promise<UserStatsResponse> => this.request("/users/stats"),
-  }
+  };
 
   roles = {
     getAllRoles: () => this.request<RolesResponse>("/roles/all"),
 
-    getAllRolesPaginated: (params?: PaginationParams & { search?: string }): Promise<RolePageResponse> => {
-      const query = params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : ""
-      return this.request(`/roles${query}`)
+    getAllRolesPaginated: (
+      params?: PaginationParams & { search?: string }
+    ): Promise<RolePageResponse> => {
+      const query = params
+        ? `?${new URLSearchParams(params as Record<string, string>).toString()}`
+        : "";
+      return this.request(`/roles${query}`);
     },
 
     getRoleById: (id: number): Promise<RoleResponse> => this.request(`/roles/${id}`),
 
     getUsersByRole: (roleId: number, params?: PaginationParams): Promise<UserPageResponse> => {
-      const query = params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : ""
-      return this.request(`/roles/${roleId}/users${query}`)
+      const query = params
+        ? `?${new URLSearchParams(params as Record<string, string>).toString()}`
+        : "";
+      return this.request(`/roles/${roleId}/users${query}`);
     },
 
     createRole: (role: NewRoleDto): Promise<RoleResponse> =>
@@ -182,41 +216,52 @@ class ApiClientImpl implements ApiClient {
         body: JSON.stringify(role),
       }),
 
-    deleteRole: (id: number): Promise<VoidResponse> => this.request(`/roles/${id}`, { method: "DELETE" }),
+    deleteRole: (id: number): Promise<VoidResponse> =>
+      this.request(`/roles/${id}`, { method: "DELETE" }),
 
     getRoleStats: (): Promise<RoleStatsResponse> => this.request("/roles/stats"),
-  }
+  };
 
   audit = {
-    getAuditLogs: (params?: PaginationParams & {
-      search?: string;
-      userId?: number;
-      actionType?: ActionType;
-      successful?: boolean;
-      after?: Date;
-      before?: Date;
-    }): Promise<AuditLogPageResponse> => {
-      const query = params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : ""
-      return this.request(`/audit-logs${query}`)
+    getAuditLogs: (
+      params?: PaginationParams & {
+        search?: string;
+        userId?: number;
+        actionType?: ActionType;
+        successful?: boolean;
+        after?: Date;
+        before?: Date;
+      }
+    ): Promise<AuditLogPageResponse> => {
+      const query = params
+        ? `?${new URLSearchParams(params as Record<string, string>).toString()}`
+        : "";
+      return this.request(`/audit-logs${query}`);
     },
 
-    getAuditLogsByUserId: (userId: number, params?: PaginationParams): Promise<AuditLogPageResponse> => {
-      const query = params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : ""
-      return this.request(`/audit-logs/user/${userId}${query}`)
+    getAuditLogsByUserId: (
+      userId: number,
+      params?: PaginationParams
+    ): Promise<AuditLogPageResponse> => {
+      const query = params
+        ? `?${new URLSearchParams(params as Record<string, string>).toString()}`
+        : "";
+      return this.request(`/audit-logs/user/${userId}${query}`);
     },
 
     getAuditLogById: (id: number): Promise<AuditLogResponse> => this.request(`/audit-logs/${id}`),
 
-    deleteAuditLog: (id: number): Promise<VoidResponse> => this.request(`/audit-logs/${id}`, { method: "DELETE" }),
+    deleteAuditLog: (id: number): Promise<VoidResponse> =>
+      this.request(`/audit-logs/${id}`, { method: "DELETE" }),
 
     getAuditStats: (): Promise<AuditStatsResponse> => this.request("/audit-logs/stats"),
-  }
+  };
 
   database = {
     getDatabaseType: (): Promise<DatabaseTypeResponse> => this.request("/database/type"),
-    getDatabaseStats: (includeSystem: boolean):
-      Promise<DatabaseStatsResponse> => this.request(`/database/stats?includeSystem=${includeSystem}`),
-  }
+    getDatabaseStats: (includeSystem: boolean): Promise<DatabaseStatsResponse> =>
+      this.request(`/database/stats?includeSystem=${includeSystem}`),
+  };
 
   schema = {
     getAllSchemas: (includeSystem: boolean): Promise<SchemasResponse> =>
@@ -230,7 +275,7 @@ class ApiClientImpl implements ApiClient {
       }),
     deleteSchema: (schemaName: string): Promise<VoidResponse> =>
       this.request(`/schemas/${schemaName}`, { method: "DELETE" }),
-  }
+  };
 
   table = {
     getTable: (schemaName: string, tableName: string): Promise<TableResponse> =>
@@ -248,17 +293,17 @@ class ApiClientImpl implements ApiClient {
         body: JSON.stringify(table),
       }),
     deleteTable: (schemaName: string, tableName: string, force?: boolean): Promise<VoidResponse> =>
-      this.request(`/tables/${schemaName}/${tableName}${force ? '?force=true' : ''}`, {
-        method: "DELETE"
+      this.request(`/tables/${schemaName}/${tableName}${force ? "?force=true" : ""}`, {
+        method: "DELETE",
       }),
-  }
+  };
 
   view = {
     getView: () => Promise.reject(new Error("Not implemented")),
     getAllViewsInSchema: () => Promise.reject(new Error("Not implemented")),
     renameView: () => Promise.reject(new Error("Not implemented")),
     deleteView: () => Promise.reject(new Error("Not implemented")),
-  }
+  };
 
   column = {
     getColumn: () => Promise.reject(new Error("Not implemented")),
@@ -275,14 +320,14 @@ class ApiClientImpl implements ApiClient {
     updateColumnDefault: () => Promise.reject(new Error("Not implemented")),
     updateColumnPrimaryKey: () => Promise.reject(new Error("Not implemented")),
     updateColumnForeignKey: () => Promise.reject(new Error("Not implemented")),
-  }
+  };
 
   index = {
     getindex: () => Promise.reject(new Error("Not implemented")),
     getIndexesForTable: () => Promise.reject(new Error("Not implemented")),
     createIndex: () => Promise.reject(new Error("Not implemented")),
     deleteIndex: () => Promise.reject(new Error("Not implemented")),
-  }
+  };
 
   record = {
     getRecords: () => Promise.reject(new Error("Not implemented")),
@@ -303,7 +348,7 @@ class ApiClientImpl implements ApiClient {
     advancedSearchView: () => Promise.reject(new Error("Not implemented")),
     getRecordCount: () => Promise.reject(new Error("Not implemented")),
     getViewRecordCount: () => Promise.reject(new Error("Not implemented")),
-  }
+  };
 }
 
-export const apiClient = new ApiClientImpl()
+export const apiClient = new ApiClientImpl();

@@ -73,12 +73,12 @@ import type {
 export interface ApiClient {
   auth: {
     login: (credentials: LoginRequestDto) => Promise<LoginResponse>
-    logout: () => Promise<LogoutResponse>
+    logout: (accessToken?: string) => Promise<LogoutResponse>
     refreshToken: (refreshToken: string) => Promise<RefreshTokenResponse>
-    validateToken: () => Promise<ValidateTokenResponse>
-    getCurrentUser: () => Promise<CurrentUserResponse>
-    getCurrentUserPermissions: () => Promise<UserPermissionsResponse>
-    getDetailedPermissions: (schemaName?: string, tableName?: string) => Promise<DetailedPermissionsResponse>
+    validateToken: (accessToken?: string) => Promise<ValidateTokenResponse>
+    getCurrentUser: (accessToken?: string) => Promise<CurrentUserResponse>
+    getCurrentUserPermissions: (accessToken?: string) => Promise<UserPermissionsResponse>
+    getDetailedPermissions: (schemaName?: string, tableName?: string, accessToken?: string) => Promise<DetailedPermissionsResponse>
   }
   users: {
     getAllUsers: (params?: PaginationParams & { search?: string }) => Promise<UserPageResponse>
