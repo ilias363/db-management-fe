@@ -1,7 +1,7 @@
 import { logoutAction } from '@/lib/auth/actions';
 import { NextResponse } from 'next/server';
 
-export async function GET() {
+export async function POST() {
     try {
         await logoutAction();
     } catch (error) {

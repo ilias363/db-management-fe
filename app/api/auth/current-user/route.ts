@@ -1,14 +1,18 @@
-import { logoutAction } from '@/lib/auth/actions';
+import { getCurrentUser } from '@/lib/auth/actions';
 import { NextResponse } from 'next/server';
 
-export async function POST() {
+export async function GET() {
     try {
-        await logoutAction();
-        return NextResponse.json({ success: true });
+        const currentUser = await getCurrentUser();
+
+        return NextResponse.json({
+            success: true,
+            data: currentUser
+        });
     } catch (error) {
-        console.error('Logout failed:', error);
+        console.error('Failed to check admin status:', error);
         return NextResponse.json(
-            { success: false, message: 'Logout failed' },
+            { success: false, message: 'Internal server error' },
             { status: 500 }
         );
     }
