@@ -1,9 +1,9 @@
-import { logout } from '@/lib/actions/auth';
+import { logoutAction } from '@/lib/auth/actions';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
     try {
-        await logout();
+        await logoutAction();
     } catch (error) {
         console.error('Logout failed:', error);
     }

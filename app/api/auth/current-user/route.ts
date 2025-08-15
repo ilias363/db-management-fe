@@ -1,25 +1,14 @@
+import { logoutAction } from '@/lib/auth/actions';
 import { NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/actions/auth';
 
-export async function GET() {
+export async function POST() {
     try {
-        const user = await getCurrentUser();
-
-        if (!user) {
-            return NextResponse.json(
-                { success: false, message: 'User not found' },
-                { status: 401 }
-            );
-        }
-
-        return NextResponse.json({
-            success: true,
-            data: user
-        });
+        await logoutAction();
+        return NextResponse.json({ success: true });
     } catch (error) {
-        console.error('Failed to get current user :', error);
+        console.error('Logout failed:', error);
         return NextResponse.json(
-            { success: false, message: 'Internal server error' },
+            { success: false, message: 'Logout failed' },
             { status: 500 }
         );
     }
