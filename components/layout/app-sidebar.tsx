@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/lib/stores/auth-store";
-import { useLogout } from "@/lib/hooks/use-logout";
+import { useAuth } from "@/lib/auth";
 import { ThemeToggle } from "@/components/theme";
 import {
   Sidebar,
@@ -101,10 +100,20 @@ const globalMenuItems: NavItem[] = [
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const { user } = useAuth();
-  const logout = useLogout();
-
+  const { user, isLoading, logout } = useAuth();
   const isAdmin = user?.roles?.some(role => role.name === "ADMIN");
+
+  if (isLoading || !user) {
+    return (
+      <Sidebar variant="inset" collapsible="icon">
+        <SidebarHeader className="border-b">
+          <div className="flex items-center justify-center p-4">
+            <div className="text-sm text-muted-foreground">Loading...</div>
+          </div>
+        </SidebarHeader>
+      </Sidebar>
+    );
+  }
 
   return (
     <Sidebar variant="inset" collapsible="icon">

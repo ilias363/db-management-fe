@@ -1,11 +1,16 @@
 "use client";
 
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAuth } from "@/lib/stores/auth-store";
+import { useAuth } from "@/lib/auth";
 import { Shield } from "lucide-react";
 
 export function PermissionAccessInfoCard() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+
+  if (isLoading || !user) {
+    return null;
+  }
+
   const isAdmin = user?.roles?.some(role => role.name === "ADMIN");
 
   return (
