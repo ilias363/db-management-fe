@@ -1,5 +1,10 @@
 import { queryOptions } from "@tanstack/react-query";
-import { getCurrentUser, getCurrentUserPermissions, getDetailedPermissions, getIsSystemAdmin } from "@/lib/actions/auth";
+import {
+    getCurrentUser,
+    getCurrentUserPermissions,
+    getDetailedPermissions,
+    getIsSystemAdmin,
+} from "@/lib/auth/actions";
 
 export const authQueries = {
     all: () => ["auth"] as const,
