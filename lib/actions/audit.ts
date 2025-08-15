@@ -9,7 +9,7 @@ import type {
     AuditStats,
 } from "../types";
 import { HttpError } from "../errors";
-import { withAdminAuth } from "./auth-utils";
+import { withAdminAuth } from "../auth";
 
 export interface AuditDataParams extends PaginationParams {
     search?: string;

@@ -1,7 +1,7 @@
 "use server";
 
 import { apiClient } from "@/lib/api-client";
-import { withAuth } from "../auth-utils";
+import { withAuth } from "@/lib/auth";
 import { DatabaseStats } from "@/lib/types/database";
 
 export async function getDatabaseStats(includeSystem: boolean): Promise<DatabaseStats | null> {

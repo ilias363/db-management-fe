@@ -15,7 +15,7 @@ import type {
 } from "@/lib/types";
 import { HttpError } from "../errors";
 import { CreateRoleFormData, createRoleSchema, UpdateRoleFormData, updateRoleSchema } from "../schemas";
-import { withAdminAuth } from "./auth-utils";
+import { withAdminAuth } from "../auth";
 
 export interface DeleteRoleResponse {
     success: boolean;

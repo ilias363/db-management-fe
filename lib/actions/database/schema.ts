@@ -1,7 +1,7 @@
 "use server";
 
 import { apiClient } from "@/lib/api-client";
-import { withAuth } from "../auth-utils";
+import { withAuth } from "@/lib/auth";
 import { SchemaListDto, SchemaMetadataDto } from "@/lib/types/database";
 import { ActionState } from "@/lib/types";
 import { CreateSchemaSchema, createSchemaSchema } from "@/lib/schemas/database";

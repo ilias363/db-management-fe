@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { TableListDto, TableMetadataDto, NewTableDto } from "@/lib/types/database";
 import { ActionState } from "@/lib/types";
-import { withAuth } from "../auth-utils";
+import { withAuth } from "@/lib/auth";
 import { apiClient } from "@/lib/api-client";
 import { CreateTableSchema, createTableSchema } from "@/lib/schemas/database";
 import { HttpError } from "@/lib/errors";

@@ -15,7 +15,7 @@ import type {
 } from "../types";
 import { HttpError } from "../errors";
 import { CreateUserFormData, createUserSchema, UpdateUserFormData, updateUserSchema } from "../schemas";
-import { withAdminAuth } from "./auth-utils";
+import { withAdminAuth } from "../auth";
 
 export interface UsersDataParams extends PaginationParams {
     search?: string;
