@@ -6,14 +6,12 @@ import { SchemaDetailsPageContent } from "@/components/database";
 export const dynamic = "force-dynamic";
 
 interface SchemaDetailsPageProps {
-  params: {
-    schemaName: string;
-  };
+  params: Promise<{ schemaName: string }>;
 }
 
 export default async function SchemaDetailsPage({ params }: SchemaDetailsPageProps) {
   const queryClient = getQueryClient();
-  const { schemaName } = params;
+  const { schemaName } = await params;
 
   // Always prefetch permissions first
   await queryClient.prefetchQuery(authQueries.permissionsQuery());
