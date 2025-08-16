@@ -26,8 +26,8 @@ import { formatBytes } from "@/lib/utils";
 import { LastUpdated } from "@/components/common/last-updated";
 import { ErrorMessage, StatsCard } from "@/components/common";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ColumnTable } from "./column-table";
-import { IndexTable } from "./index-table";
+import { ColumnTable } from "./table-column";
+import { IndexTable } from "./table-index";
 
 interface TableDetailsPageContentProps {
   schemaName: string;
