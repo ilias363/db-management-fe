@@ -29,6 +29,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ColumnTable } from "./table-column";
 import { IndexTable } from "./table-index";
 import { RenameTableDialog } from "./rename-table-dialog";
+import { DeleteTableDialog } from "./delete-table-dialog";
 import { TableMetadataDto } from "@/lib/types/database";
 
 interface TableDetailsPageContentProps {
@@ -40,6 +41,9 @@ export function TableDetailsPageContent({ schemaName, tableName }: TableDetailsP
   const router = useRouter();
 
   const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  const [disableTableFetch, setDisableTableFetch] = useState(false);
 
   const [fetchTrigger, setFetchTrigger] = useState(0);
   const prevFetchingRef = useRef(false);
@@ -54,7 +58,11 @@ export function TableDetailsPageContent({ schemaName, tableName }: TableDetailsP
     isFetching: tableFetching,
     refetch: refetchTable,
   } = useTable(schemaName, tableName, {
-    enabled: !!schemaName && !!tableName && detailedPerms?.granularPermissions.canRead,
+    enabled:
+      !!schemaName &&
+      !!tableName &&
+      detailedPerms?.granularPermissions.canRead &&
+      !disableTableFetch,
   });
 
   useEffect(() => {
@@ -74,7 +82,13 @@ export function TableDetailsPageContent({ schemaName, tableName }: TableDetailsP
   };
 
   const onRenameSuccess = async (table: TableMetadataDto) => {
+    setDisableTableFetch(true);
     router.replace(`/database/tables/${schemaName}/${table.tableName}`);
+  };
+
+  const onDeleteSuccess = () => {
+    setDisableTableFetch(true);
+    router.push(`/database/tables`);
   };
 
   if (!canViewTable && !isLoading) {
@@ -268,7 +282,7 @@ export function TableDetailsPageContent({ schemaName, tableName }: TableDetailsP
             <Button
               variant="destructive"
               size="sm"
-              onClick={() => toast.info("To be implemented")}
+              onClick={() => setIsDeleteDialogOpen(true)}
               className="gap-2"
             >
               <Trash2 className="h-4 w-4" />
@@ -346,6 +360,13 @@ export function TableDetailsPageContent({ schemaName, tableName }: TableDetailsP
         open={isRenameDialogOpen}
         onOpenChange={setIsRenameDialogOpen}
         onSuccess={onRenameSuccess}
+      />
+
+      <DeleteTableDialog
+        table={table}
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onSuccess={onDeleteSuccess}
       />
     </div>
   );
