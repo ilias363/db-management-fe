@@ -116,7 +116,7 @@ export function useCreateTableForm({ onSuccess, onError }: UseCreateTableProps =
 }
 
 interface UseRenameTableProps {
-    onSuccess?: (table?: TableMetadataDto) => void;
+    onSuccess?: (table: TableMetadataDto) => void;
     onError?: (error: string) => void;
     table: TableMetadataDto;
 }
@@ -130,7 +130,7 @@ export function useRenameTableForm({ onSuccess, onError, table }: UseRenameTable
         defaultValues: {
             schemaName: table.schema.schemaName,
             tableName: table.tableName,
-            updatedTableName: "",
+            updatedTableName: table.tableName,
         },
         mode: "onChange",
     });
@@ -139,7 +139,7 @@ export function useRenameTableForm({ onSuccess, onError, table }: UseRenameTable
         form.reset({
             schemaName: table.schema.schemaName,
             tableName: table.tableName,
-            updatedTableName: "",
+            updatedTableName: table.tableName,
         });
         setSubmitError(null);
         form.clearErrors();
@@ -154,7 +154,7 @@ export function useRenameTableForm({ onSuccess, onError, table }: UseRenameTable
                 try {
                     const result = await renameTable(undefined, data);
 
-                    if (result.success) {
+                    if (result.success && result.data) {
                         toast.success(result.message || "Table renamed successfully");
                         onSuccess?.(result.data);
                         resetForm();

@@ -149,11 +149,10 @@ export async function renameTable(
 
             revalidatePath(`/database/tables`);
             revalidatePath(`/database/schemas/${formData.schemaName}`);
-            revalidatePath(`/database/tables/${formData.schemaName}/${formData.tableName}`);
 
             return {
                 success: true,
-                message: `Table renamed from "${formData.tableName}" to "${formData.updatedTableName}" successfully`,
+                message: `Table renamed successfully`,
                 data: response.data,
             };
         } catch (error) {

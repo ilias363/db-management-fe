@@ -28,6 +28,8 @@ import { ErrorMessage, StatsCard } from "@/components/common";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ColumnTable } from "./table-column";
 import { IndexTable } from "./table-index";
+import { RenameTableDialog } from "./rename-table-dialog";
+import { TableMetadataDto } from "@/lib/types/database";
 
 interface TableDetailsPageContentProps {
   schemaName: string;
@@ -36,6 +38,9 @@ interface TableDetailsPageContentProps {
 
 export function TableDetailsPageContent({ schemaName, tableName }: TableDetailsPageContentProps) {
   const router = useRouter();
+
+  const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
+
   const [fetchTrigger, setFetchTrigger] = useState(0);
   const prevFetchingRef = useRef(false);
 
@@ -66,6 +71,10 @@ export function TableDetailsPageContent({ schemaName, tableName }: TableDetailsP
 
   const handleRefresh = async () => {
     await refetchTable();
+  };
+
+  const onRenameSuccess = async (table: TableMetadataDto) => {
+    router.replace(`/database/tables/${schemaName}/${table.tableName}`);
   };
 
   if (!canViewTable && !isLoading) {
@@ -195,7 +204,7 @@ export function TableDetailsPageContent({ schemaName, tableName }: TableDetailsP
             <ErrorMessage
               error={
                 error?.message ||
-                "The schema could not be found or you don't have permission to view it."
+                "The schema or the table could not be found or you don't have permission to view it."
               }
             />
             <div className="mt-4 space-x-2">
@@ -248,7 +257,7 @@ export function TableDetailsPageContent({ schemaName, tableName }: TableDetailsP
             <Button
               variant="outline"
               size="sm"
-              onClick={() => toast.info("To be implemented")}
+              onClick={() => setIsRenameDialogOpen(true)}
               className="gap-2"
             >
               <Edit className="h-4 w-4" />
@@ -331,6 +340,13 @@ export function TableDetailsPageContent({ schemaName, tableName }: TableDetailsP
           <IndexTable table={table} canDelete={canDeleteTable} />
         </CardContent>
       </Card>
+
+      <RenameTableDialog
+        table={table}
+        open={isRenameDialogOpen}
+        onOpenChange={setIsRenameDialogOpen}
+        onSuccess={onRenameSuccess}
+      />
     </div>
   );
 }
