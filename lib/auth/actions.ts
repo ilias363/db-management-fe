@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { loginSchema } from "@/lib/schemas";
 import { createSession, deleteSession, getSession, updateSession, type SessionData } from "./session";
 import type { UserDto, UserPermissions, DetailedPermissions } from "@/lib/types";
@@ -206,10 +207,25 @@ async function validateAndRefreshSession() {
     }
 }
 
+async function getCurrentCallbackUrl(): Promise<string> {
+    try {
+        const headersList = await headers();
+        const referer = headersList.get('referer');
+
+        if (referer) {
+            const refererUrl = new URL(referer);
+            return refererUrl.pathname !== '/' ? refererUrl.pathname : '';
+        }
+    } catch { }
+    return '';
+}
+
 export async function requireAuth() {
     const session = await validateAndRefreshSession();
     if (!session) {
-        redirect("/login?expired=true");
+        const callbackUrl = await getCurrentCallbackUrl();
+        const loginUrl = callbackUrl ? `/login?expired=true&callbackUrl=${encodeURIComponent(callbackUrl)}` : "/login?expired=true";
+        redirect(loginUrl);
     }
     return session;
 }
