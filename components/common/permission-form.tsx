@@ -1,3 +1,5 @@
+"use client";
+
 import { PermissionDetailDto, PermissionType } from "@/lib/types";
 import { Plus } from "lucide-react";
 import { useCallback } from "react";
