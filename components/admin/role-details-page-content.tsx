@@ -20,6 +20,8 @@ import { useRoleDetail, useRoleUsers } from "@/lib/hooks";
 import { ErrorMessage } from "@/components/common";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
+import { useQueryClient } from "@tanstack/react-query";
+import { roleQueries } from "@/lib/queries";
 
 interface RoleDetailsPageContentProps {
   roleId: number;
@@ -38,6 +40,8 @@ export function RoleDetailsPageContent({ roleId }: RoleDetailsPageContentProps) 
 
   const [fetchTrigger, setFetchTrigger] = useState(0);
   const prevFetchingRef = useRef(false);
+
+  const queryClient = useQueryClient();
 
   const {
     data: roleResponse,
@@ -86,6 +90,7 @@ export function RoleDetailsPageContent({ roleId }: RoleDetailsPageContentProps) 
   };
 
   const handleRefresh = () => {
+    refetchRole();
     refetchUsers();
   };
 
@@ -100,6 +105,11 @@ export function RoleDetailsPageContent({ roleId }: RoleDetailsPageContentProps) 
       if (response.success) {
         toast.success(response.message || "Role deleted successfully");
         router.push("/admin/roles");
+
+        // Invalidate all role queries
+        queryClient.invalidateQueries({
+          queryKey: roleQueries.all(),
+        });
       } else {
         toast.error(response.message || "Failed to delete role");
       }
@@ -157,52 +167,6 @@ export function RoleDetailsPageContent({ roleId }: RoleDetailsPageContentProps) 
       </div>
     );
   }
-
-  //   if (roleLoading) {
-  //     return (
-  //       <div className="space-y-6">
-  //         <div className="flex items-center justify-between">
-  //           <div className="flex items-center gap-4">
-  //             <Button
-  //               variant="ghost"
-  //               size="sm"
-  //               onClick={() => router.push("/admin/roles")}
-  //               className="gap-2"
-  //             >
-  //               <ArrowLeft className="h-4 w-4" />
-  //               Back to Roles
-  //             </Button>
-  //             <div>
-  //               <Skeleton className="h-8 w-64 mb-2" />
-  //               <Skeleton className="h-4 w-48" />
-  //             </div>
-  //           </div>
-  //         </div>
-
-  //         <div className="grid gap-6 md:grid-cols-2">
-  //           <Card>
-  //             <CardHeader>
-  //               <Skeleton className="h-6 w-32" />
-  //             </CardHeader>
-  //             <CardContent className="space-y-4">
-  //               <Skeleton className="h-4 w-full" />
-  //               <Skeleton className="h-4 w-3/4" />
-  //               <Skeleton className="h-4 w-1/2" />
-  //             </CardContent>
-  //           </Card>
-  //           <Card>
-  //             <CardHeader>
-  //               <Skeleton className="h-6 w-32" />
-  //             </CardHeader>
-  //             <CardContent className="space-y-4">
-  //               <Skeleton className="h-4 w-full" />
-  //               <Skeleton className="h-4 w-3/4" />
-  //             </CardContent>
-  //           </Card>
-  //         </div>
-  //       </div>
-  //     );
-  //   }
 
   if (!role) {
     return (

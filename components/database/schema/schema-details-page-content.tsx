@@ -23,6 +23,8 @@ import { ErrorMessage } from "@/components/common";
 import { toast } from "sonner";
 import { LastUpdated } from "@/components/common";
 import { deleteSchema } from "@/lib/actions/database";
+import { useQueryClient } from "@tanstack/react-query";
+import { schemaQueries } from "@/lib/queries";
 
 interface SchemaDetailsPageContentProps {
   schemaName: string;
@@ -33,6 +35,8 @@ export function SchemaDetailsPageContent({ schemaName }: SchemaDetailsPageConten
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [fetchTrigger, setFetchTrigger] = useState(0);
   const prevFetchingRef = useRef(false);
+
+  const queryClient = useQueryClient();
 
   // Fetch detailed permissions for this specific schema
   const { data: detailedPerms } = useDetailedPermissions(schemaName, undefined);
@@ -103,6 +107,11 @@ export function SchemaDetailsPageContent({ schemaName }: SchemaDetailsPageConten
       if (result.success) {
         toast.success(result.message);
         router.push("/database/schemas");
+
+        // Invalidate all schema queries
+        queryClient.invalidateQueries({
+          queryKey: schemaQueries.all(),
+        });
       } else {
         toast.error(result.message);
       }

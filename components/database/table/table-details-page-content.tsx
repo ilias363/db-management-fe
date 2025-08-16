@@ -31,6 +31,8 @@ import { IndexTable } from "./table-index";
 import { RenameTableDialog } from "./rename-table-dialog";
 import { DeleteTableDialog } from "./delete-table-dialog";
 import { TableMetadataDto } from "@/lib/types/database";
+import { useQueryClient } from "@tanstack/react-query";
+import { schemaQueries, tableQueries } from "@/lib/queries";
 
 interface TableDetailsPageContentProps {
   schemaName: string;
@@ -47,6 +49,8 @@ export function TableDetailsPageContent({ schemaName, tableName }: TableDetailsP
 
   const [fetchTrigger, setFetchTrigger] = useState(0);
   const prevFetchingRef = useRef(false);
+
+  const queryClient = useQueryClient();
 
   const { data: detailedPerms } = useDetailedPermissions(schemaName, tableName);
 
@@ -89,6 +93,14 @@ export function TableDetailsPageContent({ schemaName, tableName }: TableDetailsP
   const onDeleteSuccess = () => {
     setDisableTableFetch(true);
     router.push(`/database/tables`);
+
+    queryClient.invalidateQueries({
+      queryKey: schemaQueries.detail(schemaName).queryKey,
+    });
+
+    queryClient.invalidateQueries({
+      queryKey: tableQueries.all(),
+    });
   };
 
   if (!canViewTable && !isLoading) {
