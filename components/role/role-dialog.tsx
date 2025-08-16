@@ -179,6 +179,7 @@ export function RoleDialog({ open, onOpenChange, role, isCreateMode, onSuccess }
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Permissions</FormLabel>
+                    <FormMessage />
                     <FormControl>
                       <div className="space-y-4">
                         <PermissionForm
@@ -226,10 +227,7 @@ export function RoleDialog({ open, onOpenChange, role, isCreateMode, onSuccess }
                 <Button type="button" variant="outline" onClick={handleClose} disabled={isPending}>
                   Cancel
                 </Button>
-                <Button
-                  type="submit"
-                  disabled={isPending || form.getValues("permissions").length === 0}
-                >
+                <Button type="submit" disabled={isPending}>
                   {isPending ? "Saving..." : isCreateMode ? "Create Role" : "Save Changes"}
                 </Button>
               </DialogFooter>
