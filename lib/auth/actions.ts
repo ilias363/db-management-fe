@@ -112,9 +112,9 @@ export async function getDetailedPermissions(
 
     try {
         const response = await apiClient.auth.getDetailedPermissions(
-            session.accessToken,
             schemaName,
-            tableName
+            tableName,
+            session.accessToken
         );
         return response.success && response.data ? response.data : null;
     } catch (error) {
