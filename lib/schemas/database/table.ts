@@ -75,4 +75,20 @@ export const createTableSchema = z
         }
     );
 
+export const renameTableSchema = z.object({
+    schemaName: z.
+        string()
+        .min(1, "Schema name cannot be blank")
+        .regex(namePattern, "Schema name must start with a letter and contain only alphanumeric characters and underscores"),
+    tableName: z
+        .string()
+        .min(1, "Table name cannot be blank")
+        .regex(namePattern, "Table name must start with a letter and contain only alphanumeric characters and underscores"),
+    updatedTableName: z
+        .string()
+        .min(1, "New table name cannot be blank")
+        .regex(namePattern, "New table name must start with a letter and contain only alphanumeric characters and underscores"),
+});
+
 export type CreateTableSchema = z.infer<typeof createTableSchema>;
+export type RenameTableSchema = z.infer<typeof renameTableSchema>;
