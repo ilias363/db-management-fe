@@ -13,14 +13,13 @@ export default async function SchemaDetailsPage({ params }: SchemaDetailsPagePro
   const queryClient = getQueryClient();
   const { schemaName } = await params;
 
-  // Always prefetch permissions first
-  await queryClient.prefetchQuery(authQueries.permissionsQuery());
+  await queryClient.prefetchQuery(authQueries.detailedPermissionsQuery(schemaName));
 
-  // Get the prefetched permissions to check if user has DB access
-  const permissions = queryClient.getQueryData(authQueries.permissionsQuery().queryKey);
+  const permissions = queryClient.getQueryData(
+    authQueries.detailedPermissionsQuery(schemaName).queryKey
+  );
 
-  // Only prefetch schema details if user has database read access
-  if (permissions?.hasDbReadAccess) {
+  if (permissions?.granularPermissions.canRead) {
     await queryClient.prefetchQuery(schemaQueries.detail(schemaName));
   }
 
