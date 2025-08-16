@@ -53,7 +53,7 @@ interface CreateTableDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   selectedSchemaName?: string;
-  onSuccess?: (table: TableMetadataDto) => void;
+  onSuccess?: (table?: TableMetadataDto) => void;
 }
 
 export function CreateTableDialog({
