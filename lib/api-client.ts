@@ -39,6 +39,9 @@ import type {
   TablesResponse,
   NewTableDto,
   UpdateTableDto,
+  IndexResponse,
+  IndexesResponse,
+  NewIndexDto,
 } from "./types/database";
 import { HttpError } from "./errors";
 
@@ -101,7 +104,10 @@ class ApiClientImpl implements ApiClient {
     },
 
     logout: async (accessToken?: string): Promise<LogoutResponse> => {
-      const response = await this.request<LogoutResponse>("/auth/logout", { method: "POST", accessToken });
+      const response = await this.request<LogoutResponse>("/auth/logout", {
+        method: "POST",
+        accessToken,
+      });
       return response;
     },
 
@@ -323,10 +329,23 @@ class ApiClientImpl implements ApiClient {
   };
 
   index = {
-    getindex: () => Promise.reject(new Error("Not implemented")),
-    getIndexesForTable: () => Promise.reject(new Error("Not implemented")),
-    createIndex: () => Promise.reject(new Error("Not implemented")),
-    deleteIndex: () => Promise.reject(new Error("Not implemented")),
+    getindex: (schemaName: string, tableName: string, indexName: string): Promise<IndexResponse> =>
+      this.request(`/indexes/${schemaName}/${tableName}/${indexName}`),
+    getIndexesForTable: (schemaName: string, tableName: string): Promise<IndexesResponse> =>
+      this.request(`/indexes/${schemaName}/${tableName}`),
+    createIndex: (index: NewIndexDto): Promise<IndexResponse> =>
+      this.request("/indexes", {
+        method: "POST",
+        body: JSON.stringify(index),
+      }),
+    deleteIndex: (
+      schemaName: string,
+      tableName: string,
+      indexName: string
+    ): Promise<VoidResponse> =>
+      this.request(`/indexes/${schemaName}/${tableName}/${indexName}`, {
+        method: "DELETE",
+      }),
   };
 
   record = {
