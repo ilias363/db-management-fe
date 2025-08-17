@@ -52,10 +52,10 @@ export function TableCard({ schemaName, tableName, isSystemSchema, className }: 
   return (
     <Card className={cn("hover:shadow-md transition-shadow", className)}>
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between min-w-0">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
             <div
-              className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+              className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
                 isSystemSchema
                   ? "bg-orange-50 dark:bg-orange-950/20"
                   : "bg-purple-50 dark:bg-purple-950/20"
@@ -67,18 +67,18 @@ export function TableCard({ schemaName, tableName, isSystemSchema, className }: 
             </div>
             <div className="min-w-0 flex-1">
               <CardTitle className="text-base truncate">{tableName}</CardTitle>
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Database className="h-3 w-3" />
-                {schemaName}
+              <div className="flex items-center gap-1 text-xs text-muted-foreground min-w-0">
+                <Database className="h-3 w-3 flex-shrink-0" />
+                <span className="truncate">{schemaName}</span>
                 {isSystemSchema && (
-                  <Badge variant="secondary" className="text-xs ml-1">
+                  <Badge variant="secondary" className="text-xs ml-1 flex-shrink-0">
                     System
                   </Badge>
                 )}
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 flex-shrink-0 ml-2">
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleOpenDialog}>
               <Eye className="h-4 w-4" />
             </Button>

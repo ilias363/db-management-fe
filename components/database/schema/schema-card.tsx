@@ -52,10 +52,10 @@ export function SchemaCard({ schema, className }: SchemaCardProps) {
   return (
     <Card className={cn("hover:shadow-md transition-shadow", className)}>
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between min-w-0">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
             <div
-              className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+              className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
                 schema.isSystemSchema
                   ? "bg-orange-50 dark:bg-orange-950/20"
                   : "bg-blue-50 dark:bg-blue-950/20"
@@ -65,18 +65,23 @@ export function SchemaCard({ schema, className }: SchemaCardProps) {
                 className={`h-4 w-4 ${schema.isSystemSchema ? "text-orange-600" : "text-blue-600"}`}
               />
             </div>
-            <CardTitle className="text-base">{schema.schemaName}</CardTitle>
+            <CardTitle className="text-base truncate min-w-0">{schema.schemaName}</CardTitle>
             {schema.isSystemSchema ? (
-              <Badge variant="secondary" className="text-xs mt-1">
+              <Badge variant="secondary" className="text-xs mt-1 flex-shrink-0">
                 System
               </Badge>
             ) : (
-              <Badge variant="secondary" className="text-xs mt-1">
+              <Badge variant="secondary" className="text-xs mt-1 flex-shrink-0">
                 User
               </Badge>
             )}
           </div>
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleOpenDialog}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 flex-shrink-0 ml-2"
+            onClick={handleOpenDialog}
+          >
             <Eye className="h-4 w-4" />
           </Button>
         </div>
