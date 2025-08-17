@@ -120,7 +120,10 @@ export enum FilterOperator {
     NOT_IN = 'NOT_IN',
 }
 
-export type SortDirection = 'ASC' | 'DESC';
+export enum SortDirection {
+    ASC = 'ASC',
+    DESC = 'DESC'
+}
 
 export interface PaginationParams {
     page?: number; // pages starts from 0
