@@ -209,10 +209,7 @@ export function CreateIndexDialog({
                 <Button type="button" variant="outline" onClick={handleClose} disabled={isPending}>
                   Cancel
                 </Button>
-                <Button
-                  type="submit"
-                  disabled={isPending || form.watch("indexColumns").length === 0}
-                >
+                <Button type="submit" disabled={isPending}>
                   {isPending ? "Creating..." : "Create Index"}
                 </Button>
               </DialogFooter>
