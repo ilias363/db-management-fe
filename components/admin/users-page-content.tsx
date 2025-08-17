@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Plus, Search } from "lucide-react";
 import { toast } from "sonner";
-import type { UserDto, SortDirection, UserStats } from "@/lib/types";
+import { UserDto, SortDirection, UserStats } from "@/lib/types";
 
 import { UserStatsCards, UserTable, UserDialog } from "@/components/user";
 import { ConfirmDialog, LastUpdated, ErrorMessage } from "@/components/common";
@@ -30,7 +30,7 @@ export function UsersPageContent() {
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize] = useState(5);
   const [sortBy, setSortBy] = useState<string>("id");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("ASC");
+  const [sortDirection, setSortDirection] = useState<SortDirection>(SortDirection.ASC);
 
   const [editingUser, setEditingUser] = useState<UserDto | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -113,10 +113,12 @@ export function UsersPageContent() {
 
   const handleSort = (field: string) => {
     if (sortBy === field) {
-      setSortDirection(sortDirection === "ASC" ? "DESC" : "ASC");
+      setSortDirection(
+        sortDirection === SortDirection.ASC ? SortDirection.DESC : SortDirection.ASC
+      );
     } else {
       setSortBy(field);
-      setSortDirection("ASC");
+      setSortDirection(SortDirection.ASC);
     }
     setCurrentPage(0);
   };

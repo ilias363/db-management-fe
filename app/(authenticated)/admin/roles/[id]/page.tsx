@@ -2,6 +2,7 @@ import { roleQueries, authQueries } from "@/lib/queries";
 import { getQueryClient } from "@/components/react-query/get-query-client";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { RoleDetailsPageContent } from "@/components/admin";
+import { SortDirection } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +28,7 @@ export default async function RoleDetailsPage({ params }: RoleDetailsPageProps) 
         page: 0,
         size: 5,
         sortBy: "username",
-        sortDirection: "ASC",
+        sortDirection: SortDirection.ASC,
       })
     );
   }

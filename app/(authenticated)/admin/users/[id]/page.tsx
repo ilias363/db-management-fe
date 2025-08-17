@@ -2,6 +2,7 @@ import { userQueries, authQueries } from "@/lib/queries";
 import { getQueryClient } from "@/components/react-query/get-query-client";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { UserDetailsPageContent } from "@/components/admin";
+import { SortDirection } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +28,7 @@ export default async function UserDetailsPage({ params }: UserDetailsPageProps) 
         page: 0,
         size: 10,
         sortBy: "auditTimestamp",
-        sortDirection: "DESC",
+        sortDirection: SortDirection.DESC,
       })
     );
 

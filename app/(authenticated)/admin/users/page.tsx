@@ -2,6 +2,7 @@ import { userQueries, authQueries } from "@/lib/queries";
 import { getQueryClient } from "@/components/react-query/get-query-client";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { UsersPageContent } from "@/components/admin";
+import { SortDirection } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,7 @@ export default async function UsersPage() {
         page: 0,
         size: 5,
         sortBy: "username",
-        sortDirection: "ASC",
+        sortDirection: SortDirection.ASC,
         search: "",
         activeOnly: false,
       })

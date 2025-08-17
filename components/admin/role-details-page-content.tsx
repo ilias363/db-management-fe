@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Shield, Users, Edit, Trash2, Eye } from "lucide-react";
 import { toast } from "sonner";
-import type { UserDto, SortDirection } from "@/lib/types";
+import { UserDto, SortDirection } from "@/lib/types";
 
 import { LastUpdated } from "@/components/common/last-updated";
 import { PermissionBadge } from "@/components/common/permission-badge";
@@ -33,7 +33,7 @@ export function RoleDetailsPageContent({ roleId }: RoleDetailsPageContentProps) 
   const [currentUsersPage, setCurrentUsersPage] = useState(0);
   const [pageSize] = useState(5);
   const [usersSortBy, setUsersSortBy] = useState<string>("username");
-  const [usersSortDirection, setUsersSortDirection] = useState<SortDirection>("ASC");
+  const [usersSortDirection, setUsersSortDirection] = useState<SortDirection>(SortDirection.ASC);
 
   const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
@@ -77,10 +77,12 @@ export function RoleDetailsPageContent({ roleId }: RoleDetailsPageContentProps) 
 
   const handleUsersSort = (field: string) => {
     if (usersSortBy === field) {
-      setUsersSortDirection(usersSortDirection === "ASC" ? "DESC" : "ASC");
+      setUsersSortDirection(
+        usersSortDirection === SortDirection.ASC ? SortDirection.DESC : SortDirection.ASC
+      );
     } else {
       setUsersSortBy(field);
-      setUsersSortDirection("ASC");
+      setUsersSortDirection(SortDirection.ASC);
     }
     setCurrentUsersPage(0);
   };

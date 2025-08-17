@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Plus, Search } from "lucide-react";
 import { toast } from "sonner";
-import type { RoleDto, RoleStats, SortDirection } from "@/lib/types";
+import { RoleDto, RoleStats, SortDirection } from "@/lib/types";
 
 import { RoleStatsCards } from "@/components/role/role-stats-cards";
 import { RoleTable } from "@/components/role/role-table";
@@ -26,7 +26,7 @@ export function RolesPageContent() {
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize] = useState(5);
   const [sortBy, setSortBy] = useState<string>("id");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("ASC");
+  const [sortDirection, setSortDirection] = useState<SortDirection>(SortDirection.ASC);
 
   const [editingRole, setEditingRole] = useState<RoleDto | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -109,10 +109,12 @@ export function RolesPageContent() {
 
   const handleSort = (field: string) => {
     if (sortBy === field) {
-      setSortDirection(sortDirection === "ASC" ? "DESC" : "ASC");
+      setSortDirection(
+        sortDirection === SortDirection.ASC ? SortDirection.DESC : SortDirection.ASC
+      );
     } else {
       setSortBy(field);
-      setSortDirection("ASC");
+      setSortDirection(SortDirection.ASC);
     }
     setCurrentPage(0);
   };

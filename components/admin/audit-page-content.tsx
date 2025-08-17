@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Search, Calendar, CalendarDays, User, X } from "lucide-react";
 import { toast } from "sonner";
-import { AuditLogDto, ActionType, AuditStats } from "@/lib/types";
+import { AuditLogDto, ActionType, AuditStats, SortDirection } from "@/lib/types";
 
 import { AuditStatsCards, AuditTable, AuditDetailsDialog } from "@/components/audit";
 import { ConfirmDialog, LastUpdated } from "@/components/common";
@@ -42,7 +42,7 @@ export function AuditPageContent() {
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize] = useState(10);
   const [sortBy, setSortBy] = useState<string>("auditTimestamp");
-  const [sortDirection, setSortDirection] = useState<"ASC" | "DESC">("DESC");
+  const [sortDirection, setSortDirection] = useState<SortDirection>(SortDirection.DESC);
 
   const [viewingAudit, setViewingAudit] = useState<AuditLogDto | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -122,10 +122,12 @@ export function AuditPageContent() {
 
   const handleSort = (field: string) => {
     if (sortBy === field) {
-      setSortDirection(sortDirection === "ASC" ? "DESC" : "ASC");
+      setSortDirection(
+        sortDirection === SortDirection.ASC ? SortDirection.DESC : SortDirection.ASC
+      );
     } else {
       setSortBy(field);
-      setSortDirection("ASC");
+      setSortDirection(SortDirection.ASC);
     }
     setCurrentPage(0);
   };
