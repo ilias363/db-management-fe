@@ -7,6 +7,7 @@ export interface BaseNewColumnDto {
     dataType: DataType;
     characterMaxLength?: number;
     numericPrecision?: number;
+    numericScale?: number;
 }
 
 export interface BaseNewForeignKeyColumnDto extends BaseNewColumnDto {
