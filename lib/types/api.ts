@@ -144,14 +144,14 @@ export interface ApiClient {
     createStandardColumn(column: NewStandardColumnDto): Promise<ColumnResponse>;
     createPrimaryKeyColumn(column: NewPrimaryKeyColumnDto): Promise<ColumnResponse>;
     createForeignKeyColumn(column: NewForeignKeyColumnDto): Promise<ColumnResponse>;
-    deleteColumn(schemaName: string, tableName: string, columnName: string, force: boolean): Promise<VoidResponse>;
+    deleteColumn(schemaName: string, tableName: string, columnName: string, force?: boolean): Promise<VoidResponse>;
     renameColumn(renameCol: RenameColumnDto): Promise<ColumnResponse>;
     updateColumnDataType(updateCol: UpdateColumnDataTypeDto): Promise<ColumnResponse>;
     updateColumnAutoIncrement(updateCol: UpdateColumnDataTypeDto): Promise<ColumnResponse>;
-    updateColumnNullable(updateCol: UpdateColumnDataTypeDto): Promise<ColumnResponse>;
+    updateColumnNullable(updateCol: UpdateColumnDataTypeDto, populate?: boolean): Promise<ColumnResponse>;
     updateColumnUnique(updateCol: UpdateColumnDataTypeDto): Promise<ColumnResponse>;
     updateColumnDefault(updateCol: UpdateColumnDefaultDto): Promise<ColumnResponse>;
-    updateColumnPrimaryKey(updateCol: UpdateColumnDataTypeDto): Promise<ColumnResponse>;
+    updateColumnPrimaryKey(updateCol: UpdateColumnDataTypeDto, force?: boolean): Promise<ColumnResponse>;
     updateColumnForeignKey(updateCol: UpdateColumnDataTypeDto): Promise<ColumnResponse>;
   }
   index: {

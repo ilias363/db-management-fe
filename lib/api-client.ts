@@ -42,6 +42,14 @@ import type {
   IndexResponse,
   IndexesResponse,
   NewIndexDto,
+  NewStandardColumnDto,
+  NewPrimaryKeyColumnDto,
+  NewForeignKeyColumnDto,
+  RenameColumnDto,
+  UpdateColumnDataTypeDto,
+  UpdateColumnDefaultDto,
+  ColumnResponse,
+  ColumnsResponse,
 } from "./types/database";
 import { HttpError } from "./errors";
 
@@ -312,20 +320,99 @@ class ApiClientImpl implements ApiClient {
   };
 
   column = {
-    getColumn: () => Promise.reject(new Error("Not implemented")),
-    getColumnsForTable: () => Promise.reject(new Error("Not implemented")),
-    createStandardColumn: () => Promise.reject(new Error("Not implemented")),
-    createPrimaryKeyColumn: () => Promise.reject(new Error("Not implemented")),
-    createForeignKeyColumn: () => Promise.reject(new Error("Not implemented")),
-    deleteColumn: () => Promise.reject(new Error("Not implemented")),
-    renameColumn: () => Promise.reject(new Error("Not implemented")),
-    updateColumnDataType: () => Promise.reject(new Error("Not implemented")),
-    updateColumnAutoIncrement: () => Promise.reject(new Error("Not implemented")),
-    updateColumnNullable: () => Promise.reject(new Error("Not implemented")),
-    updateColumnUnique: () => Promise.reject(new Error("Not implemented")),
-    updateColumnDefault: () => Promise.reject(new Error("Not implemented")),
-    updateColumnPrimaryKey: () => Promise.reject(new Error("Not implemented")),
-    updateColumnForeignKey: () => Promise.reject(new Error("Not implemented")),
+    getColumn: (
+      schemaName: string,
+      tableName: string,
+      columnName: string
+    ): Promise<ColumnResponse> => this.request(`/columns/${schemaName}/${tableName}/${columnName}`),
+
+    getColumnsForTable: (schemaName: string, tableName: string): Promise<ColumnsResponse> =>
+      this.request(`/columns/${schemaName}/${tableName}`),
+
+    createStandardColumn: (column: NewStandardColumnDto): Promise<ColumnResponse> =>
+      this.request("/columns/standard", {
+        method: "POST",
+        body: JSON.stringify(column),
+      }),
+
+    createPrimaryKeyColumn: (column: NewPrimaryKeyColumnDto): Promise<ColumnResponse> =>
+      this.request("/columns/primary-key", {
+        method: "POST",
+        body: JSON.stringify(column),
+      }),
+
+    createForeignKeyColumn: (column: NewForeignKeyColumnDto): Promise<ColumnResponse> =>
+      this.request("/columns/foreign-key", {
+        method: "POST",
+        body: JSON.stringify(column),
+      }),
+
+    deleteColumn: (
+      schemaName: string,
+      tableName: string,
+      columnName: string,
+      force?: boolean
+    ): Promise<VoidResponse> =>
+      this.request(
+        `/columns/${schemaName}/${tableName}/${columnName}${force ? "?force=true" : ""}`,
+        {
+          method: "DELETE",
+        }
+      ),
+
+    renameColumn: (renameCol: RenameColumnDto): Promise<ColumnResponse> =>
+      this.request("/columns/rename", {
+        method: "PATCH",
+        body: JSON.stringify(renameCol),
+      }),
+
+    updateColumnDataType: (updateCol: UpdateColumnDataTypeDto): Promise<ColumnResponse> =>
+      this.request("/columns/data-type", {
+        method: "PATCH",
+        body: JSON.stringify(updateCol),
+      }),
+
+    updateColumnAutoIncrement: (updateCol: UpdateColumnDataTypeDto): Promise<ColumnResponse> =>
+      this.request("/columns/auto-increment", {
+        method: "PATCH",
+        body: JSON.stringify(updateCol),
+      }),
+
+    updateColumnNullable: (
+      updateCol: UpdateColumnDataTypeDto,
+      populate?: boolean
+    ): Promise<ColumnResponse> =>
+      this.request(`/columns/nullable${populate ? "?populate=true" : ""}`, {
+        method: "PATCH",
+        body: JSON.stringify(updateCol),
+      }),
+
+    updateColumnUnique: (updateCol: UpdateColumnDataTypeDto): Promise<ColumnResponse> =>
+      this.request("/columns/unique", {
+        method: "PATCH",
+        body: JSON.stringify(updateCol),
+      }),
+
+    updateColumnDefault: (updateCol: UpdateColumnDefaultDto): Promise<ColumnResponse> =>
+      this.request("/columns/default", {
+        method: "PATCH",
+        body: JSON.stringify(updateCol),
+      }),
+
+    updateColumnPrimaryKey: (
+      updateCol: UpdateColumnDataTypeDto,
+      force?: boolean
+    ): Promise<ColumnResponse> =>
+      this.request(`/columns/primary-key${force ? "?force=true" : ""}`, {
+        method: "PATCH",
+        body: JSON.stringify(updateCol),
+      }),
+
+    updateColumnForeignKey: (updateCol: UpdateColumnDataTypeDto): Promise<ColumnResponse> =>
+      this.request("/columns/foreign-key", {
+        method: "PATCH",
+        body: JSON.stringify(updateCol),
+      }),
   };
 
   index = {

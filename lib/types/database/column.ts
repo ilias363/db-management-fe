@@ -19,15 +19,15 @@ export interface BaseTableColumnMetadataDto extends BaseColumnMetadataDto {
     table: Omit<TableMetadataDto, 'columns' | 'indexes'>;
 }
 
-export interface StandardColumnMetadataDto extends BaseColumnMetadataDto {
+export interface StandardColumnMetadataDto extends BaseTableColumnMetadataDto {
     columnType: ColumnType.STANDARD;
 }
 
-export interface PrimaryKeyColumnMetadataDto extends BaseColumnMetadataDto {
+export interface PrimaryKeyColumnMetadataDto extends BaseTableColumnMetadataDto {
     columnType: ColumnType.PRIMARY_KEY;
 }
 
-export interface ForeignKeyColumnMetadataDto extends BaseColumnMetadataDto {
+export interface ForeignKeyColumnMetadataDto extends BaseTableColumnMetadataDto {
     referencedSchemaName: string;
     referencedTableName: string;
     referencedColumnName: string;
@@ -36,7 +36,7 @@ export interface ForeignKeyColumnMetadataDto extends BaseColumnMetadataDto {
     columnType: ColumnType.FOREIGN_KEY;
 }
 
-export interface PrimaryKeyForeignKeyColumnMetadataDto extends BaseColumnMetadataDto {
+export interface PrimaryKeyForeignKeyColumnMetadataDto extends BaseTableColumnMetadataDto {
     referencedSchemaName: string;
     referencedTableName: string;
     referencedColumnName: string;
@@ -45,5 +45,5 @@ export interface PrimaryKeyForeignKeyColumnMetadataDto extends BaseColumnMetadat
     columnType: ColumnType.PRIMARY_KEY_FOREIGN_KEY;
 }
 
-export type ColumnResponse = ApiResponse<BaseColumnMetadataDto>;
-export type ColumnsResponse = ApiResponse<BaseColumnMetadataDto[]>;
+export type ColumnResponse = ApiResponse<BaseTableColumnMetadataDto>;
+export type ColumnsResponse = ApiResponse<BaseTableColumnMetadataDto[]>;
