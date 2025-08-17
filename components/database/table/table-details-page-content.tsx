@@ -27,10 +27,10 @@ import { LastUpdated } from "@/components/common/last-updated";
 import { ErrorMessage, StatsCard } from "@/components/common";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ColumnTable } from "./table-column";
-import { IndexTable } from "./table-index";
+import { IndexTable, CreateIndexDialog, DeleteIndexDialog } from "./table-index";
 import { RenameTableDialog } from "./rename-table-dialog";
 import { DeleteTableDialog } from "./delete-table-dialog";
-import { TableMetadataDto } from "@/lib/types/database";
+import { TableMetadataDto, IndexMetadataDto } from "@/lib/types/database";
 import { useQueryClient } from "@tanstack/react-query";
 import { schemaQueries, tableQueries } from "@/lib/queries";
 
@@ -44,6 +44,8 @@ export function TableDetailsPageContent({ schemaName, tableName }: TableDetailsP
 
   const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isCreateIndexDialogOpen, setIsCreateIndexDialogOpen] = useState(false);
+  const [indexToDelete, setIndexToDelete] = useState<Omit<IndexMetadataDto, "table"> | null>(null);
 
   const [disableTableFetch, setDisableTableFetch] = useState(false);
 
@@ -101,6 +103,19 @@ export function TableDetailsPageContent({ schemaName, tableName }: TableDetailsP
     queryClient.invalidateQueries({
       queryKey: tableQueries.all(),
     });
+  };
+
+  const onIndexCreateSuccess = async () => {
+    await refetchTable();
+  };
+
+  const onIndexDeleteSuccess = async () => {
+    await refetchTable();
+    setIndexToDelete(null);
+  };
+
+  const handleDeleteIndex = (index: Omit<IndexMetadataDto, "table">) => {
+    setIndexToDelete(index);
   };
 
   if (!canViewTable && !isLoading) {
@@ -355,7 +370,7 @@ export function TableDetailsPageContent({ schemaName, tableName }: TableDetailsP
               <CardDescription>Database indexes for improved query performance</CardDescription>
             </div>
             {canModifyTable && !isSystemSchema && (
-              <Button size="sm" onClick={() => toast.info("To be implemented")} className="gap-2">
+              <Button size="sm" onClick={() => setIsCreateIndexDialogOpen(true)} className="gap-2">
                 <Plus className="h-4 w-4" />
                 Add Index
               </Button>
@@ -363,7 +378,7 @@ export function TableDetailsPageContent({ schemaName, tableName }: TableDetailsP
           </div>
         </CardHeader>
         <CardContent>
-          <IndexTable table={table} canDelete={canDeleteTable} />
+          <IndexTable table={table} canDelete={canDeleteTable} onDelete={handleDeleteIndex} />
         </CardContent>
       </Card>
 
@@ -380,6 +395,31 @@ export function TableDetailsPageContent({ schemaName, tableName }: TableDetailsP
         onOpenChange={setIsDeleteDialogOpen}
         onSuccess={onDeleteSuccess}
       />
+
+      <CreateIndexDialog
+        table={table}
+        open={isCreateIndexDialogOpen}
+        onOpenChange={setIsCreateIndexDialogOpen}
+        onSuccess={onIndexCreateSuccess}
+      />
+
+      {indexToDelete && (
+        <DeleteIndexDialog
+          index={{
+            ...indexToDelete,
+            table: {
+              schema: table.schema,
+              tableName: table.tableName,
+              columnCount: table.columnCount,
+              rowCount: table.rowCount,
+              sizeInBytes: table.sizeInBytes,
+            },
+          }}
+          open={!!indexToDelete}
+          onOpenChange={open => !open && setIndexToDelete(null)}
+          onSuccess={onIndexDeleteSuccess}
+        />
+      )}
     </div>
   );
 }

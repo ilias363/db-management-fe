@@ -2,14 +2,14 @@ import { ActionButton, ColumnDef, DataTable } from "@/components/common";
 import { Badge } from "@/components/ui/badge";
 import { IndexMetadataDto, TableMetadataDto } from "@/lib/types/database";
 import { BarChart3, Trash2 } from "lucide-react";
-import { toast } from "sonner";
 
 interface IndexTableProps {
   table: TableMetadataDto;
   canDelete: boolean;
+  onDelete?: (index: Omit<IndexMetadataDto, "table">) => void;
 }
 
-export function IndexTable({ table, canDelete }: IndexTableProps) {
+export function IndexTable({ table, canDelete, onDelete }: IndexTableProps) {
   const isSystemSchema = table.schema.isSystemSchema;
 
   const indexDefinitions: ColumnDef<Omit<IndexMetadataDto, "table">>[] = [
@@ -61,7 +61,7 @@ export function IndexTable({ table, canDelete }: IndexTableProps) {
     {
       label: "Delete Index",
       icon: <Trash2 className="h-4 w-4" />,
-      onClick: () => toast.info("To be implemented"),
+      onClick: index => onDelete?.(index),
       variant: "destructive",
       disabled: () => !canDelete || isSystemSchema,
     },
