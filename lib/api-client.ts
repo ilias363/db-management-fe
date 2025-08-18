@@ -50,6 +50,9 @@ import type {
   UpdateColumnDefaultDto,
   ColumnResponse,
   ColumnsResponse,
+  ViewResponse,
+  ViewsResponse,
+  UpdateViewDto,
 } from "./types/database";
 import { HttpError } from "./errors";
 
@@ -313,10 +316,19 @@ class ApiClientImpl implements ApiClient {
   };
 
   view = {
-    getView: () => Promise.reject(new Error("Not implemented")),
-    getAllViewsInSchema: () => Promise.reject(new Error("Not implemented")),
-    renameView: () => Promise.reject(new Error("Not implemented")),
-    deleteView: () => Promise.reject(new Error("Not implemented")),
+    getView: (schemaName: string, viewName: string): Promise<ViewResponse> =>
+      this.request(`/views/${schemaName}/${viewName}`),
+    getAllViewsInSchema: (schemaName: string): Promise<ViewsResponse> =>
+      this.request(`/views/${schemaName}`),
+    renameView: (View: UpdateViewDto): Promise<ViewResponse> =>
+      this.request("/views", {
+        method: "PUT",
+        body: JSON.stringify(View),
+      }),
+    deleteView: (schemaName: string, viewName: string): Promise<VoidResponse> =>
+      this.request(`/views/${schemaName}/${viewName}`, {
+        method: "DELETE",
+      }),
   };
 
   column = {
