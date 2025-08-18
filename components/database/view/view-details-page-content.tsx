@@ -272,7 +272,7 @@ export function ViewDetailsPageContent({ schemaName, viewName }: ViewDetailsPage
           <Button
             variant="outline"
             size="sm"
-            onClick={() => router.push(`/database/tables/${schemaName}/${viewName}/data`)}
+            onClick={() => router.push(`/database/views/${schemaName}/${viewName}/data`)}
             className="gap-2"
           >
             <Edit className="h-4 w-4" />
@@ -286,7 +286,7 @@ export function ViewDetailsPageContent({ schemaName, viewName }: ViewDetailsPage
               className="gap-2"
             >
               <Edit className="h-4 w-4" />
-              Rename Table
+              Rename View
             </Button>
           )}
           {canDeleteView && !isSystemSchema && (
@@ -297,7 +297,7 @@ export function ViewDetailsPageContent({ schemaName, viewName }: ViewDetailsPage
               className="gap-2"
             >
               <Trash2 className="h-4 w-4" />
-              Delete Table
+              Delete View
             </Button>
           )}
           <LastUpdated onRefresh={handleRefresh} resetTrigger={fetchTrigger} />
@@ -323,18 +323,14 @@ export function ViewDetailsPageContent({ schemaName, viewName }: ViewDetailsPage
                 {view.checkOption ? "Enabled" : "Disabled"}
               </Badge>
             </div>
-            {view.charachterSet && (
-              <div className="space-y-2">
-                <h4 className="text-sm font-medium">Character Set</h4>
-                <p className="text-sm text-muted-foreground">{view.charachterSet}</p>
-              </div>
-            )}
-            {view.collation && (
-              <div className="space-y-2">
-                <h4 className="text-sm font-medium">Collation</h4>
-                <p className="text-sm text-muted-foreground">{view.collation}</p>
-              </div>
-            )}
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium">Character Set</h4>
+              <p className="text-sm text-muted-foreground">{view.charachterSet ?? "--"}</p>
+            </div>
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium">Collation</h4>
+              <p className="text-sm text-muted-foreground">{view.collation ?? "--"}</p>
+            </div>
           </div>
         </CardContent>
       </Card>
