@@ -294,6 +294,15 @@ export function TableDetailsPageContent({ schemaName, tableName }: TableDetailsP
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push(`/database/tables/${schemaName}/${tableName}/data`)}
+            className="gap-2"
+          >
+            <Edit className="h-4 w-4" />
+            Browse Data
+          </Button>
           {canModifyTable && !isSystemSchema && (
             <Button
               variant="outline"
