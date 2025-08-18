@@ -18,7 +18,6 @@ import {
   AlertTriangle,
   Plus,
 } from "lucide-react";
-import { toast } from "sonner";
 
 import { useTable, useDetailedPermissions } from "@/lib/hooks";
 import { formatBytes } from "@/lib/utils";
@@ -30,6 +29,7 @@ import { ColumnTable } from "./table-column";
 import { IndexTable, CreateIndexDialog, DeleteIndexDialog } from "./table-index";
 import { RenameTableDialog } from "./rename-table-dialog";
 import { DeleteTableDialog } from "./delete-table-dialog";
+import { AddColumnDropdown } from "./add-column-dropdown";
 import { TableMetadataDto, IndexMetadataDto } from "@/lib/types/database";
 import { useQueryClient } from "@tanstack/react-query";
 import { schemaQueries, tableQueries } from "@/lib/queries";
@@ -350,10 +350,11 @@ export function TableDetailsPageContent({ schemaName, tableName }: TableDetailsP
               <CardDescription>Columns and their properties in {table.tableName}</CardDescription>
             </div>
             {canModifyTable && !isSystemSchema && (
-              <Button size="sm" onClick={() => toast.info("To be implemented")} className="gap-2">
-                <Plus className="h-4 w-4" />
-                Add Column
-              </Button>
+              <AddColumnDropdown
+                schemaName={schemaName}
+                tableName={tableName}
+                onSuccess={handleRefresh}
+              />
             )}
           </div>
         </CardHeader>

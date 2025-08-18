@@ -7,3 +7,5 @@ export * from "./create-table-dialog";
 export * from "./table-details-page-content";
 export * from "./rename-table-dialog";
 export * from "./delete-table-dialog";
+export * from "./add-column-dropdown";
+export * from "./column-dialogs";
