@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { ColumnType } from "@/lib/types";
 import { BaseTableColumnMetadataDto, TableMetadataDto } from "@/lib/types/database";
 import { Columns, Edit, Trash2 } from "lucide-react";
+import Link from "next/link";
 import { toast } from "sonner";
 
 interface ColumnTableProps {
@@ -106,13 +107,42 @@ export function ColumnTable({ table, canModify, canDelete }: ColumnTableProps) {
     {
       key: "ordinalPosition",
       title: "Position",
-      sortable: true,
       render: column => (
         <span className="text-sm text-muted-foreground">#{column.ordinalPosition}</span>
       ),
       className: "w-20",
     },
   ];
+
+  const hasFkColumns = table.columns?.some(column =>
+    [ColumnType.FOREIGN_KEY, ColumnType.PRIMARY_KEY_FOREIGN_KEY].includes(column.columnType)
+  );
+
+  if (hasFkColumns) {
+    columnDefinitions.push({
+      key: "referencedColumnName",
+      title: "Referenced Column",
+      render: column => (
+        <span className="text-sm text-muted-foreground">
+          {"referencedSchemaName" in column &&
+          "referencedTableName" in column &&
+          "referencedColumnName" in column ? (
+            <p>
+              <Link
+                href={`/database/tables/${column.referencedSchemaName}/${column.referencedTableName}`}
+                className="underline underline-offset-4 hover:text-primary/80 transition-colors"
+              >
+                {`${column.referencedSchemaName}.${column.referencedTableName}`}
+              </Link>
+              {`(${column.referencedColumnName})`}
+            </p>
+          ) : (
+            "N/A"
+          )}
+        </span>
+      ),
+    });
+  }
 
   const columnActions: ActionButton<Omit<BaseTableColumnMetadataDto, "table">>[] = [
     {
