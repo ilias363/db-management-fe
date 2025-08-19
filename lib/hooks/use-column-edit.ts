@@ -11,12 +11,19 @@ import {
     UpdateColumnDataTypeSchema,
     updateColumnDataTypeSchema,
     UpdateColumnAutoIncrementSchema,
-} from "@/lib/schemas/database/column-edit";
+    UpdateColumnNullableSchema,
+    UpdateColumnUniqueSchema,
+    UpdateColumnDefaultSchema,
+    updateColumnDefaultSchema,
+} from "@/lib/schemas/database";
 import {
     renameColumn,
     updateColumnDataType,
     updateColumnAutoIncrement,
-} from "@/lib/actions/database/column-edit";
+    updateColumnNullable,
+    updateColumnUnique,
+    updateColumnDefault,
+} from "@/lib/actions/database";
 import { DataType } from "../types";
 
 // Hook for renaming columns
@@ -276,5 +283,217 @@ export function useUpdateColumnAutoIncrementForm({
     return {
         isPending,
         submitAutoIncrementToggle,
+    };
+}
+
+// Hook for nullable toggle
+interface UseUpdateColumnNullableProps {
+    column: Omit<BaseTableColumnMetadataDto, "table">;
+    schemaName: string;
+    tableName: string;
+    onSuccess?: (column: BaseTableColumnMetadataDto) => void;
+    onError?: (error: string) => void;
+}
+
+export function useUpdateColumnNullableForm({
+    column,
+    schemaName,
+    tableName,
+    onSuccess,
+    onError,
+}: UseUpdateColumnNullableProps) {
+    const [isPending, startTransition] = useTransition();
+
+    const submitNullableToggle = useCallback(
+        async (nullable: boolean, populate: boolean = false) => {
+            const formData: UpdateColumnNullableSchema = {
+                schemaName,
+                tableName,
+                columnName: column.columnName,
+                isNullable: nullable,
+                populate,
+            };
+
+            startTransition(async () => {
+                try {
+                    const result = await updateColumnNullable(undefined, formData);
+
+                    if (result.success && result.data) {
+                        toast.success(result.message || "Column nullable status updated successfully");
+                        onSuccess?.(result.data);
+                    } else {
+                        const errorMessage = result.message || "Failed to update column nullable status";
+                        toast.error(errorMessage);
+                        onError?.(errorMessage);
+                    }
+                } catch (error) {
+                    const errorMessage =
+                        error instanceof Error ? error.message : "An unexpected error occurred";
+                    toast.error(errorMessage);
+                    onError?.(errorMessage);
+                }
+            });
+        },
+        [column, schemaName, tableName, onSuccess, onError]
+    );
+
+    return {
+        isPending,
+        submitNullableToggle,
+    };
+}
+
+// Hook for unique toggle
+interface UseUpdateColumnUniqueProps {
+    column: Omit<BaseTableColumnMetadataDto, "table">;
+    schemaName: string;
+    tableName: string;
+    onSuccess?: (column: BaseTableColumnMetadataDto) => void;
+    onError?: (error: string) => void;
+}
+
+export function useUpdateColumnUniqueForm({
+    column,
+    schemaName,
+    tableName,
+    onSuccess,
+    onError,
+}: UseUpdateColumnUniqueProps) {
+    const [isPending, startTransition] = useTransition();
+
+    const submitUniqueToggle = useCallback(
+        async (unique: boolean) => {
+            const formData: UpdateColumnUniqueSchema = {
+                schemaName,
+                tableName,
+                columnName: column.columnName,
+                isUnique: unique,
+            };
+
+            startTransition(async () => {
+                try {
+                    const result = await updateColumnUnique(undefined, formData);
+
+                    if (result.success && result.data) {
+                        toast.success(result.message || "Column unique constraint updated successfully");
+                        onSuccess?.(result.data);
+                    } else {
+                        const errorMessage = result.message || "Failed to update column unique constraint";
+                        toast.error(errorMessage);
+                        onError?.(errorMessage);
+                    }
+                } catch (error) {
+                    const errorMessage =
+                        error instanceof Error ? error.message : "An unexpected error occurred";
+                    toast.error(errorMessage);
+                    onError?.(errorMessage);
+                }
+            });
+        },
+        [column, schemaName, tableName, onSuccess, onError]
+    );
+
+    return {
+        isPending,
+        submitUniqueToggle,
+    };
+}
+
+// Hook for column default value
+interface UseUpdateColumnDefaultProps {
+    column: Omit<BaseTableColumnMetadataDto, "table">;
+    schemaName: string;
+    tableName: string;
+    onSuccess?: (column: BaseTableColumnMetadataDto) => void;
+    onError?: (error: string) => void;
+}
+
+export function useUpdateColumnDefaultForm({
+    column,
+    schemaName,
+    tableName,
+    onSuccess,
+    onError,
+}: UseUpdateColumnDefaultProps) {
+    const [isPending, startTransition] = useTransition();
+    const [submitError, setSubmitError] = useState<string | null>(null);
+
+    const form = useForm<UpdateColumnDefaultSchema>({
+        resolver: zodResolver(updateColumnDefaultSchema),
+        defaultValues: {
+            schemaName,
+            tableName,
+            columnName: column.columnName,
+            columnDefault: column.columnDefault || "",
+        },
+        mode: "onChange",
+    });
+
+    const resetForm = useCallback(() => {
+        form.reset({
+            schemaName,
+            tableName,
+            columnName: column.columnName,
+            columnDefault: column.columnDefault || "",
+        });
+        setSubmitError(null);
+        form.clearErrors();
+    }, [form, column, schemaName, tableName]);
+
+    const submitDefaultUpdate = useCallback(
+        async (data: UpdateColumnDefaultSchema) => {
+            setSubmitError(null);
+            form.clearErrors();
+
+            startTransition(async () => {
+                try {
+                    const result = await updateColumnDefault(undefined, data);
+
+                    if (result.success && result.data) {
+                        toast.success(result.message || "Column default value updated successfully");
+                        onSuccess?.(result.data);
+                        resetForm();
+                    } else {
+                        if (result.errors) {
+                            Object.entries(result.errors).forEach(([field, fieldErrors]) => {
+                                if (field === "root") {
+                                    setSubmitError(Array.isArray(fieldErrors) ? fieldErrors.join(", ") : fieldErrors);
+                                } else {
+                                    if (field in form.getValues()) {
+                                        form.setError(field as keyof UpdateColumnDefaultSchema, {
+                                            type: "server",
+                                            message: Array.isArray(fieldErrors) ? fieldErrors[0] : fieldErrors,
+                                        });
+                                    }
+                                }
+                            });
+                        }
+
+                        if (result.message && !result.errors) {
+                            setSubmitError(result.message);
+                        }
+
+                        onError?.(result.message || "An error occurred");
+                    }
+                } catch (error) {
+                    const errorMessage =
+                        error instanceof Error ? error.message : "An unexpected error occurred";
+                    setSubmitError(errorMessage);
+                    onError?.(errorMessage);
+                }
+            });
+        },
+        [form, onSuccess, onError, resetForm]
+    );
+
+    return {
+        form,
+        isPending,
+        submitError,
+        submitDefaultUpdate,
+        resetForm,
+        isValid: form.formState.isValid,
+        isDirty: form.formState.isDirty,
+        errors: form.formState.errors,
     };
 }
