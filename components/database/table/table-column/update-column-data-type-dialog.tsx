@@ -61,7 +61,7 @@ export function UpdateColumnDataTypeDialog({
   // (probably something related to react-compiler auto memoization)
   const [rerenderTrigger, setRerenderTrigger] = useState(1);
 
-  const { form, isPending, submitError, submitUpdate, resetForm, isDirty, errors } =
+  const { form, isPending, submitError, submitUpdate, resetForm, isValid, isDirty, errors } =
     useUpdateColumnDataTypeForm({
       column,
       schemaName,
@@ -241,7 +241,7 @@ export function UpdateColumnDataTypeDialog({
                 <Button type="button" variant="outline" onClick={handleClose} disabled={isPending}>
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isPending || !form.formState.isValid}>
+                <Button type="submit" disabled={isPending || !isValid}>
                   {isPending ? "Updating..." : "Update Data Type"}
                 </Button>
               </div>

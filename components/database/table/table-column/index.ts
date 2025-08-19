@@ -7,3 +7,6 @@ export * from "./delete-column-dialog";
 export * from "./rename-column-dialog";
 export * from "./update-column-data-type-dialog";
 export * from "./auto-increment-column-dialog";
+export * from "./column-nullable-dialog";
+export * from "./column-unique-dialog";
+export * from "./column-default-dialog";
