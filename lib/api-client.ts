@@ -419,7 +419,7 @@ class ApiClientImpl implements ApiClient {
     updateColumnPrimaryKey: (
       updateCol: UpdateColumnPrimaryKeyDto,
       force?: boolean
-    ): Promise<ColumnResponse> =>
+    ): Promise<ColumnsResponse> =>
       this.request(`/columns/primary-key${force ? "?force=true" : ""}`, {
         method: "PATCH",
         body: JSON.stringify(updateCol),

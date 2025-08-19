@@ -179,7 +179,7 @@ export interface ApiClient {
     updateColumnPrimaryKey(
       updateCol: UpdateColumnPrimaryKeyDto,
       force?: boolean
-    ): Promise<ColumnResponse>;
+    ): Promise<ColumnsResponse>;
     updateColumnForeignKey(updateCol: UpdateColumnForeignKeyDto): Promise<ColumnResponse>;
   };
   index: {

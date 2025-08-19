@@ -13,6 +13,8 @@ import {
     updateColumnDataTypeSchema,
     UpdateColumnAutoIncrementSchema,
     updateColumnAutoIncrementSchema,
+    UpdateColumnPrimaryKeySchema,
+    updateColumnPrimaryKeySchema,
     UpdateColumnNullableSchema,
     updateColumnNullableSchema,
     UpdateColumnUniqueSchema,
@@ -342,6 +344,65 @@ export async function updateColumnDefault(
             return {
                 success: false,
                 errors: { root: ["An unexpected error occurred while updating the column default value."] },
+            };
+        }
+    });
+
+    return authAction();
+}
+
+export async function updateColumnPrimaryKey(
+    prevState: ActionState<BaseTableColumnMetadataDto> | undefined,
+    formData: UpdateColumnPrimaryKeySchema
+): Promise<ActionState<BaseTableColumnMetadataDto[]>> {
+    const authAction = await withAuth(async (): Promise<ActionState<BaseTableColumnMetadataDto[]>> => {
+        const result = updateColumnPrimaryKeySchema.safeParse(formData);
+
+        if (!result.success) {
+            return {
+                success: false,
+                errors: z.flattenError(result.error).fieldErrors,
+            };
+        }
+
+        try {
+            const response = await apiClient.column.updateColumnPrimaryKey({
+                schemaName: formData.schemaName,
+                tableName: formData.tableName,
+                columnNames: formData.columnNames,
+                isPrimaryKey: formData.isPrimaryKey,
+            }, formData.force);
+
+            if (!response.success) {
+                return {
+                    success: false,
+                    errors: { root: response.message.split("\n") },
+                };
+            }
+
+            revalidatePath(`/database/tables/${formData.schemaName}/${formData.tableName}`);
+            revalidatePath(`/database/schemas/${formData.schemaName}`);
+
+            const actionMsg = formData.isPrimaryKey
+                ? `Primary key created with columns: ${formData.columnNames.join(", ")}`
+                : "Primary key removed";
+
+            return {
+                success: true,
+                message: actionMsg,
+                data: response.data,
+            };
+        } catch (error) {
+            if (error instanceof HttpError) {
+                return {
+                    success: false,
+                    errors: { root: [error.message] },
+                };
+            }
+
+            return {
+                success: false,
+                errors: { root: ["An unexpected error occurred while updating the primary key."] },
             };
         }
     });
