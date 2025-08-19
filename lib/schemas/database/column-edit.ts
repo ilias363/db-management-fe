@@ -1,9 +1,10 @@
 import { DataType } from "@/lib/types";
 import { z } from "zod";
+import { createColumnDefaultValidator } from "./column";
 
 const namePattern = /^[a-zA-Z][a-zA-Z0-9_]*$/;
 
-export const renameColumnSchema = z.object({
+const baseUpdateColumnSchema = z.object({
     schemaName: z
         .string()
         .min(1, "Schema name cannot be blank")
@@ -25,6 +26,9 @@ export const renameColumnSchema = z.object({
             namePattern,
             "Column name must start with a letter and contain only alphanumeric characters and underscores"
         ),
+});
+
+export const renameColumnSchema = baseUpdateColumnSchema.extend({
     newColumnName: z
         .string()
         .min(1, "New column name cannot be blank")
@@ -34,29 +38,8 @@ export const renameColumnSchema = z.object({
         ),
 });
 
-export const updateColumnDataTypeSchema = z
-    .object({
-        schemaName: z
-            .string()
-            .min(1, "Schema name cannot be blank")
-            .regex(
-                namePattern,
-                "Schema name must start with a letter and contain only alphanumeric characters and underscores"
-            ),
-        tableName: z
-            .string()
-            .min(1, "Table name cannot be blank")
-            .regex(
-                namePattern,
-                "Table name must start with a letter and contain only alphanumeric characters and underscores"
-            ),
-        columnName: z
-            .string()
-            .min(1, "Column name cannot be blank")
-            .regex(
-                namePattern,
-                "Column name must start with a letter and contain only alphanumeric characters and underscores"
-            ),
+export const updateColumnDataTypeSchema = baseUpdateColumnSchema
+    .extend({
         dataType: z.enum(DataType),
         characterMaxLength: z.number().int().positive().optional(),
         numericPrecision: z.number().int().positive().optional(),
@@ -140,31 +123,60 @@ export const updateColumnDataTypeSchema = z
         }
     );
 
-export const updateColumnAutoIncrementSchema = z.object({
-    schemaName: z
-        .string()
-        .min(1, "Schema name cannot be blank")
-        .regex(
-            namePattern,
-            "Schema name must start with a letter and contain only alphanumeric characters and underscores"
-        ),
-    tableName: z
-        .string()
-        .min(1, "Table name cannot be blank")
-        .regex(
-            namePattern,
-            "Table name must start with a letter and contain only alphanumeric characters and underscores"
-        ),
-    columnName: z
-        .string()
-        .min(1, "Column name cannot be blank")
-        .regex(
-            namePattern,
-            "Column name must start with a letter and contain only alphanumeric characters and underscores"
-        ),
+export const updateColumnAutoIncrementSchema = baseUpdateColumnSchema.extend({
     autoIncrement: z.boolean(),
 });
+
+// Nullable toggle schema
+export const updateColumnNullableSchema = baseUpdateColumnSchema.extend({
+    isNullable: z.boolean(),
+    populate: z.boolean().optional(),
+});
+
+// Unique toggle schema
+export const updateColumnUniqueSchema = baseUpdateColumnSchema.extend({
+    isUnique: z.boolean(),
+});
+
+// Column default update schema
+export const updateColumnDefaultSchema = baseUpdateColumnSchema
+    .extend({
+        columnDefault: z.string().optional(),
+        // Include column metadata for validation
+        dataType: z.enum(DataType),
+        characterMaxLength: z.number().int().positive().optional(),
+        numericPrecision: z.number().int().positive().optional(),
+        numericScale: z.number().int().min(0).optional(),
+        isUnique: z.boolean(),
+    })
+    .refine(
+        data => {
+            if (data.columnDefault && data.columnDefault.trim() !== "") {
+                const validator = createColumnDefaultValidator(
+                    data.dataType,
+                    data.characterMaxLength,
+                    data.numericPrecision,
+                    data.numericScale,
+                    data.isUnique
+                );
+                try {
+                    validator.parse(data.columnDefault);
+                    return true;
+                } catch {
+                    return false;
+                }
+            }
+            return true;
+        },
+        {
+            message: "Invalid default value for the specified data type and parameters",
+            path: ["columnDefault"],
+        }
+    );
 
 export type RenameColumnSchema = z.infer<typeof renameColumnSchema>;
 export type UpdateColumnDataTypeSchema = z.infer<typeof updateColumnDataTypeSchema>;
 export type UpdateColumnAutoIncrementSchema = z.infer<typeof updateColumnAutoIncrementSchema>;
+export type UpdateColumnNullableSchema = z.infer<typeof updateColumnNullableSchema>;
+export type UpdateColumnUniqueSchema = z.infer<typeof updateColumnUniqueSchema>;
+export type UpdateColumnDefaultSchema = z.infer<typeof updateColumnDefaultSchema>;

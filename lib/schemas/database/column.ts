@@ -12,7 +12,7 @@ const baseColumnDataTypeDefinitionSchema = z.object({
 });
 
 // COLUMN DEFAULT VALUE VALIDATION
-const createColumnDefaultValidator = (
+export const createColumnDefaultValidator = (
     dataType: DataType,
     characterMaxLength?: number,
     numericPrecision?: number,
