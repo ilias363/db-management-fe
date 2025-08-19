@@ -11,6 +11,8 @@ import {
     UpdateColumnDataTypeSchema,
     updateColumnDataTypeSchema,
     UpdateColumnAutoIncrementSchema,
+    UpdateColumnPrimaryKeySchema,
+    updateColumnPrimaryKeySchema,
     UpdateColumnNullableSchema,
     UpdateColumnUniqueSchema,
     UpdateColumnDefaultSchema,
@@ -20,6 +22,7 @@ import {
     renameColumn,
     updateColumnDataType,
     updateColumnAutoIncrement,
+    updateColumnPrimaryKey,
     updateColumnNullable,
     updateColumnUnique,
     updateColumnDefault,
@@ -505,5 +508,107 @@ export function useUpdateColumnDefaultForm({
         isValid: form.formState.isValid,
         isDirty: form.formState.isDirty,
         errors: form.formState.errors,
+    };
+}
+
+// Hook for primary key toggle
+interface UseUpdateColumnPrimaryKeyProps {
+    schemaName: string;
+    tableName: string;
+    columns: Omit<BaseTableColumnMetadataDto, "table">[];
+    onSuccess?: (columns: BaseTableColumnMetadataDto[]) => void;
+    onError?: (error: string) => void;
+}
+
+export function useUpdateColumnPrimaryKeyForm({
+    schemaName,
+    tableName,
+    columns,
+    onSuccess,
+    onError,
+}: UseUpdateColumnPrimaryKeyProps) {
+    const [isPending, startTransition] = useTransition();
+    const [submitError, setSubmitError] = useState<string | null>(null);
+
+    const form = useForm<UpdateColumnPrimaryKeySchema>({
+        resolver: zodResolver(updateColumnPrimaryKeySchema),
+        defaultValues: {
+            schemaName: schemaName,
+            tableName: tableName,
+            columnNames: [],
+            isPrimaryKey: true,
+            force: false,
+        },
+        mode: "onChange",
+    });
+
+    const resetForm = useCallback(() => {
+        form.reset({
+            schemaName: schemaName,
+            tableName: tableName,
+            columnNames: [],
+            isPrimaryKey: true,
+            force: false,
+        });
+        setSubmitError(null);
+        form.clearErrors();
+    }, [form, schemaName, tableName]);
+
+    const submitPrimaryKeyUpdate = useCallback(
+        async (data: UpdateColumnPrimaryKeySchema) => {
+            setSubmitError(null);
+            form.clearErrors();
+
+            startTransition(async () => {
+                try {
+                    const result = await updateColumnPrimaryKey(undefined, data);
+
+                    if (result.success && result.data) {
+                        toast.success(result.message || "Primary key updated successfully");
+                        onSuccess?.(result.data);
+                        resetForm();
+                    } else {
+                        if (result.errors) {
+                            Object.entries(result.errors).forEach(([field, fieldErrors]) => {
+                                if (field === "root") {
+                                    setSubmitError(Array.isArray(fieldErrors) ? fieldErrors.join(", ") : fieldErrors);
+                                } else {
+                                    if (field in form.getValues()) {
+                                        form.setError(field as keyof UpdateColumnPrimaryKeySchema, {
+                                            type: "server",
+                                            message: Array.isArray(fieldErrors) ? fieldErrors[0] : fieldErrors,
+                                        });
+                                    }
+                                }
+                            });
+                        }
+
+                        if (result.message && !result.errors) {
+                            setSubmitError(result.message);
+                        }
+
+                        onError?.(result.message || "An error occurred");
+                    }
+                } catch (error) {
+                    const errorMessage =
+                        error instanceof Error ? error.message : "An unexpected error occurred";
+                    setSubmitError(errorMessage);
+                    onError?.(errorMessage);
+                }
+            });
+        },
+        [form, onSuccess, onError, resetForm]
+    );
+
+    return {
+        form,
+        isPending,
+        submitError,
+        submitPrimaryKeyUpdate,
+        resetForm,
+        isValid: form.formState.isValid,
+        isDirty: form.formState.isDirty,
+        errors: form.formState.errors,
+        availableColumns: columns.map(col => col.columnName),
     };
 }
