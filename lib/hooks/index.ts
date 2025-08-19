@@ -11,4 +11,5 @@ export * from "./use-user-form";
 export * from "./use-admin";
 export * from "./use-index-form";
 export * from "./use-column-form";
+export * from "./use-column-edit";
 export * from "./use-view-form";
