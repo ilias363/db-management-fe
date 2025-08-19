@@ -59,7 +59,7 @@ export function ColumnUniqueDialog({
           <AlertDialogDescription>{`Are you sure you want to ${
             column.isUnique ? "remove" : "add"
           } the unique constraint for
-              column &quot;{column.columnName}&quot;?`}</AlertDialogDescription>
+              column "${column.columnName}"?`}</AlertDialogDescription>
         </AlertDialogHeader>
 
         {!canToggle && (

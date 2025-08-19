@@ -425,6 +425,11 @@ export function useUpdateColumnDefaultForm({
             tableName,
             columnName: column.columnName,
             columnDefault: column.columnDefault || "",
+            dataType: column.dataType.toUpperCase() as DataType,
+            characterMaxLength: column.characterMaxLength || undefined,
+            numericPrecision: column.numericPrecision || undefined,
+            numericScale: column.numericScale || undefined,
+            isUnique: column.isUnique,
         },
         mode: "onChange",
     });
@@ -435,6 +440,11 @@ export function useUpdateColumnDefaultForm({
             tableName,
             columnName: column.columnName,
             columnDefault: column.columnDefault || "",
+            dataType: column.dataType.toUpperCase() as DataType,
+            characterMaxLength: column.characterMaxLength || undefined,
+            numericPrecision: column.numericPrecision || undefined,
+            numericScale: column.numericScale || undefined,
+            isUnique: column.isUnique,
         });
         setSubmitError(null);
         form.clearErrors();

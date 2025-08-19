@@ -135,11 +135,7 @@ export function ColumnDefaultDialog({
                 <Button type="button" variant="outline" onClick={handleClose} disabled={isPending}>
                   Cancel
                 </Button>
-                <Button
-                  type="submit"
-                  disabled={!isValid || !isDirty || isPending}
-                  className="min-w-24"
-                >
+                <Button type="submit" disabled={!isValid || isPending} className="min-w-24">
                   {isPending ? "Updating..." : "Update Default"}
                 </Button>
               </DialogFooter>
