@@ -174,9 +174,41 @@ export const updateColumnDefaultSchema = baseUpdateColumnSchema
         }
     );
 
+// Primary key toggle schema
+export const updateColumnPrimaryKeySchema = z.object({
+    schemaName: z
+        .string()
+        .min(1, "Schema name cannot be blank")
+        .regex(
+            namePattern,
+            "Schema name must start with a letter and contain only alphanumeric characters and underscores"
+        ),
+    tableName: z
+        .string()
+        .min(1, "Table name cannot be blank")
+        .regex(
+            namePattern,
+            "Table name must start with a letter and contain only alphanumeric characters and underscores"
+        ),
+    columnNames: z
+        .array(
+            z
+                .string()
+                .min(1, "Column name cannot be blank")
+                .regex(
+                    namePattern,
+                    "Column name must start with a letter and contain only alphanumeric characters and underscores"
+                )
+        )
+        .min(1, "At least one column must be selected for the primary key"),
+    isPrimaryKey: z.boolean(),
+    force: z.boolean().optional(),
+});
+
 export type RenameColumnSchema = z.infer<typeof renameColumnSchema>;
 export type UpdateColumnDataTypeSchema = z.infer<typeof updateColumnDataTypeSchema>;
 export type UpdateColumnAutoIncrementSchema = z.infer<typeof updateColumnAutoIncrementSchema>;
+export type UpdateColumnPrimaryKeySchema = z.infer<typeof updateColumnPrimaryKeySchema>;
 export type UpdateColumnNullableSchema = z.infer<typeof updateColumnNullableSchema>;
 export type UpdateColumnUniqueSchema = z.infer<typeof updateColumnUniqueSchema>;
 export type UpdateColumnDefaultSchema = z.infer<typeof updateColumnDefaultSchema>;
