@@ -13,6 +13,12 @@ import {
     updateColumnDataTypeSchema,
     UpdateColumnAutoIncrementSchema,
     updateColumnAutoIncrementSchema,
+    UpdateColumnNullableSchema,
+    updateColumnNullableSchema,
+    UpdateColumnUniqueSchema,
+    updateColumnUniqueSchema,
+    UpdateColumnDefaultSchema,
+    updateColumnDefaultSchema,
 } from "@/lib/schemas/database/column-edit";
 import z from "zod";
 
@@ -163,6 +169,179 @@ export async function updateColumnAutoIncrement(
                 errors: {
                     root: ["An unexpected error occurred while updating the column auto-increment."],
                 },
+            };
+        }
+    });
+
+    return authAction();
+}
+
+export async function updateColumnNullable(
+    prevState: ActionState<BaseTableColumnMetadataDto> | undefined,
+    formData: UpdateColumnNullableSchema
+): Promise<ActionState<BaseTableColumnMetadataDto>> {
+    const authAction = await withAuth(async (): Promise<ActionState<BaseTableColumnMetadataDto>> => {
+        const result = updateColumnNullableSchema.safeParse(formData);
+
+        if (!result.success) {
+            return {
+                success: false,
+                errors: z.flattenError(result.error).fieldErrors,
+            };
+        }
+
+        try {
+            const response = await apiClient.column.updateColumnNullable(
+                {
+                    schemaName: formData.schemaName,
+                    tableName: formData.tableName,
+                    columnName: formData.columnName,
+                    isNullable: formData.isNullable,
+                },
+                formData.populate
+            );
+
+            if (!response.success) {
+                return {
+                    success: false,
+                    errors: { root: response.message.split("\n") },
+                };
+            }
+
+            revalidatePath(`/database/tables/${formData.schemaName}/${formData.tableName}`);
+            revalidatePath(`/database/schemas/${formData.schemaName}`);
+
+            return {
+                success: true,
+                message: `Column ${formData.isNullable ? "can now accept" : "no longer accepts"
+                    } NULL values`,
+                data: response.data,
+            };
+        } catch (error) {
+            if (error instanceof HttpError) {
+                return {
+                    success: false,
+                    errors: { root: [error.message] },
+                };
+            }
+
+            return {
+                success: false,
+                errors: {
+                    root: ["An unexpected error occurred while updating the column nullable constraint."],
+                },
+            };
+        }
+    });
+
+    return authAction();
+}
+
+export async function updateColumnUnique(
+    prevState: ActionState<BaseTableColumnMetadataDto> | undefined,
+    formData: UpdateColumnUniqueSchema
+): Promise<ActionState<BaseTableColumnMetadataDto>> {
+    const authAction = await withAuth(async (): Promise<ActionState<BaseTableColumnMetadataDto>> => {
+        const result = updateColumnUniqueSchema.safeParse(formData);
+
+        if (!result.success) {
+            return {
+                success: false,
+                errors: z.flattenError(result.error).fieldErrors,
+            };
+        }
+
+        try {
+            const response = await apiClient.column.updateColumnUnique(formData);
+
+            if (!response.success) {
+                return {
+                    success: false,
+                    errors: { root: response.message.split("\n") },
+                };
+            }
+
+            revalidatePath(`/database/tables/${formData.schemaName}/${formData.tableName}`);
+            revalidatePath(`/database/schemas/${formData.schemaName}`);
+
+            return {
+                success: true,
+                message: `Column ${formData.isUnique ? "now enforces" : "no longer enforces"
+                    } unique constraint`,
+                data: response.data,
+            };
+        } catch (error) {
+            if (error instanceof HttpError) {
+                return {
+                    success: false,
+                    errors: { root: [error.message] },
+                };
+            }
+
+            return {
+                success: false,
+                errors: {
+                    root: ["An unexpected error occurred while updating the column unique constraint."],
+                },
+            };
+        }
+    });
+
+    return authAction();
+}
+
+export async function updateColumnDefault(
+    prevState: ActionState<BaseTableColumnMetadataDto> | undefined,
+    formData: UpdateColumnDefaultSchema
+): Promise<ActionState<BaseTableColumnMetadataDto>> {
+    const authAction = await withAuth(async (): Promise<ActionState<BaseTableColumnMetadataDto>> => {
+        const result = updateColumnDefaultSchema.safeParse(formData);
+
+        if (!result.success) {
+            return {
+                success: false,
+                errors: z.flattenError(result.error).fieldErrors,
+            };
+        }
+
+        try {
+            const response = await apiClient.column.updateColumnDefault({
+                schemaName: formData.schemaName,
+                tableName: formData.tableName,
+                columnName: formData.columnName,
+                columnDefault: formData.columnDefault || "NULL",
+            });
+
+            if (!response.success) {
+                return {
+                    success: false,
+                    errors: { root: response.message.split("\n") },
+                };
+            }
+
+            revalidatePath(`/database/tables/${formData.schemaName}/${formData.tableName}`);
+            revalidatePath(`/database/schemas/${formData.schemaName}`);
+
+            const defaultMsg = formData.columnDefault
+                ? `Column default value updated to "${formData.columnDefault}"`
+                : "Column default value removed";
+
+            return {
+                success: true,
+                message: defaultMsg,
+                data: response.data,
+            };
+        } catch (error) {
+            if (error instanceof HttpError) {
+                return {
+                    success: false,
+                    errors: { root: [error.message] },
+                };
+            }
+
+            return {
+                success: false,
+                errors: { root: ["An unexpected error occurred while updating the column default value."] },
             };
         }
     });
