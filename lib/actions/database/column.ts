@@ -254,3 +254,45 @@ export async function createForeignKeyColumn(
 
     return authAction(prevState, formData);
 }
+
+export async function deleteColumn(
+    schemaName: string,
+    tableName: string,
+    columnName: string,
+    force: boolean = false
+): Promise<ActionState<void>> {
+    const authAction = await withAuth(async (): Promise<ActionState<void>> => {
+        try {
+            const response = await apiClient.column.deleteColumn(schemaName, tableName, columnName, force);
+
+            if (!response.success) {
+                return {
+                    success: false,
+                    message: response.message || "Failed to delete column",
+                };
+            }
+
+            revalidatePath(`/database/tables/${schemaName}/${tableName}`);
+            revalidatePath(`/database/schemas/${schemaName}`);
+
+            return {
+                success: true,
+                message: `Column "${columnName}" deleted successfully`,
+            };
+        } catch (error) {
+            if (error instanceof HttpError) {
+                return {
+                    success: false,
+                    message: error.message || "Failed to delete column",
+                };
+            }
+
+            return {
+                success: false,
+                message: "An unexpected error occurred while deleting the column",
+            };
+        }
+    });
+
+    return authAction();
+}
