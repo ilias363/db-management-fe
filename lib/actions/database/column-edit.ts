@@ -21,6 +21,8 @@ import {
     updateColumnUniqueSchema,
     UpdateColumnDefaultSchema,
     updateColumnDefaultSchema,
+    UpdateColumnForeignKeySchema,
+    updateColumnForeignKeySchema,
 } from "@/lib/schemas/database/column-edit";
 import z from "zod";
 
@@ -403,6 +405,60 @@ export async function updateColumnPrimaryKey(
             return {
                 success: false,
                 errors: { root: ["An unexpected error occurred while updating the primary key."] },
+            };
+        }
+    });
+
+    return authAction();
+}
+
+export async function updateColumnForeignKey(
+    prevState: ActionState<BaseTableColumnMetadataDto> | undefined,
+    formData: UpdateColumnForeignKeySchema
+): Promise<ActionState<BaseTableColumnMetadataDto>> {
+    const authAction = await withAuth(async (): Promise<ActionState<BaseTableColumnMetadataDto>> => {
+        const result = updateColumnForeignKeySchema.safeParse(formData);
+
+        if (!result.success) {
+            return {
+                success: false,
+                errors: z.flattenError(result.error).fieldErrors,
+            };
+        }
+
+        try {
+            const response = await apiClient.column.updateColumnForeignKey(formData);
+
+            if (!response.success) {
+                return {
+                    success: false,
+                    errors: { root: response.message.split("\n") },
+                };
+            }
+
+            revalidatePath(`/database/tables/${formData.schemaName}/${formData.tableName}`);
+            revalidatePath(`/database/schemas/${formData.schemaName}`);
+
+            const actionMsg = formData.isForeignKey
+                ? `Foreign key constraint created, referencing ${formData.referencedSchemaName}.${formData.referencedTableName}.${formData.referencedColumnName}`
+                : "Foreign key constraint removed";
+
+            return {
+                success: true,
+                message: actionMsg,
+                data: response.data,
+            };
+        } catch (error) {
+            if (error instanceof HttpError) {
+                return {
+                    success: false,
+                    errors: { root: [error.message] },
+                };
+            }
+
+            return {
+                success: false,
+                errors: { root: ["An unexpected error occurred while updating the foreign key constraint."] },
             };
         }
     });
