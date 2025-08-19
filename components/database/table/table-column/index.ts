@@ -4,3 +4,6 @@ export * from "./primary-key-column-manager";
 export * from "./primary-key-foreign-key-column-manager";
 export * from "./column-table";
 export * from "./delete-column-dialog";
+export * from "./rename-column-dialog";
+export * from "./update-column-data-type-dialog";
+export * from "./auto-increment-column-dialog";

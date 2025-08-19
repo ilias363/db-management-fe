@@ -390,6 +390,7 @@ export function TableDetailsPageContent({ schemaName, tableName }: TableDetailsP
             canModify={canModifyTable}
             canDelete={canDeleteTable}
             onDeleteColumn={handleDeleteColumn}
+            onColumnUpdated={handleRefresh}
           />
         </CardContent>
       </Card>

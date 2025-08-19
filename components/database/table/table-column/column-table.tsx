@@ -1,19 +1,36 @@
+"use client";
+
+import React, { useState } from "react";
 import { ActionButton, ColumnDef, DataTable } from "@/components/common";
 import { Badge } from "@/components/ui/badge";
-import { ColumnType } from "@/lib/types";
+import { ColumnType, DataType } from "@/lib/types";
 import { BaseTableColumnMetadataDto, TableMetadataDto } from "@/lib/types/database";
-import { Columns, Edit, Trash2 } from "lucide-react";
+import { Columns, Trash2, FileEdit, Settings, ToggleLeft, ToggleRight } from "lucide-react";
 import Link from "next/link";
-import { toast } from "sonner";
+import { RenameColumnDialog, UpdateColumnDataTypeDialog, AutoIncrementColumnDialog } from "./index";
 
 interface ColumnTableProps {
   table: TableMetadataDto;
   canModify: boolean;
   canDelete: boolean;
   onDeleteColumn?: (column: Omit<BaseTableColumnMetadataDto, "table">) => void;
+  onColumnUpdated?: () => void;
 }
 
-export function ColumnTable({ table, canModify, canDelete, onDeleteColumn }: ColumnTableProps) {
+type DialogType = "rename" | "dataType" | "autoIncrement" | null;
+
+export function ColumnTable({
+  table,
+  canModify,
+  canDelete,
+  onDeleteColumn,
+  onColumnUpdated,
+}: ColumnTableProps) {
+  const [dialogState, setDialogState] = useState<{
+    type: DialogType;
+    column: Omit<BaseTableColumnMetadataDto, "table"> | null;
+  }>({ type: null, column: null });
+
   const getColumnTypeBadgeVariant = (columnType: ColumnType) => {
     switch (columnType) {
       case ColumnType.PRIMARY_KEY:
@@ -28,6 +45,32 @@ export function ColumnTable({ table, canModify, canDelete, onDeleteColumn }: Col
   };
 
   const isSystemSchema = table.schema.isSystemSchema;
+
+  const openDialog = (type: DialogType, column: Omit<BaseTableColumnMetadataDto, "table">) => {
+    setDialogState({ type, column });
+  };
+
+  const closeDialog = () => {
+    setDialogState({ type: null, column: null });
+  };
+
+  const handleSuccess = () => {
+    onColumnUpdated?.();
+    closeDialog();
+  };
+
+  const isAutoIncrementAvailable = (column: Omit<BaseTableColumnMetadataDto, "table">) => {
+    const autoIncrementCompatibleTypes = [
+      DataType.INT,
+      DataType.INTEGER,
+      DataType.SMALLINT,
+      DataType.BIGINT,
+    ];
+    const isPrimaryKey = [ColumnType.PRIMARY_KEY, ColumnType.PRIMARY_KEY_FOREIGN_KEY].includes(
+      column.columnType
+    );
+    return autoIncrementCompatibleTypes.includes(column.dataType) && isPrimaryKey;
+  };
 
   const columnDefinitions: ColumnDef<Omit<BaseTableColumnMetadataDto, "table">>[] = [
     {
@@ -147,11 +190,31 @@ export function ColumnTable({ table, canModify, canDelete, onDeleteColumn }: Col
 
   const columnActions: ActionButton<Omit<BaseTableColumnMetadataDto, "table">>[] = [
     {
-      label: "Edit Column",
-      icon: <Edit className="h-4 w-4" />,
-      onClick: () => toast.info("To be implemented"),
+      label: "Rename Column",
+      icon: <FileEdit className="h-4 w-4" />,
+      onClick: column => openDialog("rename", column),
       variant: "ghost",
       disabled: () => !canModify || isSystemSchema,
+    },
+    {
+      label: "Update Data Type",
+      icon: <Settings className="h-4 w-4" />,
+      onClick: column => openDialog("dataType", column),
+      variant: "ghost",
+      disabled: () => !canModify || isSystemSchema,
+    },
+    {
+      label: column => (column.autoIncrement ? "Disable Auto-Increment" : "Enable Auto-Increment"),
+      icon: column =>
+        column.autoIncrement ? (
+          <ToggleLeft className="h-4 w-4" />
+        ) : (
+          <ToggleRight className="h-4 w-4" />
+        ),
+      onClick: column => openDialog("autoIncrement", column),
+      variant: "ghost",
+      disabled: column => !canModify || isSystemSchema || !isAutoIncrementAvailable(column),
+      hidden: column => !isAutoIncrementAvailable(column),
     },
     {
       label: "Delete Column",
@@ -163,14 +226,47 @@ export function ColumnTable({ table, canModify, canDelete, onDeleteColumn }: Col
   ];
 
   return (
-    <DataTable<Omit<BaseTableColumnMetadataDto, "table">>
-      data={table.columns || []}
-      columns={columnDefinitions}
-      actions={columnActions}
-      getRowKey={column => column.columnName}
-      emptyStateIcon={<Columns className="w-12 h-12 text-muted-foreground opacity-50" />}
-      emptyStateTitle="No columns found"
-      emptyStateDescription="This table has no columns defined."
-    />
+    <>
+      <DataTable<Omit<BaseTableColumnMetadataDto, "table">>
+        data={table.columns || []}
+        columns={columnDefinitions}
+        actions={columnActions}
+        getRowKey={column => column.columnName}
+        emptyStateIcon={<Columns className="w-12 h-12 text-muted-foreground opacity-50" />}
+        emptyStateTitle="No columns found"
+        emptyStateDescription="This table has no columns defined."
+      />
+
+      {dialogState.column && (
+        <>
+          <RenameColumnDialog
+            column={dialogState.column}
+            schemaName={table.schema.schemaName}
+            tableName={table.tableName}
+            open={dialogState.type === "rename"}
+            onOpenChange={open => !open && closeDialog()}
+            onSuccess={handleSuccess}
+          />
+
+          <UpdateColumnDataTypeDialog
+            column={dialogState.column}
+            schemaName={table.schema.schemaName}
+            tableName={table.tableName}
+            open={dialogState.type === "dataType"}
+            onOpenChange={open => !open && closeDialog()}
+            onSuccess={handleSuccess}
+          />
+
+          <AutoIncrementColumnDialog
+            column={dialogState.column}
+            schemaName={table.schema.schemaName}
+            tableName={table.tableName}
+            open={dialogState.type === "autoIncrement"}
+            onOpenChange={open => !open && closeDialog()}
+            onSuccess={handleSuccess}
+          />
+        </>
+      )}
+    </>
   );
 }
