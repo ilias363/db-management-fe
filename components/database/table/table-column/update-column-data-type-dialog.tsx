@@ -57,6 +57,9 @@ export function UpdateColumnDataTypeDialog({
   onSuccess,
 }: UpdateColumnDataTypeDialogProps) {
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
+  // A state to force re-render cuz the form doesn't automatically update the fields
+  // (probably something related to react-compiler auto memoization)
+  const [rerenderTrigger, setRerenderTrigger] = useState(1);
 
   const { form, isPending, submitError, submitUpdate, resetForm, isDirty, errors } =
     useUpdateColumnDataTypeForm({
@@ -97,10 +100,12 @@ export function UpdateColumnDataTypeDialog({
     setValue("numericPrecision", undefined);
     setValue("numericScale", undefined);
     setValue("dataType", newDataType);
+    setRerenderTrigger(prev => prev + 1);
   };
 
-  const requiresCharacterMaxLength = NEEDS_CHARACTER_MAX_LENGTH.includes(dataType);
-  const supportsNumericPrecision = NEEDS_NUMERIC_PRECISION.includes(dataType);
+  const requiresCharacterMaxLength =
+    NEEDS_CHARACTER_MAX_LENGTH.includes(dataType) && !!rerenderTrigger;
+  const supportsNumericPrecision = NEEDS_NUMERIC_PRECISION.includes(dataType) && !!rerenderTrigger;
 
   return (
     <>

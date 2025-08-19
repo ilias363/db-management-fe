@@ -17,6 +17,7 @@ import {
     updateColumnDataType,
     updateColumnAutoIncrement,
 } from "@/lib/actions/database/column-edit";
+import { DataType } from "../types";
 
 // Hook for renaming columns
 interface UseRenameColumnProps {
@@ -142,10 +143,10 @@ export function useUpdateColumnDataTypeForm({
             schemaName,
             tableName,
             columnName: column.columnName,
-            dataType: column.dataType,
-            characterMaxLength: column.characterMaxLength,
-            numericPrecision: column.numericPrecision,
-            numericScale: column.numericScale,
+            dataType: column.dataType.toUpperCase() as DataType,
+            characterMaxLength: column.characterMaxLength || undefined,
+            numericPrecision: column.numericPrecision || undefined,
+            numericScale: column.numericScale || undefined,
         },
         mode: "onChange",
     });
@@ -155,10 +156,10 @@ export function useUpdateColumnDataTypeForm({
             schemaName,
             tableName,
             columnName: column.columnName,
-            dataType: column.dataType,
-            characterMaxLength: column.characterMaxLength,
-            numericPrecision: column.numericPrecision,
-            numericScale: column.numericScale,
+            dataType: column.dataType.toUpperCase() as DataType,
+            characterMaxLength: column.characterMaxLength || undefined,
+            numericPrecision: column.numericPrecision || undefined,
+            numericScale: column.numericScale || undefined,
         });
         setSubmitError(null);
         form.clearErrors();
