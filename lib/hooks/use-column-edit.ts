@@ -17,6 +17,8 @@ import {
     UpdateColumnUniqueSchema,
     UpdateColumnDefaultSchema,
     updateColumnDefaultSchema,
+    UpdateColumnForeignKeySchema,
+    updateColumnForeignKeySchema,
 } from "@/lib/schemas/database";
 import {
     renameColumn,
@@ -26,8 +28,9 @@ import {
     updateColumnNullable,
     updateColumnUnique,
     updateColumnDefault,
+    updateColumnForeignKey,
 } from "@/lib/actions/database";
-import { DataType } from "../types";
+import { DataType, FKOnAction, ColumnType } from "../types";
 
 // Hook for renaming columns
 interface UseRenameColumnProps {
@@ -610,5 +613,155 @@ export function useUpdateColumnPrimaryKeyForm({
         isDirty: form.formState.isDirty,
         errors: form.formState.errors,
         availableColumns: columns.map(col => col.columnName),
+    };
+}
+
+// Hook for foreign key toggle
+interface UseUpdateColumnForeignKeyProps {
+    column: Omit<BaseTableColumnMetadataDto, "table">;
+    schemaName: string;
+    tableName: string;
+    onSuccess?: (column: BaseTableColumnMetadataDto) => void;
+    onError?: (error: string) => void;
+}
+
+export function useUpdateColumnForeignKeyForm({
+    column,
+    schemaName,
+    tableName,
+    onSuccess,
+    onError,
+}: UseUpdateColumnForeignKeyProps) {
+    const [isPending, startTransition] = useTransition();
+    const [submitError, setSubmitError] = useState<string | null>(null);
+
+    const hasForeignKey = column.columnType === ColumnType.FOREIGN_KEY || column.columnType === ColumnType.PRIMARY_KEY_FOREIGN_KEY;
+
+    const form = useForm<UpdateColumnForeignKeySchema>({
+        resolver: zodResolver(updateColumnForeignKeySchema),
+        defaultValues: {
+            schemaName,
+            tableName,
+            columnName: column.columnName,
+            isForeignKey: hasForeignKey,
+            referencedSchemaName: "referencedSchemaName" in column ? column.referencedSchemaName as string : undefined,
+            referencedTableName: "referencedTableName" in column ? column.referencedTableName as string : undefined,
+            referencedColumnName: "referencedColumnName" in column ? column.referencedColumnName as string : undefined,
+            onUpdateAction: "onUpdateAction" in column ? column.onUpdateAction as FKOnAction : undefined,
+            onDeleteAction: "onDeleteAction" in column ? column.onDeleteAction as FKOnAction : undefined,
+        },
+        mode: "onChange",
+    });
+
+    const resetForm = useCallback(() => {
+        form.reset({
+            schemaName,
+            tableName,
+            columnName: column.columnName,
+            isForeignKey: hasForeignKey,
+            referencedSchemaName: "referencedSchemaName" in column ? column.referencedSchemaName as string : undefined,
+            referencedTableName: "referencedTableName" in column ? column.referencedTableName as string : undefined,
+            referencedColumnName: "referencedColumnName" in column ? column.referencedColumnName as string : undefined,
+            onUpdateAction: "onUpdateAction" in column ? column.onUpdateAction as FKOnAction : undefined,
+            onDeleteAction: "onDeleteAction" in column ? column.onDeleteAction as FKOnAction : undefined,
+        });
+        setSubmitError(null);
+        form.clearErrors();
+    }, [form, column, schemaName, tableName, hasForeignKey]);
+
+    const submitForeignKeyUpdate = useCallback(
+        async (data: UpdateColumnForeignKeySchema) => {
+            setSubmitError(null);
+            form.clearErrors();
+
+            startTransition(async () => {
+                try {
+                    const result = await updateColumnForeignKey(undefined, data);
+
+                    if (result.success && result.data) {
+                        toast.success(result.message || "Foreign key constraint updated successfully");
+                        onSuccess?.(result.data);
+                        resetForm();
+                    } else {
+                        if (result.errors) {
+                            Object.entries(result.errors).forEach(([field, fieldErrors]) => {
+                                if (field === "root") {
+                                    setSubmitError(Array.isArray(fieldErrors) ? fieldErrors.join(", ") : fieldErrors);
+                                } else {
+                                    if (field in form.getValues()) {
+                                        form.setError(field as keyof UpdateColumnForeignKeySchema, {
+                                            type: "server",
+                                            message: Array.isArray(fieldErrors) ? fieldErrors[0] : fieldErrors,
+                                        });
+                                    }
+                                }
+                            });
+                        }
+
+                        if (result.message && !result.errors) {
+                            setSubmitError(result.message);
+                        }
+
+                        onError?.(result.message || "An error occurred");
+                    }
+                } catch (error) {
+                    const errorMessage =
+                        error instanceof Error ? error.message : "An unexpected error occurred";
+                    setSubmitError(errorMessage);
+                    onError?.(errorMessage);
+                }
+            });
+        },
+        [form, onSuccess, onError, resetForm]
+    );
+
+    const submitForeignKeyRemoval = useCallback(
+        async () => {
+            const formData: UpdateColumnForeignKeySchema = {
+                schemaName,
+                tableName,
+                columnName: column.columnName,
+                isForeignKey: false,
+            };
+
+            setSubmitError(null);
+
+            startTransition(async () => {
+                try {
+                    const result = await updateColumnForeignKey(undefined, formData);
+
+                    if (result.success && result.data) {
+                        toast.success(result.message || "Foreign key constraint removed successfully");
+                        onSuccess?.(result.data);
+                        resetForm();
+                    } else {
+                        const errorMessage = result.message || "Failed to remove foreign key constraint";
+                        setSubmitError(errorMessage);
+                        toast.error(errorMessage);
+                        onError?.(errorMessage);
+                    }
+                } catch (error) {
+                    const errorMessage =
+                        error instanceof Error ? error.message : "An unexpected error occurred";
+                    setSubmitError(errorMessage);
+                    toast.error(errorMessage);
+                    onError?.(errorMessage);
+                }
+            });
+        },
+        [column, schemaName, tableName, onSuccess, onError, resetForm]
+    );
+
+    return {
+        form,
+        isPending,
+        submitError,
+        submitForeignKeyUpdate,
+        submitForeignKeyRemoval,
+        resetForm,
+        isValid: form.formState.isValid,
+        isDirty: form.formState.isDirty,
+        errors: form.formState.errors,
+        hasForeignKey: hasForeignKey,
     };
 }
