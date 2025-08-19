@@ -11,3 +11,4 @@ export * from "./column-nullable-dialog";
 export * from "./column-unique-dialog";
 export * from "./column-default-dialog";
 export * from "./column-primary-key-dialog";
+export * from "./column-foreign-key-dialog";
