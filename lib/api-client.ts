@@ -53,6 +53,11 @@ import type {
   ViewResponse,
   ViewsResponse,
   UpdateViewDto,
+  UpdateColumnAutoIncrementDto,
+  UpdateColumnUniqueDto,
+  UpdateColumnNullableDto,
+  UpdateColumnForeignKeyDto,
+  UpdateColumnPrimaryKeyDto,
 } from "./types/database";
 import { HttpError } from "./errors";
 
@@ -384,14 +389,14 @@ class ApiClientImpl implements ApiClient {
         body: JSON.stringify(updateCol),
       }),
 
-    updateColumnAutoIncrement: (updateCol: UpdateColumnDataTypeDto): Promise<ColumnResponse> =>
+    updateColumnAutoIncrement: (updateCol: UpdateColumnAutoIncrementDto): Promise<ColumnResponse> =>
       this.request("/columns/auto-increment", {
         method: "PATCH",
         body: JSON.stringify(updateCol),
       }),
 
     updateColumnNullable: (
-      updateCol: UpdateColumnDataTypeDto,
+      updateCol: UpdateColumnNullableDto,
       populate?: boolean
     ): Promise<ColumnResponse> =>
       this.request(`/columns/nullable${populate ? "?populate=true" : ""}`, {
@@ -399,7 +404,7 @@ class ApiClientImpl implements ApiClient {
         body: JSON.stringify(updateCol),
       }),
 
-    updateColumnUnique: (updateCol: UpdateColumnDataTypeDto): Promise<ColumnResponse> =>
+    updateColumnUnique: (updateCol: UpdateColumnUniqueDto): Promise<ColumnResponse> =>
       this.request("/columns/unique", {
         method: "PATCH",
         body: JSON.stringify(updateCol),
@@ -412,7 +417,7 @@ class ApiClientImpl implements ApiClient {
       }),
 
     updateColumnPrimaryKey: (
-      updateCol: UpdateColumnDataTypeDto,
+      updateCol: UpdateColumnPrimaryKeyDto,
       force?: boolean
     ): Promise<ColumnResponse> =>
       this.request(`/columns/primary-key${force ? "?force=true" : ""}`, {
@@ -420,7 +425,7 @@ class ApiClientImpl implements ApiClient {
         body: JSON.stringify(updateCol),
       }),
 
-    updateColumnForeignKey: (updateCol: UpdateColumnDataTypeDto): Promise<ColumnResponse> =>
+    updateColumnForeignKey: (updateCol: UpdateColumnForeignKeyDto): Promise<ColumnResponse> =>
       this.request("/columns/foreign-key", {
         method: "PATCH",
         body: JSON.stringify(updateCol),
