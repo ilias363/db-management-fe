@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { BaseTableColumnMetadataDto } from "@/lib/types/database";
 import { useUpdateColumnAutoIncrementForm } from "@/lib/hooks/use-column-edit";
-import { ColumnType, AUTO_INCREMENT_COMPATIBLE_TYPES } from "@/lib/types";
+import { ColumnType, AUTO_INCREMENT_COMPATIBLE_TYPES, DataType } from "@/lib/types";
 import { toast } from "sonner";
 
 interface AutoIncrementColumnDialogProps {
@@ -45,7 +45,9 @@ export function AutoIncrementColumnDialog({
     onError: (error: string) => toast.error(error),
   });
 
-  const isCompatible = AUTO_INCREMENT_COMPATIBLE_TYPES.includes(column.dataType);
+  const isCompatible = AUTO_INCREMENT_COMPATIBLE_TYPES.includes(
+    column.dataType.toUpperCase() as DataType
+  );
   const isPrimaryKey = [ColumnType.PRIMARY_KEY, ColumnType.PRIMARY_KEY_FOREIGN_KEY].includes(
     column.columnType
   );
