@@ -14,15 +14,8 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { BaseTableColumnMetadataDto } from "@/lib/types/database";
 import { useUpdateColumnAutoIncrementForm } from "@/lib/hooks/use-column-edit";
-import { DataType, ColumnType } from "@/lib/types";
+import { ColumnType, AUTO_INCREMENT_COMPATIBLE_TYPES } from "@/lib/types";
 import { toast } from "sonner";
-
-const AUTO_INCREMENT_COMPATIBLE_TYPES = [
-  DataType.INT,
-  DataType.INTEGER,
-  DataType.SMALLINT,
-  DataType.BIGINT,
-];
 
 interface AutoIncrementColumnDialogProps {
   column: Omit<BaseTableColumnMetadataDto, "table">;

@@ -77,6 +77,16 @@ export enum DataType {
     TIMESTAMP = 'TIMESTAMP'
 }
 
+export const AUTO_INCREMENT_COMPATIBLE_TYPES = [
+    DataType.INT,
+    DataType.INTEGER,
+    DataType.SMALLINT,
+    DataType.BIGINT,
+    DataType.FLOAT,
+    DataType.REAL,
+    DataType.DOUBLE,
+];
+
 export enum ColumnType {
     STANDARD = 'STANDARD',
     PRIMARY_KEY = 'PRIMARY_KEY',

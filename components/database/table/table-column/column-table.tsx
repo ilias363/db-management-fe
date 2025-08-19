@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { ActionButton, ColumnDef, DataTable } from "@/components/common";
 import { Badge } from "@/components/ui/badge";
-import { ColumnType, DataType } from "@/lib/types";
+import { AUTO_INCREMENT_COMPATIBLE_TYPES, ColumnType } from "@/lib/types";
 import { BaseTableColumnMetadataDto, TableMetadataDto } from "@/lib/types/database";
 import { Columns, Trash2, FileEdit, Settings, ToggleLeft, ToggleRight } from "lucide-react";
 import Link from "next/link";
@@ -60,16 +60,10 @@ export function ColumnTable({
   };
 
   const isAutoIncrementAvailable = (column: Omit<BaseTableColumnMetadataDto, "table">) => {
-    const autoIncrementCompatibleTypes = [
-      DataType.INT,
-      DataType.INTEGER,
-      DataType.SMALLINT,
-      DataType.BIGINT,
-    ];
     const isPrimaryKey = [ColumnType.PRIMARY_KEY, ColumnType.PRIMARY_KEY_FOREIGN_KEY].includes(
       column.columnType
     );
-    return autoIncrementCompatibleTypes.includes(column.dataType) && isPrimaryKey;
+    return AUTO_INCREMENT_COMPATIBLE_TYPES.includes(column.dataType) && isPrimaryKey;
   };
 
   const columnDefinitions: ColumnDef<Omit<BaseTableColumnMetadataDto, "table">>[] = [

@@ -1,4 +1,4 @@
-import { ColumnType, DataType, FKOnAction } from "@/lib/types";
+import { AUTO_INCREMENT_COMPATIBLE_TYPES, ColumnType, DataType, FKOnAction } from "@/lib/types";
 import z from "zod";
 
 const namePattern = /^[a-zA-Z][a-zA-Z0-9_]*$/;
@@ -350,12 +350,6 @@ export const standardColumnSchema = baseNewColumnSchema
     );
 
 // PRIMARY KEY COLUMN SCHEMA
-const autoIncrementCompatibleTypes = [
-    DataType.INT,
-    DataType.INTEGER,
-    DataType.SMALLINT,
-    DataType.BIGINT,
-];
 
 export const primaryKeyColumnSchema = baseNewColumnSchema
     .extend({
@@ -442,7 +436,7 @@ export const primaryKeyColumnSchema = baseNewColumnSchema
     // Primary key specific validations
     .refine(
         data => {
-            if (data.autoIncrement && !autoIncrementCompatibleTypes.includes(data.dataType)) {
+            if (data.autoIncrement && !AUTO_INCREMENT_COMPATIBLE_TYPES.includes(data.dataType)) {
                 return false;
             }
             return true;

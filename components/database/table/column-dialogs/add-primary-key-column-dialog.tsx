@@ -32,18 +32,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { ConfirmDialog } from "@/components/common";
 import { usePrimaryKeyColumnForm } from "@/lib/hooks";
-import { DataType } from "@/lib/types";
+import { AUTO_INCREMENT_COMPATIBLE_TYPES, DataType } from "@/lib/types";
 
 const NEEDS_CHARACTER_MAX_LENGTH = [DataType.VARCHAR, DataType.CHAR];
 
 const NEEDS_NUMERIC_PRECISION = [DataType.DECIMAL, DataType.NUMERIC];
-
-const AUTO_INCREMENT_COMPATIBLE_TYPES = [
-  DataType.INT,
-  DataType.INTEGER,
-  DataType.SMALLINT,
-  DataType.BIGINT,
-];
 
 const DATA_TYPES = Object.values(DataType);
 
