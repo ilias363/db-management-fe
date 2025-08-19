@@ -537,7 +537,7 @@ export function useUpdateColumnPrimaryKeyForm({
             tableName: tableName,
             columnNames: [],
             isPrimaryKey: true,
-            force: false,
+            force: undefined,
         },
         mode: "onChange",
     });
@@ -548,7 +548,7 @@ export function useUpdateColumnPrimaryKeyForm({
             tableName: tableName,
             columnNames: [],
             isPrimaryKey: true,
-            force: false,
+            force: undefined,
         });
         setSubmitError(null);
         form.clearErrors();
