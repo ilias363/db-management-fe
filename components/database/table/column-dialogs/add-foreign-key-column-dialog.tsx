@@ -259,7 +259,7 @@ export function AddForeignKeyColumnDialog({
               <div className="space-y-4 border-t pt-4">
                 <h3 className="text-lg font-medium">Foreign Key Reference</h3>
 
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-3 gap-4 items-start">
                   <FormField
                     control={form.control}
                     name="referencedSchemaName"
