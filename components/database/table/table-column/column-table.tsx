@@ -10,9 +10,10 @@ interface ColumnTableProps {
   table: TableMetadataDto;
   canModify: boolean;
   canDelete: boolean;
+  onDeleteColumn?: (column: Omit<BaseTableColumnMetadataDto, "table">) => void;
 }
 
-export function ColumnTable({ table, canModify, canDelete }: ColumnTableProps) {
+export function ColumnTable({ table, canModify, canDelete, onDeleteColumn }: ColumnTableProps) {
   const getColumnTypeBadgeVariant = (columnType: ColumnType) => {
     switch (columnType) {
       case ColumnType.PRIMARY_KEY:
@@ -155,7 +156,7 @@ export function ColumnTable({ table, canModify, canDelete }: ColumnTableProps) {
     {
       label: "Delete Column",
       icon: <Trash2 className="h-4 w-4" />,
-      onClick: () => toast.info("To be implemented"),
+      onClick: column => onDeleteColumn?.(column),
       variant: "destructive",
       disabled: () => !canDelete || isSystemSchema,
     },

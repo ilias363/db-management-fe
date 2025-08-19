@@ -25,12 +25,16 @@ import { formatBytes } from "@/lib/utils";
 import { LastUpdated } from "@/components/common/last-updated";
 import { ErrorMessage, StatsCard } from "@/components/common";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ColumnTable } from "./table-column";
+import { ColumnTable, DeleteColumnDialog } from "./table-column";
 import { IndexTable, CreateIndexDialog, DeleteIndexDialog } from "./table-index";
 import { RenameTableDialog } from "./rename-table-dialog";
 import { DeleteTableDialog } from "./delete-table-dialog";
 import { AddColumnDropdown } from "./add-column-dropdown";
-import { TableMetadataDto, IndexMetadataDto } from "@/lib/types/database";
+import {
+  TableMetadataDto,
+  IndexMetadataDto,
+  BaseTableColumnMetadataDto,
+} from "@/lib/types/database";
 import { useQueryClient } from "@tanstack/react-query";
 import { schemaQueries, tableQueries } from "@/lib/queries";
 
@@ -46,6 +50,10 @@ export function TableDetailsPageContent({ schemaName, tableName }: TableDetailsP
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isCreateIndexDialogOpen, setIsCreateIndexDialogOpen] = useState(false);
   const [indexToDelete, setIndexToDelete] = useState<Omit<IndexMetadataDto, "table"> | null>(null);
+  const [columnToDelete, setColumnToDelete] = useState<Omit<
+    BaseTableColumnMetadataDto,
+    "table"
+  > | null>(null);
 
   const [disableTableFetch, setDisableTableFetch] = useState(false);
 
@@ -116,6 +124,15 @@ export function TableDetailsPageContent({ schemaName, tableName }: TableDetailsP
 
   const handleDeleteIndex = (index: Omit<IndexMetadataDto, "table">) => {
     setIndexToDelete(index);
+  };
+
+  const handleDeleteColumn = (column: Omit<BaseTableColumnMetadataDto, "table">) => {
+    setColumnToDelete(column);
+  };
+
+  const onColumnDeleteSuccess = async () => {
+    await refetchTable();
+    setColumnToDelete(null);
   };
 
   if (!canViewTable && !isLoading) {
@@ -368,7 +385,12 @@ export function TableDetailsPageContent({ schemaName, tableName }: TableDetailsP
           </div>
         </CardHeader>
         <CardContent>
-          <ColumnTable table={table} canModify={canModifyTable} canDelete={canDeleteTable} />
+          <ColumnTable
+            table={table}
+            canModify={canModifyTable}
+            canDelete={canDeleteTable}
+            onDeleteColumn={handleDeleteColumn}
+          />
         </CardContent>
       </Card>
 
@@ -428,6 +450,17 @@ export function TableDetailsPageContent({ schemaName, tableName }: TableDetailsP
           open={!!indexToDelete}
           onOpenChange={open => !open && setIndexToDelete(null)}
           onSuccess={onIndexDeleteSuccess}
+        />
+      )}
+
+      {columnToDelete && (
+        <DeleteColumnDialog
+          column={columnToDelete}
+          schemaName={schemaName}
+          tableName={tableName}
+          open={!!columnToDelete}
+          onOpenChange={open => !open && setColumnToDelete(null)}
+          onSuccess={onColumnDeleteSuccess}
         />
       )}
     </div>
