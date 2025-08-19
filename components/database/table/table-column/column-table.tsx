@@ -5,9 +5,26 @@ import { ActionButton, ColumnDef, DataTable } from "@/components/common";
 import { Badge } from "@/components/ui/badge";
 import { AUTO_INCREMENT_COMPATIBLE_TYPES, ColumnType, DataType } from "@/lib/types";
 import { BaseTableColumnMetadataDto, TableMetadataDto } from "@/lib/types/database";
-import { Columns, Trash2, FileEdit, Settings, ToggleLeft, ToggleRight } from "lucide-react";
+import {
+  Columns,
+  Trash2,
+  FileEdit,
+  Settings,
+  ToggleLeft,
+  ToggleRight,
+  Shield,
+  Hash,
+  ShieldCheck,
+} from "lucide-react";
 import Link from "next/link";
-import { RenameColumnDialog, UpdateColumnDataTypeDialog, AutoIncrementColumnDialog } from "./index";
+import {
+  RenameColumnDialog,
+  UpdateColumnDataTypeDialog,
+  AutoIncrementColumnDialog,
+  ColumnNullableDialog,
+  ColumnUniqueDialog,
+  ColumnDefaultDialog,
+} from "./index";
 
 interface ColumnTableProps {
   table: TableMetadataDto;
@@ -17,7 +34,14 @@ interface ColumnTableProps {
   onColumnUpdated?: () => void;
 }
 
-type DialogType = "rename" | "dataType" | "autoIncrement" | null;
+type DialogType =
+  | "rename"
+  | "dataType"
+  | "autoIncrement"
+  | "nullable"
+  | "unique"
+  | "default"
+  | null;
 
 export function ColumnTable({
   table,
@@ -214,6 +238,33 @@ export function ColumnTable({
       hidden: column => !isAutoIncrementAvailable(column),
     },
     {
+      label: column => (column.isNullable ? "Set NOT NULL" : "Allow NULL"),
+      icon: column =>
+        column.isNullable ? <Shield className="h-4 w-4" /> : <ShieldCheck className="h-4 w-4" />,
+      onClick: column => openDialog("nullable", column),
+      variant: "ghost",
+      disabled: () => !canModify || isSystemSchema,
+      hidden: column =>
+        [ColumnType.PRIMARY_KEY, ColumnType.PRIMARY_KEY_FOREIGN_KEY].includes(column.columnType),
+    },
+    {
+      label: column => (column.isUnique ? "Remove Unique" : "Make Unique"),
+      icon: <Hash className="h-4 w-4" />,
+      onClick: column => openDialog("unique", column),
+      variant: "ghost",
+      disabled: () => !canModify || isSystemSchema,
+      hidden: column => column.columnType !== ColumnType.STANDARD,
+    },
+    {
+      label: "Update Default",
+      icon: <Settings className="h-4 w-4" />,
+      onClick: column => openDialog("default", column),
+      variant: "ghost",
+      disabled: () => !canModify || isSystemSchema,
+      hidden: column =>
+        [ColumnType.PRIMARY_KEY, ColumnType.PRIMARY_KEY_FOREIGN_KEY].includes(column.columnType),
+    },
+    {
       label: "Delete Column",
       icon: <Trash2 className="h-4 w-4" />,
       onClick: column => onDeleteColumn?.(column),
@@ -260,6 +311,33 @@ export function ColumnTable({
             tableName={table.tableName}
             open={dialogState.type === "autoIncrement"}
             onOpenChange={open => !open && closeDialog()}
+            onSuccess={handleSuccess}
+          />
+
+          <ColumnNullableDialog
+            column={dialogState.column}
+            schemaName={table.schema.schemaName}
+            tableName={table.tableName}
+            open={dialogState.type === "nullable"}
+            onOpenChange={open => !open && closeDialog()}
+            onSuccess={handleSuccess}
+          />
+
+          <ColumnUniqueDialog
+            column={dialogState.column}
+            schemaName={table.schema.schemaName}
+            tableName={table.tableName}
+            open={dialogState.type === "unique"}
+            onOpenChange={open => !open && closeDialog()}
+            onSuccess={handleSuccess}
+          />
+
+          <ColumnDefaultDialog
+            column={dialogState.column}
+            schemaName={table.schema.schemaName}
+            tableName={table.tableName}
+            open={dialogState.type === "default"}
+            onOpenChange={closeDialog}
             onSuccess={handleSuccess}
           />
         </>
