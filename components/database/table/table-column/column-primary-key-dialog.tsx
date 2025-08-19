@@ -162,9 +162,11 @@ export function ColumnPrimaryKeyDialog({
                             disabled={isPending}
                           />
                         </FormControl>
-                        <FormLabel className="font-normal cursor-pointer">
-                          Force remove primary key: automatically drops any foreign key constraints
-                          on this column.
+                        <FormLabel className="flex-col items-start cursor-pointer">
+                          Force remove primary key
+                          <p className="font-normal">
+                            Automatically drops any foreign key constraints on this column.
+                          </p>
                         </FormLabel>
                       </FormItem>
                     )}

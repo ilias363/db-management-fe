@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { ActionButton, ColumnDef, DataTable } from "@/components/common";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { AUTO_INCREMENT_COMPATIBLE_TYPES, ColumnType, DataType } from "@/lib/types";
 import { BaseTableColumnMetadataDto, TableMetadataDto } from "@/lib/types/database";
 import {
@@ -15,6 +16,7 @@ import {
   Shield,
   Hash,
   ShieldCheck,
+  Key,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -24,6 +26,7 @@ import {
   ColumnNullableDialog,
   ColumnUniqueDialog,
   ColumnDefaultDialog,
+  ColumnPrimaryKeyDialog,
 } from "./index";
 
 interface ColumnTableProps {
@@ -41,6 +44,7 @@ type DialogType =
   | "nullable"
   | "unique"
   | "default"
+  | "primaryKey"
   | null;
 
 export function ColumnTable({
@@ -70,8 +74,11 @@ export function ColumnTable({
 
   const isSystemSchema = table.schema.isSystemSchema;
 
-  const openDialog = (type: DialogType, column: Omit<BaseTableColumnMetadataDto, "table">) => {
-    setDialogState({ type, column });
+  const openDialog = (
+    type: DialogType,
+    column?: Omit<BaseTableColumnMetadataDto, "table"> | null
+  ) => {
+    setDialogState({ type, column: column || null });
   };
 
   const closeDialog = () => {
@@ -275,6 +282,17 @@ export function ColumnTable({
 
   return (
     <>
+      <div className="mb-4">
+        <Button
+          onClick={() => openDialog("primaryKey")}
+          disabled={!canModify || isSystemSchema}
+          variant="outline"
+        >
+          <Key className="w-4 h-4 mr-2" />
+          Manage Primary Key
+        </Button>
+      </div>
+
       <DataTable<Omit<BaseTableColumnMetadataDto, "table">>
         data={table.columns || []}
         columns={columnDefinitions}
@@ -342,6 +360,13 @@ export function ColumnTable({
           />
         </>
       )}
+
+      <ColumnPrimaryKeyDialog
+        table={table}
+        open={dialogState.type === "primaryKey"}
+        onOpenChange={closeDialog}
+        onSuccess={handleSuccess}
+      />
     </>
   );
 }
