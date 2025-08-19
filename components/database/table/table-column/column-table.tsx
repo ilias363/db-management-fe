@@ -17,6 +17,7 @@ import {
   Hash,
   ShieldCheck,
   Key,
+  Link2,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -27,6 +28,7 @@ import {
   ColumnUniqueDialog,
   ColumnDefaultDialog,
   ColumnPrimaryKeyDialog,
+  ColumnForeignKeyDialog,
 } from "./index";
 
 interface ColumnTableProps {
@@ -45,6 +47,7 @@ type DialogType =
   | "unique"
   | "default"
   | "primaryKey"
+  | "foreignKey"
   | null;
 
 export function ColumnTable({
@@ -272,6 +275,16 @@ export function ColumnTable({
         [ColumnType.PRIMARY_KEY, ColumnType.PRIMARY_KEY_FOREIGN_KEY].includes(column.columnType),
     },
     {
+      label: column =>
+        [ColumnType.FOREIGN_KEY, ColumnType.PRIMARY_KEY_FOREIGN_KEY].includes(column.columnType)
+          ? "Drop Foreign Key"
+          : "Add Foreign Key",
+      icon: <Link2 className="h-4 w-4" />,
+      onClick: column => openDialog("foreignKey", column),
+      variant: "ghost",
+      disabled: () => !canModify || isSystemSchema,
+    },
+    {
       label: "Delete Column",
       icon: <Trash2 className="h-4 w-4" />,
       onClick: column => onDeleteColumn?.(column),
@@ -367,6 +380,17 @@ export function ColumnTable({
         onOpenChange={closeDialog}
         onSuccess={handleSuccess}
       />
+
+      {dialogState.column && (
+        <ColumnForeignKeyDialog
+          column={dialogState.column}
+          schemaName={table.schema.schemaName}
+          tableName={table.tableName}
+          open={dialogState.type === "foreignKey"}
+          onOpenChange={(open: boolean) => !open && closeDialog()}
+          onSuccess={handleSuccess}
+        />
+      )}
     </>
   );
 }

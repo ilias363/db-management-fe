@@ -146,7 +146,7 @@ export function ColumnForeignKeyDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="lg:max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Link2 className="w-5 h-5" />
@@ -166,7 +166,7 @@ export function ColumnForeignKeyDialog({
                 </Alert>
               )}
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4 items-start">
                   <FormField
                     control={form.control}
                     name="referencedSchemaName"
@@ -174,7 +174,11 @@ export function ColumnForeignKeyDialog({
                       <FormItem>
                         <FormLabel>Referenced Schema *</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter schema name" {...field} />
+                          <Input
+                            placeholder="Enter schema name"
+                            {...field}
+                            value={field.value || ""}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -188,7 +192,11 @@ export function ColumnForeignKeyDialog({
                       <FormItem>
                         <FormLabel>Referenced Table *</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter table name" {...field} />
+                          <Input
+                            placeholder="Enter table name"
+                            {...field}
+                            value={field.value || ""}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -203,7 +211,11 @@ export function ColumnForeignKeyDialog({
                     <FormItem>
                       <FormLabel>Referenced Column *</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter column name" {...field} />
+                        <Input
+                          placeholder="Enter column name"
+                          {...field}
+                          value={field.value || ""}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

@@ -241,16 +241,14 @@ export const updateColumnForeignKeySchema = baseUpdateColumnSchema.extend({
                 return (
                     data.referencedSchemaName &&
                     data.referencedTableName &&
-                    data.referencedColumnName &&
-                    data.onUpdateAction &&
-                    data.onDeleteAction
+                    data.referencedColumnName
                 );
             }
             return true;
         },
         {
             message: "All foreign key fields are required when creating a foreign key constraint",
-            path: ["referencedSchemaName"],
+            path: ["referencedColumnName"],
         }
     );
 
