@@ -1,4 +1,4 @@
-import { DataType } from "@/lib/types";
+import { DataType, FKOnAction } from "@/lib/types";
 import { z } from "zod";
 import { createColumnDefaultValidator } from "./column";
 
@@ -205,6 +205,55 @@ export const updateColumnPrimaryKeySchema = z.object({
     force: z.boolean().optional(),
 });
 
+// Foreign key update schema
+export const updateColumnForeignKeySchema = baseUpdateColumnSchema.extend({
+    isForeignKey: z.boolean(),
+    referencedSchemaName: z
+        .string()
+        .min(1, "Referenced schema name cannot be blank")
+        .regex(
+            namePattern,
+            "Referenced schema name must start with a letter and contain only alphanumeric characters and underscores"
+        )
+        .optional(),
+    referencedTableName: z
+        .string()
+        .min(1, "Referenced table name cannot be blank")
+        .regex(
+            namePattern,
+            "Referenced table name must start with a letter and contain only alphanumeric characters and underscores"
+        )
+        .optional(),
+    referencedColumnName: z
+        .string()
+        .min(1, "Referenced column name cannot be blank")
+        .regex(
+            namePattern,
+            "Referenced column name must start with a letter and contain only alphanumeric characters and underscores"
+        )
+        .optional(),
+    onUpdateAction: z.enum(FKOnAction).optional(),
+    onDeleteAction: z.enum(FKOnAction).optional(),
+})
+    .refine(
+        data => {
+            if (data.isForeignKey) {
+                return (
+                    data.referencedSchemaName &&
+                    data.referencedTableName &&
+                    data.referencedColumnName &&
+                    data.onUpdateAction &&
+                    data.onDeleteAction
+                );
+            }
+            return true;
+        },
+        {
+            message: "All foreign key fields are required when creating a foreign key constraint",
+            path: ["referencedSchemaName"],
+        }
+    );
+
 export type RenameColumnSchema = z.infer<typeof renameColumnSchema>;
 export type UpdateColumnDataTypeSchema = z.infer<typeof updateColumnDataTypeSchema>;
 export type UpdateColumnAutoIncrementSchema = z.infer<typeof updateColumnAutoIncrementSchema>;
@@ -212,3 +261,4 @@ export type UpdateColumnPrimaryKeySchema = z.infer<typeof updateColumnPrimaryKey
 export type UpdateColumnNullableSchema = z.infer<typeof updateColumnNullableSchema>;
 export type UpdateColumnUniqueSchema = z.infer<typeof updateColumnUniqueSchema>;
 export type UpdateColumnDefaultSchema = z.infer<typeof updateColumnDefaultSchema>;
+export type UpdateColumnForeignKeySchema = z.infer<typeof updateColumnForeignKeySchema>;
