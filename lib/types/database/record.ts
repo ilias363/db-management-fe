@@ -1,6 +1,6 @@
 // Record/data management related interfaces
 
-import { ApiResponse, PageDto, SortDirection } from '../index';
+import { ApiResponse, FilterOperator, PageDto, SortDirection } from '../index';
 
 export interface RecordDto {
     schemaName: string;
@@ -97,7 +97,7 @@ export interface BatchDeleteRecordsByValuesDto {
 
 export interface RecordFilterCriteriaDto {
     columnName: string;
-    operator: string; // FilterOperator enum value
+    operator: FilterOperator;
     value?: unknown;
     values?: unknown[]; // For IN/NOT_IN operators
     minValue?: unknown; // For BETWEEN operator

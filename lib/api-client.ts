@@ -58,6 +58,23 @@ import type {
   UpdateColumnNullableDto,
   UpdateColumnForeignKeyDto,
   UpdateColumnPrimaryKeyDto,
+  RecordPageResponse,
+  ViewRecordPageResponse,
+  RecordResponse,
+  RecordsResponse,
+  NewRecordDto,
+  UpdateRecordDto,
+  DeleteRecordDto,
+  UpdateRecordByValuesDto,
+  DeleteRecordByValuesDto,
+  BatchNewRecordsDto,
+  BatchUpdateRecordsDto,
+  BatchDeleteRecordsDto,
+  BatchUpdateRecordsByValuesDto,
+  BatchDeleteRecordsByValuesDto,
+  RecordAdvancedSearchDto,
+  RecordAdvancedSearchResponse,
+  CountResponse,
 } from "./types/database";
 import { HttpError } from "./errors";
 
@@ -453,24 +470,155 @@ class ApiClientImpl implements ApiClient {
   };
 
   record = {
-    getRecords: () => Promise.reject(new Error("Not implemented")),
-    getViewRecords: () => Promise.reject(new Error("Not implemented")),
-    createRecord: () => Promise.reject(new Error("Not implemented")),
-    updateRecord: () => Promise.reject(new Error("Not implemented")),
-    deleteRecord: () => Promise.reject(new Error("Not implemented")),
-    getRecordsByValues: () => Promise.reject(new Error("Not implemented")),
-    getViewRecordsByValues: () => Promise.reject(new Error("Not implemented")),
-    updateRecordByValues: () => Promise.reject(new Error("Not implemented")),
-    deleteRecordByValues: () => Promise.reject(new Error("Not implemented")),
-    createRecords: () => Promise.reject(new Error("Not implemented")),
-    updateRecords: () => Promise.reject(new Error("Not implemented")),
-    deleteRecords: () => Promise.reject(new Error("Not implemented")),
-    updateRecordsByValues: () => Promise.reject(new Error("Not implemented")),
-    deleteRecordsByValues: () => Promise.reject(new Error("Not implemented")),
-    advancedSearch: () => Promise.reject(new Error("Not implemented")),
-    advancedSearchView: () => Promise.reject(new Error("Not implemented")),
-    getRecordCount: () => Promise.reject(new Error("Not implemented")),
-    getViewRecordCount: () => Promise.reject(new Error("Not implemented")),
+    getRecords: (
+      schemaName: string,
+      tableName: string,
+      params?: PaginationParams
+    ): Promise<RecordPageResponse> => {
+      const query = params
+        ? `?${new URLSearchParams(params as Record<string, string>).toString()}`
+        : "";
+      return this.request(`/records/table/${schemaName}/${tableName}${query}`);
+    },
+
+    getViewRecords: (
+      schemaName: string,
+      viewName: string,
+      params?: PaginationParams
+    ): Promise<ViewRecordPageResponse> => {
+      const query = params
+        ? `?${new URLSearchParams(params as Record<string, string>).toString()}`
+        : "";
+      return this.request(`/records/view/${schemaName}/${viewName}${query}`);
+    },
+
+    createRecord: (record: NewRecordDto): Promise<RecordResponse> =>
+      this.request("/records", {
+        method: "POST",
+        body: JSON.stringify(record),
+      }),
+
+    updateRecord: (record: UpdateRecordDto): Promise<RecordResponse> =>
+      this.request("/records", {
+        method: "PUT",
+        body: JSON.stringify(record),
+      }),
+
+    deleteRecord: (record: DeleteRecordDto): Promise<VoidResponse> =>
+      this.request("/records", {
+        method: "DELETE",
+        body: JSON.stringify(record),
+      }),
+
+    getRecordsByValues: (
+      schemaName: string,
+      tableName: string,
+      identifyingValues: Record<string, unknown>,
+      params?: PaginationParams
+    ): Promise<RecordPageResponse> => {
+      let urlParams;
+      if (params) {
+        urlParams = new URLSearchParams(params as Record<string, string>);
+      } else {
+        urlParams = new URLSearchParams();
+      }
+      urlParams.append("identifyingValues", JSON.stringify(identifyingValues));
+
+      return this.request(
+        `/records/table/${schemaName}/${tableName}/by-values${urlParams.toString()}`,
+        {
+          method: "GET",
+          body: JSON.stringify({ identifyingValues }),
+        }
+      );
+    },
+
+    getViewRecordsByValues: (
+      schemaName: string,
+      viewName: string,
+      identifyingValues: Record<string, unknown>,
+      params?: PaginationParams
+    ): Promise<ViewRecordPageResponse> => {
+      let urlParams;
+      if (params) {
+        urlParams = new URLSearchParams(params as Record<string, string>);
+      } else {
+        urlParams = new URLSearchParams();
+      }
+      urlParams.append("identifyingValues", JSON.stringify(identifyingValues));
+
+      return this.request(
+        `/records/view/${schemaName}/${viewName}/by-values${urlParams.toString()}`,
+        {
+          method: "GET",
+          body: JSON.stringify({ identifyingValues }),
+        }
+      );
+    },
+
+    updateRecordByValues: (record: UpdateRecordByValuesDto): Promise<RecordsResponse> =>
+      this.request("/records/by-values", {
+        method: "PUT",
+        body: JSON.stringify(record),
+      }),
+
+    deleteRecordByValues: (record: DeleteRecordByValuesDto): Promise<CountResponse> =>
+      this.request("/records/by-values", {
+        method: "DELETE",
+        body: JSON.stringify(record),
+      }),
+
+    createRecords: (records: BatchNewRecordsDto): Promise<RecordsResponse> =>
+      this.request("/records/batch", {
+        method: "POST",
+        body: JSON.stringify(records),
+      }),
+
+    updateRecords: (records: BatchUpdateRecordsDto): Promise<RecordsResponse> =>
+      this.request("/records/batch", {
+        method: "PUT",
+        body: JSON.stringify(records),
+      }),
+
+    deleteRecords: (records: BatchDeleteRecordsDto): Promise<CountResponse> =>
+      this.request("/records/batch", {
+        method: "DELETE",
+        body: JSON.stringify(records),
+      }),
+
+    updateRecordsByValues: (records: BatchUpdateRecordsByValuesDto): Promise<RecordsResponse> =>
+      this.request("/records/batch/by-values", {
+        method: "PUT",
+        body: JSON.stringify(records),
+      }),
+
+    deleteRecordsByValues: (records: BatchDeleteRecordsByValuesDto): Promise<CountResponse> =>
+      this.request("/records/batch/by-values", {
+        method: "DELETE",
+        body: JSON.stringify(records),
+      }),
+
+    advancedSearch: (
+      searchRequest: RecordAdvancedSearchDto
+    ): Promise<RecordAdvancedSearchResponse> =>
+      this.request("/records/table/advanced-search", {
+        method: "POST",
+        body: JSON.stringify(searchRequest),
+      }),
+
+    advancedSearchView: (
+      searchRequest: RecordAdvancedSearchDto
+    ): Promise<RecordAdvancedSearchResponse> =>
+      this.request("/records/view/advanced-search", {
+        method: "POST",
+        body: JSON.stringify(searchRequest),
+      }),
+
+    getRecordCount: (schemaName: string, tableName: string): Promise<CountResponse> =>
+      this.request(`/records/table/${schemaName}/${tableName}/count`),
+
+    getViewRecordCount: (schemaName: string, viewName: string): Promise<CountResponse> =>
+      this.request(`/records/view/${schemaName}/${viewName}/count`),
   };
 }
 
