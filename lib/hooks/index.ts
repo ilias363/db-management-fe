@@ -4,6 +4,7 @@ export * from "./use-schemas";
 export * from "./use-auth";
 export * from "./use-tables";
 export * from "./use-views";
+export * from "./use-records";
 export * from "./use-table-form";
 export * from "./use-schema-form";
 export * from "./use-role-form";
