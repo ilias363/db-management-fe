@@ -1,6 +1,6 @@
 // Record/data management related interfaces
 
-import { ApiResponse, FilterOperator, PageDto, SortDirection } from '../index';
+import { ApiResponse, FilterOperator, PageDto, SortDirection } from "../index";
 
 export interface RecordDto {
     schemaName: string;
@@ -8,12 +8,12 @@ export interface RecordDto {
     data: Record<string, unknown>;
 }
 
-export interface RecordPageDto extends PageDto<Omit<RecordDto, 'schemaName' | 'tableName'>> {
+export interface TableRecordPageDto extends PageDto<Omit<RecordDto, "schemaName" | "tableName">> {
     schemaName: string;
     tableName: string;
 }
 
-export interface ViewRecordPageDto extends PageDto<Omit<RecordDto, 'schemaName' | 'tableName'>> {
+export interface ViewRecordPageDto extends PageDto<Omit<RecordDto, "schemaName" | "tableName">> {
     schemaName: string;
     viewName: string;
 }
@@ -122,10 +122,10 @@ export interface RecordAdvancedSearchDto {
 }
 
 /*
-*  Advanced record search response DTO
-*/
+ *  Advanced record search response DTO
+ */
 export interface RecordAdvancedSearchResponseDto {
-    records: Omit<RecordDto, 'schemaName' | 'tableName'>[];
+    records: Omit<RecordDto, "schemaName" | "tableName">[];
     totalRecords: number;
     filteredRecords: number; // Records after filtering but before pagination
     currentPage: number;
@@ -146,7 +146,7 @@ export interface RecordAdvancedSearchResponseDto {
 
 export type RecordResponse = ApiResponse<RecordDto>;
 export type RecordsResponse = ApiResponse<RecordDto[]>;
-export type RecordPageResponse = ApiResponse<RecordPageDto>;
+export type RecordPageResponse = ApiResponse<TableRecordPageDto>;
 export type ViewRecordPageResponse = ApiResponse<ViewRecordPageDto>;
 export type CountResponse = ApiResponse<number>;
 export type RecordAdvancedSearchResponse = ApiResponse<RecordAdvancedSearchResponseDto>;

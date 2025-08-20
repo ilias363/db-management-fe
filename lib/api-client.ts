@@ -470,7 +470,7 @@ class ApiClientImpl implements ApiClient {
   };
 
   record = {
-    getRecords: (
+    getTableRecords: (
       schemaName: string,
       tableName: string,
       params?: PaginationParams
@@ -510,7 +510,7 @@ class ApiClientImpl implements ApiClient {
         body: JSON.stringify(record),
       }),
 
-    getRecordsByValues: (
+    getTableRecordsByValues: (
       schemaName: string,
       tableName: string,
       identifyingValues: Record<string, unknown>,
@@ -598,7 +598,7 @@ class ApiClientImpl implements ApiClient {
         body: JSON.stringify(records),
       }),
 
-    advancedSearch: (
+    advancedSearchTable: (
       searchRequest: RecordAdvancedSearchDto
     ): Promise<RecordAdvancedSearchResponse> =>
       this.request("/records/table/advanced-search", {
@@ -614,7 +614,7 @@ class ApiClientImpl implements ApiClient {
         body: JSON.stringify(searchRequest),
       }),
 
-    getRecordCount: (schemaName: string, tableName: string): Promise<CountResponse> =>
+    getTableRecordCount: (schemaName: string, tableName: string): Promise<CountResponse> =>
       this.request(`/records/table/${schemaName}/${tableName}/count`),
 
     getViewRecordCount: (schemaName: string, viewName: string): Promise<CountResponse> =>

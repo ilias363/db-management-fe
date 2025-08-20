@@ -189,7 +189,7 @@ export interface ApiClient {
     deleteIndex(schemaName: string, tableName: string, indexName: string): Promise<VoidResponse>;
   };
   record: {
-    getRecords(
+    getTableRecords(
       schemaName: string,
       tableName: string,
       params?: PaginationParams
@@ -202,7 +202,7 @@ export interface ApiClient {
     createRecord(record: NewRecordDto): Promise<RecordResponse>;
     updateRecord(upcateRecord: UpdateRecordDto): Promise<RecordResponse>;
     deleteRecord(deleteRecord: DeleteRecordDto): Promise<VoidResponse>;
-    getRecordsByValues(
+    getTableRecordsByValues(
       schemaName: string,
       tableName: string,
       identifyingValues: Record<string, unknown>,
@@ -221,9 +221,9 @@ export interface ApiClient {
     deleteRecords(records: BatchDeleteRecordsDto): Promise<CountResponse>;
     updateRecordsByValues(updateData: BatchUpdateRecordsByValuesDto): Promise<RecordsResponse>;
     deleteRecordsByValues(deleteData: BatchDeleteRecordsByValuesDto): Promise<CountResponse>;
-    advancedSearch(search: RecordAdvancedSearchDto): Promise<RecordAdvancedSearchResponse>;
+    advancedSearchTable(search: RecordAdvancedSearchDto): Promise<RecordAdvancedSearchResponse>;
     advancedSearchView(search: RecordAdvancedSearchDto): Promise<RecordAdvancedSearchResponse>;
-    getRecordCount(schemaName: string, tableName: string): Promise<CountResponse>;
+    getTableRecordCount(schemaName: string, tableName: string): Promise<CountResponse>;
     getViewRecordCount(schemaName: string, viewName: string): Promise<CountResponse>;
   };
 }
