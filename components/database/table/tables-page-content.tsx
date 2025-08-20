@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,10 +21,35 @@ import {
 
 export function TablesPageContent() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedSchema, setSelectedSchema] = useState<string>("");
   const [isCreateTableOpen, setIsCreateTableOpen] = useState(false);
   const [fetchTrigger, setFetchTrigger] = useState(0);
   const prevFetchingRef = useRef(false);
+
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const [selectedSchema, setSelectedSchemaState] = useState<string>(
+    searchParams.get("schema") || ""
+  );
+
+  const setSelectedSchema = (schema: string) => {
+    setSelectedSchemaState(schema);
+    const params = new URLSearchParams(searchParams);
+    if (schema) {
+      params.set("schema", schema);
+    } else {
+      params.delete("schema");
+    }
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
+  useEffect(() => {
+    const schemaFromUrl = searchParams.get("schema") || "";
+    if (schemaFromUrl !== selectedSchema) {
+      setSelectedSchemaState(schemaFromUrl);
+    }
+  }, [searchParams, selectedSchema]);
 
   const { data: perms, isLoading: permsLoading, isError: permsError } = useDbPermissions();
 

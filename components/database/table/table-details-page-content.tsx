@@ -102,7 +102,7 @@ export function TableDetailsPageContent({ schemaName, tableName }: TableDetailsP
 
   const onDeleteSuccess = () => {
     setDisableTableFetch(true);
-    router.push(`/database/tables`);
+    router.push(`/database/tables?schema=${encodeURIComponent(schemaName)}`);
 
     queryClient.invalidateQueries({
       queryKey: schemaQueries.detail(schemaName).queryKey,
@@ -139,7 +139,11 @@ export function TableDetailsPageContent({ schemaName, tableName }: TableDetailsP
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => router.back()}>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => router.push(`/database/tables?schema=${encodeURIComponent(schemaName)}`)}
+          >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Tables
           </Button>
@@ -193,7 +197,11 @@ export function TableDetailsPageContent({ schemaName, tableName }: TableDetailsP
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={() => router.back()}>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => router.push(`/database/tables?schema=${encodeURIComponent(schemaName)}`)}
+            >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Tables
             </Button>
@@ -224,7 +232,11 @@ export function TableDetailsPageContent({ schemaName, tableName }: TableDetailsP
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => router.back()}>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => router.push(`/database/tables?schema=${encodeURIComponent(schemaName)}`)}
+          >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Tables
           </Button>
@@ -280,7 +292,11 @@ export function TableDetailsPageContent({ schemaName, tableName }: TableDetailsP
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => router.back()}>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => router.push(`/database/tables?schema=${encodeURIComponent(schemaName)}`)}
+          >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Tables
           </Button>
