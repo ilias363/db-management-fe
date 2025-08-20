@@ -104,9 +104,9 @@ export function ViewDetailsPageContent({ schemaName, viewName }: ViewDetailsPage
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-4">
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => router.push(`/database/views?schema=${encodeURIComponent(schemaName)}`)}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -160,10 +160,12 @@ export function ViewDetailsPageContent({ schemaName, viewName }: ViewDetailsPage
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => router.push(`/database/views?schema=${encodeURIComponent(schemaName)}`)}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() =>
+                router.push(`/database/views?schema=${encodeURIComponent(schemaName)}`)
+              }
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Views
@@ -194,9 +196,9 @@ export function ViewDetailsPageContent({ schemaName, viewName }: ViewDetailsPage
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-4">
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => router.push(`/database/views?schema=${encodeURIComponent(schemaName)}`)}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -250,11 +252,11 @@ export function ViewDetailsPageContent({ schemaName, viewName }: ViewDetailsPage
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => router.push(`/database/views?schema=${encodeURIComponent(schemaName)}`)}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
