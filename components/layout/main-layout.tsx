@@ -5,17 +5,17 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset>
-        <div className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/30 px-6">
+      <SidebarInset className="w-full h-screen overflow-x-hidden">
+        <div className="flex h-14 items-center gap-4 border-b bg-background/95 px-6">
           <SidebarTrigger />
           <div className="flex items-center gap-2">
             <span className="text-lg font-semibold">DB Manager</span>
           </div>
         </div>
 
-        <main className="flex-1 overflow-hidden">
-          <div className="h-full overflow-auto bg-gradient-to-br from-background via-background to-muted/20 p-6">
-            <div className="mx-auto max-w-7xl">{children}</div>
+        <main className="flex-1 overflow-x-hidden">
+          <div className="h-full overflow-y-auto bg-gradient-to-br from-background via-background to-muted/20 p-6">
+            <div className="mx-auto w-full">{children}</div>
           </div>
         </main>
       </SidebarInset>

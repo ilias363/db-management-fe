@@ -105,7 +105,7 @@ export function AppSidebar() {
 
   if (isLoading || !user) {
     return (
-      <Sidebar variant="inset" collapsible="icon">
+      <Sidebar variant="floating" collapsible="icon">
         <SidebarHeader className="border-b">
           <div className="flex items-center justify-center p-4">
             <div className="text-sm text-muted-foreground">Loading...</div>
@@ -116,7 +116,7 @@ export function AppSidebar() {
   }
 
   return (
-    <Sidebar variant="inset" collapsible="icon">
+    <Sidebar variant="floating" collapsible="icon">
       <SidebarHeader className="border-b">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
