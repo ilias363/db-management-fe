@@ -342,16 +342,16 @@ export function TableDataContent({ schemaName, tableName }: TableDataContentProp
                 </div>
 
                 {Array.from({ length: pageSize || 5 }).map((_, i) => (
-                  <div key={i} className="p-4 border-b last:border-b-0">
+                  <div key={i} className="p-2 border-b last:border-b-0">
                     <div className="flex gap-4 items-center">
                       <Skeleton className="h-4 w-4" />
                       <Skeleton className="h-4 w-24" />
                       <Skeleton className="h-4 w-32" />
                       <Skeleton className="h-4 w-20" />
                       <Skeleton className="h-4 w-28" />
-                      <div className="ml-auto flex gap-1">
-                        <Skeleton className="h-8 w-8" />
-                        <Skeleton className="h-8 w-8" />
+                      <div className="ml-auto flex gap-2">
+                        <Skeleton className="h-6 w-6" />
+                        <Skeleton className="h-6 w-6" />
                       </div>
                     </div>
                   </div>
