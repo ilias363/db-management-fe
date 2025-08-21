@@ -55,8 +55,11 @@ interface RecordDataGridProps {
   sortDirection: SortDirection;
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
+  canEditRecords?: boolean;
   onEditRecord?: (record: Record<string, unknown>) => void;
+  canDeleteRecords?: boolean;
   onDeleteRecord?: (record: Record<string, unknown>) => void;
+  onDeleteSelectedRecords?: (records: Record<string, unknown>[]) => void;
 }
 
 export function RecordDataGrid({
@@ -69,8 +72,11 @@ export function RecordDataGrid({
   sortDirection,
   onPageChange,
   onPageSizeChange,
+  canEditRecords = false,
   onEditRecord,
+  canDeleteRecords = false,
   onDeleteRecord,
+  onDeleteSelectedRecords,
 }: RecordDataGridProps) {
   const records = useMemo(() => recordsData?.items || [], [recordsData?.items]);
   const totalPages = recordsData?.totalPages || 0;
@@ -268,26 +274,30 @@ export function RecordDataGrid({
       })
     );
 
-    if (onEditRecord && onDeleteRecord) {
+    if ((canEditRecords && onEditRecord) || (canDeleteRecords && onDeleteRecord)) {
       columnDefs.push({
         id: "actions",
         header: () => <span className="flex items-center justify-end mr-4">Actions</span>,
         cell: ({ row }) => (
           <div className="flex items-center justify-end gap-1">
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => onEditRecord(row.original.originalRecord)}
-            >
-              <Edit className="h-3 w-3" />
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => onDeleteRecord(row.original.originalRecord)}
-            >
-              <Trash2 className="h-3 w-3" />
-            </Button>
+            {canEditRecords && onEditRecord && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => onEditRecord(row.original.originalRecord)}
+              >
+                <Edit className="h-3 w-3" />
+              </Button>
+            )}
+            {canDeleteRecords && onDeleteRecord && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => onDeleteRecord(row.original.originalRecord)}
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            )}
           </div>
         ),
         enableSorting: false,
@@ -296,7 +306,14 @@ export function RecordDataGrid({
     }
 
     return columnDefs;
-  }, [table?.columns, onEditRecord, onDeleteRecord, onSelectionChange]);
+  }, [
+    table?.columns,
+    onSelectionChange,
+    canEditRecords,
+    onEditRecord,
+    canDeleteRecords,
+    onDeleteRecord,
+  ]);
 
   const tableInstance = useReactTable({
     data,
@@ -348,33 +365,47 @@ export function RecordDataGrid({
 
   return (
     <div className="space-y-4">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="mt-1">
-            <Settings2 className="mr-2 h-4 w-4" />
-            Columns Visibility
+      <div className="flex items-center justify-between pt-1 px-1">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline">
+              <Settings2 className="mr-2 h-4 w-4" />
+              Columns Visibility
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-[200px]">
+            <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {tableInstance
+              .getAllColumns()
+              .filter(column => typeof column.accessorFn !== "undefined" && column.getCanHide())
+              .map(column => {
+                return (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    className="capitalize"
+                    checked={column.getIsVisible()}
+                    onCheckedChange={value => column.toggleVisibility(!!value)}
+                  >
+                    {column.id}
+                  </DropdownMenuCheckboxItem>
+                );
+              })}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {canDeleteRecords && selectedRecords.length > 0 && (
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={() => onDeleteSelectedRecords?.(selectedRecords)}
+            className="gap-2"
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete Selected
           </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-[200px]">
-          <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          {tableInstance
-            .getAllColumns()
-            .filter(column => typeof column.accessorFn !== "undefined" && column.getCanHide())
-            .map(column => {
-              return (
-                <DropdownMenuCheckboxItem
-                  key={column.id}
-                  className="capitalize"
-                  checked={column.getIsVisible()}
-                  onCheckedChange={value => column.toggleVisibility(!!value)}
-                >
-                  {column.id}
-                </DropdownMenuCheckboxItem>
-              );
-            })}
-        </DropdownMenuContent>
-      </DropdownMenu>
+        )}
+      </div>
 
       <div className="border rounded-md">
         <Table>

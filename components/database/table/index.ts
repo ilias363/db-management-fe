@@ -9,3 +9,4 @@ export * from "./rename-table-dialog";
 export * from "./delete-table-dialog";
 export * from "./add-column-dropdown";
 export * from "./column-dialogs";
+export * from "./table-data-content";
