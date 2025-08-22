@@ -27,7 +27,7 @@ export function TablePagination({
   pageSizes = [5, 10, 15, 25],
   onPageSizeChange,
 }: TablePaginationProps) {
-  if (totalPages <= 1) return null;
+  if (totalPages <= 1 && !onPageSizeChange) return null;
 
   const startItem = currentPage * pageSize + 1;
   const endItem = Math.min((currentPage + 1) * pageSize, totalItems);
