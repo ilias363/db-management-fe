@@ -7,6 +7,7 @@ import {
     getTableRecords,
     getTableRecordsByValues,
     getViewRecordCount,
+    getViewRecords,
     getViewRecordsByValues,
 } from "../actions/database";
 import { RecordAdvancedSearchDto } from "../types/database";
@@ -34,7 +35,7 @@ export const recordQueries = {
     listForView: (schemaName: string, viewName: string, params?: PaginationParams) =>
         queryOptions({
             queryKey: [...recordQueries.listsForView(schemaName, viewName), params],
-            queryFn: () => getTableRecords(schemaName, viewName, params),
+            queryFn: () => getViewRecords(schemaName, viewName, params),
             staleTime: 1000 * 60 * 2,
             retry: 2,
         }),
