@@ -45,7 +45,7 @@ import { ColumnType, DataType, SortDirection } from "@/lib/types";
 import { TableMetadataDto, TableRecordPageDto } from "@/lib/types/database";
 import { TablePagination } from "@/components/common";
 import { EditableRowCell } from "./editable-row-cell";
-import { formatColumnType, renderCellValue } from "./utils";
+import { formatColumnType, renderCellValue, deepEqual } from "./utils";
 
 interface TanstackTableRecord {
   id: string;
@@ -113,9 +113,7 @@ export function RecordDataGrid({
   // Transform data for TanStack Table
   const tanstackTableData = useMemo<TanstackTableRecord[]>(() => {
     const existingRecords = records.map((record, index) => {
-      const editingRecord = editingRecords.find(
-        er => JSON.stringify(er.originalData) === JSON.stringify(record.data)
-      );
+      const editingRecord = editingRecords.find(er => deepEqual(er.originalData, record.data));
 
       return {
         id: `row-${index}`,
@@ -155,9 +153,7 @@ export function RecordDataGrid({
 
     const newSelection: RowSelectionState = {};
     tanstackTableData.forEach((row, index) => {
-      const isSelected = selectedRecords.some(
-        selected => JSON.stringify(selected) === JSON.stringify(row.originalData)
-      );
+      const isSelected = selectedRecords.some(selected => deepEqual(selected, row.originalData));
       if (isSelected) {
         newSelection[index] = true;
       }
@@ -431,8 +427,8 @@ export function RecordDataGrid({
             }
 
             if (record.isEditing) {
-              const editingRecord = editingRecords.find(
-                er => JSON.stringify(er.originalData) === JSON.stringify(record.originalData)
+              const editingRecord = editingRecords.find(er =>
+                deepEqual(er.originalData, record.originalData)
               );
 
               if (editingRecord) {
@@ -485,8 +481,8 @@ export function RecordDataGrid({
           }
 
           if (record.isEditing) {
-            const editingRecord = editingRecords.find(
-              er => JSON.stringify(er.originalData) === JSON.stringify(record.originalData)
+            const editingRecord = editingRecords.find(er =>
+              deepEqual(er.originalData, record.originalData)
             );
 
             if (editingRecord) {

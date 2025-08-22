@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -19,6 +20,13 @@ interface EditableRowCellProps {
 export function EditableRowCell({ recordId, value, column, onUpdate }: EditableRowCellProps) {
   const dataType = column.dataType.toUpperCase() as DataType;
 
+  const handleUpdate = useCallback(
+    (newValue: unknown) => {
+      onUpdate(recordId, column.columnName, newValue);
+    },
+    [onUpdate, recordId, column.columnName]
+  );
+
   if ([DataType.VARCHAR, DataType.CHAR].includes(dataType)) {
     return (
       <Input
@@ -32,7 +40,7 @@ export function EditableRowCell({ recordId, value, column, onUpdate }: EditableR
             newValue = null;
           }
 
-          onUpdate(recordId, column.columnName, newValue);
+          handleUpdate(newValue);
         }}
         className="h-8"
         placeholder={column.isNullable ? "NULL" : ""}
@@ -52,7 +60,7 @@ export function EditableRowCell({ recordId, value, column, onUpdate }: EditableR
             newValue = null;
           }
 
-          onUpdate(recordId, column.columnName, newValue);
+          handleUpdate(newValue);
         }}
         className="h-8"
         placeholder={column.isNullable ? "NULL" : ""}
@@ -63,10 +71,18 @@ export function EditableRowCell({ recordId, value, column, onUpdate }: EditableR
   if (dataType === DataType.BOOLEAN || dataType.toUpperCase() === "TINYINT") {
     return (
       <Select
-        value={value === null || value === undefined ? "null" : String(value)}
+        value={
+          value === null || value === undefined
+            ? column.isNullable
+              ? "null"
+              : "false"
+            : ["0", "false", "FALSE"].includes(String(value))
+            ? "false"
+            : "true"
+        }
         onValueChange={newValue => {
           const actualValue = newValue === "null" ? null : newValue === "true";
-          onUpdate(recordId, column.columnName, actualValue);
+          handleUpdate(actualValue);
         }}
       >
         <SelectTrigger className="h-8">
@@ -116,7 +132,7 @@ export function EditableRowCell({ recordId, value, column, onUpdate }: EditableR
                 );
           }
 
-          onUpdate(recordId, column.columnName, newValue);
+          handleUpdate(newValue);
         }}
         className="h-8"
         placeholder={column.isNullable ? "NULL" : ""}
@@ -136,7 +152,7 @@ export function EditableRowCell({ recordId, value, column, onUpdate }: EditableR
             newValue = null;
           }
 
-          onUpdate(recordId, column.columnName, newValue);
+          handleUpdate(newValue);
         }}
         className="h-8"
         placeholder={column.isNullable ? "NULL" : ""}
@@ -156,7 +172,7 @@ export function EditableRowCell({ recordId, value, column, onUpdate }: EditableR
             newValue = null;
           }
 
-          onUpdate(recordId, column.columnName, newValue);
+          handleUpdate(newValue);
         }}
         className="h-8"
         placeholder={column.isNullable ? "NULL" : ""}
@@ -182,7 +198,7 @@ export function EditableRowCell({ recordId, value, column, onUpdate }: EditableR
             newValue = null;
           }
 
-          onUpdate(recordId, column.columnName, newValue);
+          handleUpdate(newValue);
         }}
         className="h-8"
         placeholder={column.isNullable ? "NULL" : ""}
@@ -201,7 +217,7 @@ export function EditableRowCell({ recordId, value, column, onUpdate }: EditableR
           newValue = null;
         }
 
-        onUpdate(recordId, column.columnName, newValue);
+        handleUpdate(newValue);
       }}
       className="h-8"
       placeholder={column.isNullable ? "NULL" : ""}
