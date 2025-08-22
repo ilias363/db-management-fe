@@ -46,6 +46,10 @@ export function ColumnDefaultDialog({
   onOpenChange,
   onSuccess,
 }: ColumnDefaultDialogProps) {
+  column.dataType =
+    column.dataType.toUpperCase() === "TINYINT"
+      ? DataType.BOOLEAN
+      : (column.dataType.toUpperCase() as DataType);
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
 
   const { form, isPending, submitError, submitDefaultUpdate, resetForm, isValid, isDirty, errors } =
