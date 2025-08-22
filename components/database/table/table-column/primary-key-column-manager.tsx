@@ -29,6 +29,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { primaryKeyColumnSchema } from "@/lib/schemas/database";
 
+const NEEDS_CHARACTER_MAX_LENGTH = [DataType.VARCHAR, DataType.CHAR];
+
+const NEEDS_NUMERIC_PRECISION = [DataType.DECIMAL, DataType.NUMERIC];
+
 const DATA_TYPES = Object.values(DataType);
 
 interface PrimaryKeyColumnManagerProps {
@@ -98,6 +102,10 @@ function PrimaryKeyColumnCard({ column, onUpdate, onRemove }: PrimaryKeyColumnCa
 }
 
 function PrimaryKeyColumnForm({ column, onSave, onCancel }: PrimaryKeyColumnFormProps) {
+  // A state to force re-render cuz the form doesn't automatically update the fields
+  // (probably something related to react-compiler auto memoization)
+  const [rerenderTrigger, setRerenderTrigger] = useState(1);
+
   const form = useForm<PrimaryKeyColumnSchema>({
     resolver: zodResolver(primaryKeyColumnSchema),
     defaultValues: column || {
@@ -121,11 +129,16 @@ function PrimaryKeyColumnForm({ column, onSave, onCancel }: PrimaryKeyColumnForm
     setValue("numericScale", undefined);
 
     setValue("dataType", newDataType);
+    setRerenderTrigger(prev => prev + 1);
   };
 
   const onSubmit = (data: PrimaryKeyColumnSchema) => {
     onSave(data);
   };
+
+  const requiresCharacterMaxLength =
+    NEEDS_CHARACTER_MAX_LENGTH.includes(dataType) && !!rerenderTrigger;
+  const supportsNumericPrecision = NEEDS_NUMERIC_PRECISION.includes(dataType) && !!rerenderTrigger;
 
   const isAutoIncrementSupported = [
     DataType.INT,
@@ -188,7 +201,7 @@ function PrimaryKeyColumnForm({ column, onSave, onCancel }: PrimaryKeyColumnForm
               />
             </div>
 
-            {[DataType.VARCHAR, DataType.CHAR].includes(dataType) && (
+            {requiresCharacterMaxLength && (
               <FormField
                 control={form.control}
                 name="characterMaxLength"
@@ -212,7 +225,7 @@ function PrimaryKeyColumnForm({ column, onSave, onCancel }: PrimaryKeyColumnForm
               />
             )}
 
-            {[DataType.DECIMAL, DataType.NUMERIC].includes(dataType) && (
+            {supportsNumericPrecision && (
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
