@@ -10,7 +10,7 @@ import {
   type RowSelectionState,
   type VisibilityState,
 } from "@tanstack/react-table";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import {
   Table,
   TableBody,
@@ -22,7 +22,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Trash2, ArrowUp, ArrowDown, ArrowUpDown, Settings2 } from "lucide-react";
+import {
+  Edit,
+  Trash2,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpDown,
+  Settings2,
+  Plus,
+  X,
+  Save,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -31,18 +41,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ColumnType, SortDirection } from "@/lib/types";
-import {
-  BaseTableColumnMetadataDto,
-  TableMetadataDto,
-  TableRecordPageDto,
-} from "@/lib/types/database";
+import { ColumnType, DataType, SortDirection } from "@/lib/types";
+import { TableMetadataDto, TableRecordPageDto } from "@/lib/types/database";
 import { TablePagination } from "@/components/common";
+import { EditableRowCell } from "./editable-row-cell";
+import { formatColumnType, renderCellValue } from "./utils";
 
 interface TanstackTableRecord {
   id: string;
   data: Record<string, unknown>;
   originalRecord: Record<string, unknown>;
+  isNewRecord?: boolean;
 }
 
 interface RecordDataGridProps {
@@ -60,6 +69,8 @@ interface RecordDataGridProps {
   canDeleteRecords?: boolean;
   onDeleteRecord?: (record: Record<string, unknown>) => void;
   onDeleteSelectedRecords?: (records: Record<string, unknown>[]) => void;
+  canCreateRecords?: boolean;
+  onCreateRecords?: (records: Record<string, unknown>[]) => Promise<void>;
 }
 
 export function RecordDataGrid({
@@ -77,6 +88,8 @@ export function RecordDataGrid({
   canDeleteRecords = false,
   onDeleteRecord,
   onDeleteSelectedRecords,
+  canCreateRecords = false,
+  onCreateRecords,
 }: RecordDataGridProps) {
   const records = useMemo(() => recordsData?.items || [], [recordsData?.items]);
   const totalPages = recordsData?.totalPages || 0;
@@ -84,14 +97,27 @@ export function RecordDataGrid({
   const page = recordsData?.currentPage || 0;
   const pageSize = recordsData?.pageSize || 10;
 
+  const [newRecords, setNewRecords] = useState<{ id: string; data: Record<string, unknown> }[]>([]);
+  const [isCreating, setIsCreating] = useState(false);
+
   // Transform data for TanStack Table
-  const data = useMemo<TanstackTableRecord[]>(() => {
-    return records.map((record, index) => ({
+  const tanstackTableData = useMemo<TanstackTableRecord[]>(() => {
+    const existingRecords = records.map((record, index) => ({
       id: `row-${index}`,
       data: (record as { data?: Record<string, unknown> })?.data || {},
       originalRecord: record,
+      isNewRecord: false,
     }));
-  }, [records]);
+
+    const newRecordRows = newRecords.map(newRecord => ({
+      id: newRecord.id,
+      data: newRecord.data,
+      originalRecord: newRecord.data,
+      isNewRecord: true,
+    }));
+
+    return [...newRecordRows, ...existingRecords];
+  }, [records, newRecords]);
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
@@ -110,7 +136,7 @@ export function RecordDataGrid({
     if (!onselectionchange || !selectedRecords) return;
 
     const newSelection: RowSelectionState = {};
-    data.forEach((row, index) => {
+    tanstackTableData.forEach((row, index) => {
       const isSelected = selectedRecords.some(
         selected => JSON.stringify(selected) === JSON.stringify(row.originalRecord)
       );
@@ -119,26 +145,82 @@ export function RecordDataGrid({
       }
     });
     setRowSelection(newSelection);
-  }, [selectedRecords, data]);
+  }, [selectedRecords, tanstackTableData]);
 
-  const renderCellValue = (value: unknown): string => {
-    if (value === null) return "NULL";
-    if (value === undefined) return "";
-    if (typeof value === "boolean") return value ? "true" : "false";
-    if (typeof value === "object") return JSON.stringify(value);
-    return String(value);
+  const addNewRecord = () => {
+    if (!table?.columns) return;
+
+    tableInstance.toggleAllColumnsVisible(true);
+
+    const newRecordId = `new-${Date.now()}`;
+    const emptyData: Record<string, unknown> = {};
+
+    table.columns.forEach(column => {
+      if (column.columnDefault !== null && column.columnDefault !== undefined) {
+        emptyData[column.columnName] = column.columnDefault;
+      } else if (!column.isNullable) {
+        switch (column.dataType.toUpperCase() as DataType) {
+          case (DataType.VARCHAR, DataType.TEXT, DataType.CHAR):
+            emptyData[column.columnName] = "";
+            break;
+          case (DataType.INT,
+          DataType.INTEGER,
+          DataType.SMALLINT,
+          DataType.BIGINT,
+          DataType.DECIMAL,
+          DataType.NUMERIC,
+          DataType.FLOAT,
+          DataType.REAL,
+          DataType.DOUBLE):
+            emptyData[column.columnName] = 0;
+            break;
+          case DataType.BOOLEAN:
+            emptyData[column.columnName] = false;
+            break;
+          case (DataType.DATE, DataType.TIMESTAMP):
+            emptyData[column.columnName] = new Date().toISOString().split("T")[0];
+            break;
+          case DataType.TIME:
+            emptyData[column.columnName] = new Date().toISOString().split("T")[1].split("Z")[0];
+            break;
+          default:
+            emptyData[column.columnName] = null;
+        }
+      } else {
+        emptyData[column.columnName] = null;
+      }
+    });
+
+    setNewRecords(prev => [...prev, { id: newRecordId, data: emptyData }]);
   };
 
-  const formatColumnType = (column: Omit<BaseTableColumnMetadataDto, "table">) => {
-    let type = column.dataType.toUpperCase();
-    if (column.characterMaxLength) {
-      type += `(${column.characterMaxLength})`;
-    } else if (column.numericPrecision) {
-      type += `(${column.numericPrecision}${
-        column.numericScale ? `, ${column.numericScale}` : ""
-      })`;
+  const updateNewRecord = useCallback((recordId: string, columnName: string, value: unknown) => {
+    setNewRecords(prev =>
+      prev.map(record =>
+        record.id === recordId
+          ? { ...record, data: { ...record.data, [columnName]: value } }
+          : record
+      )
+    );
+  }, []);
+
+  const removeNewRecord = useCallback((recordId: string) => {
+    setNewRecords(prev => prev.filter(record => record.id !== recordId));
+  }, []);
+
+  const saveNewRecords = async () => {
+    if (!onCreateRecords || newRecords.length === 0) return;
+
+    setIsCreating(true);
+    try {
+      const recordsToCreate = newRecords.map(record => record.data);
+      await onCreateRecords(recordsToCreate);
+      setNewRecords([]);
+    } catch (error) {
+      console.error("Failed to create records:", error);
+    } finally {
+      setIsCreating(false);
     }
-    return type;
   };
 
   const getColumnIcon = (columnType: ColumnType) => {
@@ -188,12 +270,17 @@ export function RecordDataGrid({
             onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
           />
         ),
-        cell: ({ row }) => (
-          <Checkbox
-            checked={row.getIsSelected()}
-            onCheckedChange={value => row.toggleSelected(!!value)}
-          />
-        ),
+        cell: ({ row }) => {
+          if (row.original.isNewRecord) {
+            return null;
+          }
+          return (
+            <Checkbox
+              checked={row.getIsSelected()}
+              onCheckedChange={value => row.toggleSelected(!!value)}
+            />
+          );
+        },
         enableSorting: false,
         enableHiding: false,
       });
@@ -257,8 +344,20 @@ export function RecordDataGrid({
               </div>
             );
           },
-          cell: ({ getValue }) => {
+          cell: ({ getValue, row }) => {
             const value = getValue();
+
+            if (row.original.isNewRecord) {
+              return (
+                <EditableRowCell
+                  recordId={row.original.id}
+                  value={value}
+                  column={column}
+                  onUpdate={updateNewRecord}
+                />
+              );
+            }
+
             return (
               <span
                 className={`max-w-xs truncate block${isPrimaryKey ? " font-medium" : ""}${
@@ -278,28 +377,47 @@ export function RecordDataGrid({
       columnDefs.push({
         id: "actions",
         header: () => <span className="flex items-center justify-end mr-4">Actions</span>,
-        cell: ({ row }) => (
-          <div className="flex items-center justify-end gap-1">
-            {canEditRecords && onEditRecord && (
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => onEditRecord(row.original.originalRecord)}
-              >
-                <Edit className="h-3 w-3" />
-              </Button>
-            )}
-            {canDeleteRecords && onDeleteRecord && (
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => onDeleteRecord(row.original.originalRecord)}
-              >
-                <Trash2 className="h-3 w-3" />
-              </Button>
-            )}
-          </div>
-        ),
+        cell: ({ row }) => {
+          const record = row.original;
+
+          if (record.isNewRecord) {
+            return (
+              <div className="flex items-center justify-end gap-1">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => removeNewRecord(record.id)}
+                  title="Remove new record"
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            );
+          }
+
+          return (
+            <div className="flex items-center justify-end gap-1">
+              {canEditRecords && onEditRecord && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => onEditRecord(row.original.originalRecord)}
+                >
+                  <Edit className="h-3 w-3" />
+                </Button>
+              )}
+              {canDeleteRecords && onDeleteRecord && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => onDeleteRecord(row.original.originalRecord)}
+                >
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              )}
+            </div>
+          );
+        },
         enableSorting: false,
         enableHiding: false,
       });
@@ -313,10 +431,12 @@ export function RecordDataGrid({
     onEditRecord,
     canDeleteRecords,
     onDeleteRecord,
+    updateNewRecord,
+    removeNewRecord,
   ]);
 
   const tableInstance = useReactTable({
-    data,
+    data: tanstackTableData,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -344,8 +464,9 @@ export function RecordDataGrid({
 
       const selectedIds = Object.keys(newRowSelection).filter(id => newRowSelection[id]);
       const selectedOriginalRecords = selectedIds
-        .map(id => data[parseInt(id)]?.originalRecord)
-        .filter(Boolean);
+        .map(id => tanstackTableData[parseInt(id)])
+        .filter(record => !record.isNewRecord)
+        .map(record => record.originalRecord);
 
       onSelectionChange(selectedOriginalRecords);
     },
@@ -355,90 +476,118 @@ export function RecordDataGrid({
     enableHiding: true,
   });
 
-  if (!table?.columns || records.length === 0) {
-    return (
-      <div className="text-center text-muted-foreground p-8">
-        <p>No records found</p>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between pt-1 px-1">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline">
-              <Settings2 className="mr-2 h-4 w-4" />
-              Columns Visibility
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-[200px]">
-            <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {tableInstance
-              .getAllColumns()
-              .filter(column => typeof column.accessorFn !== "undefined" && column.getCanHide())
-              .map(column => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={value => column.toggleVisibility(!!value)}
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                );
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">
+                <Settings2 className="mr-2 h-4 w-4" />
+                Columns Visibility
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-[200px]">
+              <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {tableInstance
+                .getAllColumns()
+                .filter(column => typeof column.accessorFn !== "undefined" && column.getCanHide())
+                .map(column => {
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      className="capitalize"
+                      checked={column.getIsVisible()}
+                      onCheckedChange={value => column.toggleVisibility(!!value)}
+                    >
+                      {column.id}
+                    </DropdownMenuCheckboxItem>
+                  );
+                })}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-        {canDeleteRecords && selectedRecords.length > 0 && (
-          <Button
-            size="sm"
-            variant="destructive"
-            onClick={() => onDeleteSelectedRecords?.(selectedRecords)}
-            className="gap-2"
-          >
-            <Trash2 className="h-4 w-4 mr-2" />
-            Delete Selected
-          </Button>
-        )}
+          {canCreateRecords && onCreateRecords && (
+            <>
+              {newRecords.length === 0 ? (
+                <Button size="sm" onClick={addNewRecord} className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  Add Record
+                </Button>
+              ) : (
+                <Button size="sm" onClick={addNewRecord} variant="outline" className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  Add Another
+                </Button>
+              )}
+            </>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          {newRecords.length > 0 && (
+            <Button size="sm" onClick={saveNewRecords} disabled={isCreating} className="gap-2">
+              <Save className="h-4 w-4" />
+              {isCreating
+                ? "Saving..."
+                : `Save ${newRecords.length} Record${newRecords.length > 1 ? "s" : ""}`}
+            </Button>
+          )}
+          {canDeleteRecords && selectedRecords.length > 0 && (
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={() => onDeleteSelectedRecords?.(selectedRecords)}
+              className="gap-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete Selected
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="border rounded-md">
-        <Table>
-          <TableHeader>
-            {tableInstance.getHeaderGroups().map(headerGroup => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map(header => (
-                  <TableHead key={header.id} className="min-w-[40px]">
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
+        {tableInstance.getRowModel().rows.length === 0 ? (
+          <div className="text-center text-muted-foreground py-36">
+            <p>No records found</p>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              {tableInstance.getHeaderGroups().map(headerGroup => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map(header => (
+                    <TableHead key={header.id} className="min-w-[40px]">
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(header.column.columnDef.header, header.getContext())}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
 
-          <TableBody>
-            {tableInstance.getRowModel().rows.map(row => (
-              <TableRow
-                key={row.id}
-                className={row.getIsSelected() ? "bg-muted/50" : ""}
-                data-state={row.getIsSelected() && "selected"}
-              >
-                {row.getVisibleCells().map(cell => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            <TableBody>
+              {tableInstance.getRowModel().rows.map(row => (
+                <TableRow
+                  key={row.id}
+                  className={`${row.getIsSelected() ? "bg-muted/50" : ""} ${
+                    row.original.isNewRecord ? "bg-blue-50 dark:bg-blue-950/20" : ""
+                  }`}
+                  data-state={row.getIsSelected() && "selected"}
+                >
+                  {row.getVisibleCells().map(cell => (
+                    <TableCell key={cell.id}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </div>
 
       <TablePagination

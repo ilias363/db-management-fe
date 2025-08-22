@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Table, Plus, ArrowLeft, Database, Filter, AlertTriangle } from "lucide-react";
+import { Table, ArrowLeft, Database, Filter, AlertTriangle } from "lucide-react";
 import { useTable, useTableRecords, useDetailedPermissions } from "@/lib/hooks";
 import { SortDirection } from "@/lib/types";
 import { TableMetadataDto, TableRecordPageDto } from "@/lib/types/database";
@@ -27,7 +27,6 @@ export function TableDataContent({ schemaName, tableName }: TableDataContentProp
   const [sortDirection, setSortDirection] = useState<SortDirection>(SortDirection.ASC);
 
   const [selectedRecords, setSelectedRecords] = useState<Record<string, unknown>[]>([]);
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showSearchDialog, setShowSearchDialog] = useState(false);
 
   const { data: detailedPerms } = useDetailedPermissions(schemaName, tableName);
@@ -100,6 +99,10 @@ export function TableDataContent({ schemaName, tableName }: TableDataContentProp
 
   const handleDeleteSelectedRecords = () => {
     console.log("Delete selected records:", selectedRecords);
+  };
+
+  const handleCreateRecords = async (recordsData: Record<string, unknown>[]) => {
+    console.log(recordsData);
   };
 
   if (!canViewRecords && !tableLoading) {
@@ -303,12 +306,6 @@ export function TableDataContent({ schemaName, tableName }: TableDataContentProp
               Advanced Search
             </Button>
           )}
-          {canCreateRecords && !isSystemSchema && (
-            <Button size="sm" onClick={() => setShowCreateDialog(true)} className="gap-2">
-              <Plus className="h-4 w-4" />
-              Create Records
-            </Button>
-          )}
           <LastUpdated onRefresh={handleRefresh} resetTrigger={Number(recordsLoading)} />
         </div>
       </div>
@@ -395,6 +392,8 @@ export function TableDataContent({ schemaName, tableName }: TableDataContentProp
                 canDeleteRecords={canDeleteRecords}
                 onDeleteRecord={handleDeleteRecord}
                 onDeleteSelectedRecords={handleDeleteSelectedRecords}
+                canCreateRecords={canCreateRecords && !isSystemSchema}
+                onCreateRecords={handleCreateRecords}
               />
             </div>
           )}
