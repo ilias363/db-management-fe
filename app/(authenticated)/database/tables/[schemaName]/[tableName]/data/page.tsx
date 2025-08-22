@@ -1,7 +1,6 @@
 import { TableDataContent } from "@/components/database/table";
 import { getQueryClient } from "@/components/react-query";
 import { authQueries, recordQueries, tableQueries } from "@/lib/queries";
-import { SortDirection } from "@/lib/types";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
 export const dynamic = "force-dynamic";
@@ -26,19 +25,17 @@ export default async function TableDataPage({ params }: PageProps) {
   if (permissions?.granularPermissions.canRead) {
     await queryClient.prefetchQuery(tableQueries.detail(schemaName, tableName));
     await queryClient.prefetchQuery(
-      recordQueries.listForTable(schemaName, tableName, {
+      recordQueries.listSearchForTable({
+        schemaName: schemaName,
+        objectName: tableName,
         page: 0,
         size: 10,
-        sortDirection: SortDirection.ASC,
       })
     );
   }
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <TableDataContent
-        schemaName={decodeURIComponent(schemaName)}
-        tableName={decodeURIComponent(tableName)}
-      />
+      <TableDataContent schemaName={schemaName} tableName={tableName} />
     </HydrationBoundary>
   );
 }

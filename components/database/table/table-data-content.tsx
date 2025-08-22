@@ -1,15 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Table, ArrowLeft, Database, Filter, AlertTriangle } from "lucide-react";
-import { useTable, useTableRecords, useDetailedPermissions } from "@/lib/hooks";
+import { Table, ArrowLeft, Database, AlertTriangle } from "lucide-react";
+import { useTable, useTableRecordsSearch, useDetailedPermissions } from "@/lib/hooks";
 import { SortDirection } from "@/lib/types";
-import { TableMetadataDto, TableRecordPageDto } from "@/lib/types/database";
-import { RecordDataGrid } from "@/components/database/record";
+import {
+  TableMetadataDto,
+  TableRecordPageDto,
+  RecordAdvancedSearchDto,
+} from "@/lib/types/database";
+import { RecordDataGrid, AdvancedSearch } from "@/components/database/record";
 import { Badge } from "@/components/ui/badge";
 import { ErrorMessage, LastUpdated } from "@/components/common";
 
@@ -21,13 +25,23 @@ interface TableDataContentProps {
 export function TableDataContent({ schemaName, tableName }: TableDataContentProps) {
   const router = useRouter();
 
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
-  const [sortBy, setSortBy] = useState<string>();
-  const [sortDirection, setSortDirection] = useState<SortDirection>(SortDirection.ASC);
-
   const [selectedRecords, setSelectedRecords] = useState<Record<string, unknown>[]>([]);
-  const [showSearchDialog, setShowSearchDialog] = useState(false);
+
+  const [searchParams, setSearchParams] = useState<RecordAdvancedSearchDto>({
+    schemaName,
+    objectName: tableName,
+    page: 0,
+    size: 10,
+  });
+
+  useEffect(() => {
+    setSearchParams(prev => ({
+      ...prev,
+      schemaName,
+      objectName: tableName,
+      page: 0,
+    }));
+  }, [schemaName, tableName]);
 
   const { data: detailedPerms } = useDetailedPermissions(schemaName, tableName);
 
@@ -42,21 +56,25 @@ export function TableDataContent({ schemaName, tableName }: TableDataContentProp
   });
 
   const {
-    data: recordsData,
+    data: recordsResponse,
     isLoading: recordsLoading,
     isError: isRecordsError,
     refetch: refetchRecords,
-  } = useTableRecords(
-    schemaName,
-    tableName,
-    {
-      page,
-      size: pageSize,
-      sortBy,
-      sortDirection,
-    },
-    { enabled: isTableEnabled }
-  );
+  } = useTableRecordsSearch(searchParams, {
+    enabled: isTableEnabled,
+  });
+
+  const recordsData = recordsResponse
+    ? ({
+        items: recordsResponse.records,
+        totalItems: recordsResponse.filteredRecords,
+        totalPages: recordsResponse.totalPages,
+        currentPage: recordsResponse.currentPage,
+        pageSize: recordsResponse.pageSize,
+        schemaName: recordsResponse.schemaName,
+        tableName: recordsResponse.objectName,
+      } as TableRecordPageDto)
+    : null;
 
   const canViewRecords = detailedPerms?.granularPermissions.canRead || false;
   const canCreateRecords = detailedPerms?.granularPermissions.canWrite || false;
@@ -68,25 +86,53 @@ export function TableDataContent({ schemaName, tableName }: TableDataContentProp
     await refetchRecords();
   };
 
+  const handleAdvancedSearch = useCallback(
+    (newSearchParams: RecordAdvancedSearchDto) => {
+      setSearchParams({
+        ...newSearchParams,
+        page: 0,
+        size: newSearchParams.size || searchParams.size || 10,
+      });
+    },
+    [searchParams.size]
+  );
+
+  const handleClearAdvancedSearch = useCallback(() => {
+    setSearchParams({
+      schemaName,
+      objectName: tableName,
+      page: 0,
+      size: searchParams.size || 10,
+    });
+  }, [schemaName, tableName, searchParams.size]);
+
   const handleSort = (columnName: string) => {
-    if (sortBy === columnName) {
-      setSortDirection(prev =>
-        prev === SortDirection.ASC ? SortDirection.DESC : SortDirection.ASC
-      );
-    } else {
-      setSortBy(columnName);
-      setSortDirection(SortDirection.ASC);
-    }
-    setPage(0);
+    const currentSort = searchParams.sorts?.[0];
+    const newDirection =
+      currentSort?.columnName === columnName && currentSort?.direction === SortDirection.ASC
+        ? SortDirection.DESC
+        : SortDirection.ASC;
+
+    setSearchParams(prev => ({
+      ...prev,
+      page: 0,
+      sorts: [{ columnName, direction: newDirection }],
+    }));
   };
 
   const handlePageChange = (newPage: number) => {
-    setPage(newPage);
+    setSearchParams(prev => ({
+      ...prev,
+      page: newPage,
+    }));
   };
 
   const handlePageSizeChange = (newSize: number) => {
-    setPageSize(newSize);
-    setPage(0);
+    setSearchParams(prev => ({
+      ...prev,
+      page: 0,
+      size: newSize,
+    }));
   };
 
   const handleCreateRecords = async (recordsData: Record<string, unknown>[]) => {
@@ -292,20 +338,7 @@ export function TableDataContent({ schemaName, tableName }: TableDataContentProp
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          {canEditRecords && !isSystemSchema && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowSearchDialog(true)}
-              className="gap-2"
-            >
-              <Filter className="h-4 w-4" />
-              Advanced Search
-            </Button>
-          )}
-          <LastUpdated onRefresh={handleRefresh} resetTrigger={Number(recordsLoading)} />
-        </div>
+        <LastUpdated onRefresh={handleRefresh} resetTrigger={Number(recordsLoading)} />
       </div>
 
       <Card>
@@ -318,6 +351,18 @@ export function TableDataContent({ schemaName, tableName }: TableDataContentProp
           </div>
         </CardHeader>
         <CardContent>
+          {table && (
+            <div className="mb-6">
+              <AdvancedSearch
+                table={table}
+                onSearch={handleAdvancedSearch}
+                onClear={handleClearAdvancedSearch}
+                isLoading={recordsLoading}
+                defaultExpanded={false}
+              />
+            </div>
+          )}
+
           {recordsLoading ? (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -336,7 +381,7 @@ export function TableDataContent({ schemaName, tableName }: TableDataContentProp
                   </div>
                 </div>
 
-                {Array.from({ length: pageSize || 5 }).map((_, i) => (
+                {Array.from({ length: searchParams.size || 5 }).map((_, i) => (
                   <div key={i} className="p-2 border-b last:border-b-0">
                     <div className="flex gap-4 items-center">
                       <Skeleton className="h-4 w-4" />
@@ -380,8 +425,8 @@ export function TableDataContent({ schemaName, tableName }: TableDataContentProp
                 recordsData={recordsData !== null ? recordsData : ({} as TableRecordPageDto)}
                 selectedRecords={selectedRecords}
                 onSelectionChange={setSelectedRecords}
-                sortBy={sortBy}
-                sortDirection={sortDirection}
+                sortBy={searchParams.sorts?.[0]?.columnName}
+                sortDirection={searchParams.sorts?.[0]?.direction || SortDirection.ASC}
                 onSort={handleSort}
                 onPageChange={handlePageChange}
                 onPageSizeChange={handlePageSizeChange}
