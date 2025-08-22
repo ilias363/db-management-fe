@@ -1,7 +1,10 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
+import { useCurrentUser } from "@/lib/hooks";
+import { logoutAction } from "@/lib/auth";
 import type { UserDto } from "@/lib/types";
 
 interface AuthContextType {
@@ -19,63 +22,32 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState<UserDto | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const queryClient = useQueryClient();
 
-  const fetchUser = async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch("/api/auth/current-user", {
-        credentials: "include",
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success && data.data) {
-          setUser(data.data);
-        } else {
-          setUser(null);
-        }
-      } else {
-        setUser(null);
-      }
-    } catch (error) {
-      console.error("Failed to fetch user:", error);
-      setUser(null);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { data: user, isLoading, refetch } = useCurrentUser();
 
   const refresh = async () => {
-    await fetchUser();
+    await refetch();
   };
 
   const login = () => {
-    fetchUser();
+    refetch();
   };
 
   const logout = async () => {
     try {
-      await fetch("/api/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
+      queryClient.clear();
+      await logoutAction();
     } catch (error) {
       console.error("Logout failed:", error);
+      queryClient.clear();
+      router.push("/login");
     }
-
-    setUser(null);
-    router.push("/login");
   };
 
-  useEffect(() => {
-    fetchUser();
-  }, []);
-
   const value: AuthContextType = {
-    user,
+    user: user ?? null,
     isLoading,
     login,
     logout,
