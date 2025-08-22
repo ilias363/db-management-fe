@@ -12,3 +12,6 @@ export * from "./column-unique-dialog";
 export * from "./column-default-dialog";
 export * from "./column-primary-key-dialog";
 export * from "./column-foreign-key-dialog";
+export * from "./add-standard-column-dialog";
+export * from "./add-primary-key-column-dialog";
+export * from "./add-foreign-key-column-dialog";

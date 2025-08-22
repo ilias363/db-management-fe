@@ -14,7 +14,7 @@ import {
   AddStandardColumnDialog,
   AddPrimaryKeyColumnDialog,
   AddForeignKeyColumnDialog,
-} from "./column-dialogs";
+} from "./table-column";
 
 interface AddColumnDropdownProps {
   schemaName: string;
