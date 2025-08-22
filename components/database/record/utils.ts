@@ -1,3 +1,4 @@
+import { FilterOperator } from "@/lib/types";
 import { BaseTableColumnMetadataDto } from "@/lib/types/database";
 
 export const renderCellValue = (value: unknown): string => {
@@ -38,3 +39,78 @@ export function deepEqual(a: unknown, b: unknown): boolean {
 
     return true;
 }
+
+export const getOperatorsForDataType = (dataType: string): FilterOperator[] => {
+    const baseOperators = [
+        FilterOperator.EQUALS,
+        FilterOperator.NOT_EQUALS,
+        FilterOperator.IS_NULL,
+        FilterOperator.IS_NOT_NULL,
+    ];
+
+    if (
+        dataType.toLowerCase().includes("char") ||
+        dataType.toLowerCase().includes("text") ||
+        dataType.toLowerCase().includes("string")
+    ) {
+        return [
+            ...baseOperators,
+            FilterOperator.LIKE,
+            FilterOperator.NOT_LIKE,
+            FilterOperator.STARTS_WITH,
+            FilterOperator.ENDS_WITH,
+            FilterOperator.CONTAINS,
+            FilterOperator.IN,
+            FilterOperator.NOT_IN,
+        ];
+    }
+
+    if (
+        dataType.toLowerCase().includes("int") ||
+        dataType.toLowerCase().includes("decimal") ||
+        dataType.toLowerCase().includes("float") ||
+        dataType.toLowerCase().includes("double") ||
+        dataType.toLowerCase().includes("numeric")
+    ) {
+        return [
+            ...baseOperators,
+            FilterOperator.GREATER_THAN,
+            FilterOperator.GREATER_THAN_OR_EQUAL,
+            FilterOperator.LESS_THAN,
+            FilterOperator.LESS_THAN_OR_EQUAL,
+            FilterOperator.BETWEEN,
+            FilterOperator.IN,
+            FilterOperator.NOT_IN,
+        ];
+    }
+
+    if (
+        dataType.toLowerCase().includes("date") ||
+        dataType.toLowerCase().includes("time") ||
+        dataType.toLowerCase().includes("timestamp")
+    ) {
+        return [
+            ...baseOperators,
+            FilterOperator.GREATER_THAN,
+            FilterOperator.GREATER_THAN_OR_EQUAL,
+            FilterOperator.LESS_THAN,
+            FilterOperator.LESS_THAN_OR_EQUAL,
+            FilterOperator.BETWEEN,
+        ];
+    }
+
+    // Default operators
+    return [...baseOperators, FilterOperator.IN, FilterOperator.NOT_IN];
+};
+
+export const needsValue = (operator: FilterOperator): boolean => {
+    return ![FilterOperator.IS_NULL, FilterOperator.IS_NOT_NULL].includes(operator);
+};
+
+export const needsMinMaxValues = (operator: FilterOperator): boolean => {
+    return operator === FilterOperator.BETWEEN;
+};
+
+export const needsMultipleValues = (operator: FilterOperator): boolean => {
+    return [FilterOperator.IN, FilterOperator.NOT_IN].includes(operator);
+};
