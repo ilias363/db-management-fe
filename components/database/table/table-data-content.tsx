@@ -89,20 +89,18 @@ export function TableDataContent({ schemaName, tableName }: TableDataContentProp
     setPage(0);
   };
 
-  const handleEditRecord = (record: Record<string, unknown>) => {
-    console.log("Edit record:", record);
-  };
-
-  const handleDeleteRecord = (record: Record<string, unknown>) => {
-    console.log("Delete record:", record);
-  };
-
-  const handleDeleteSelectedRecords = () => {
-    console.log("Delete selected records:", selectedRecords);
-  };
-
   const handleCreateRecords = async (recordsData: Record<string, unknown>[]) => {
     console.log(recordsData);
+  };
+
+  const handleEditRecords = async (
+    updates: { originalData: Record<string, unknown>; newData: Record<string, unknown> }[]
+  ) => {
+    console.log(updates);
+  };
+
+  const handleDeleteRecords = async () => {
+    console.log("Delete selected records:", selectedRecords);
   };
 
   if (!canViewRecords && !tableLoading) {
@@ -382,18 +380,17 @@ export function TableDataContent({ schemaName, tableName }: TableDataContentProp
                 recordsData={recordsData !== null ? recordsData : ({} as TableRecordPageDto)}
                 selectedRecords={selectedRecords}
                 onSelectionChange={setSelectedRecords}
-                onSort={handleSort}
                 sortBy={sortBy}
                 sortDirection={sortDirection}
+                onSort={handleSort}
                 onPageChange={handlePageChange}
                 onPageSizeChange={handlePageSizeChange}
-                canEditRecords={canEditRecords}
-                onEditRecord={handleEditRecord}
-                canDeleteRecords={canDeleteRecords}
-                onDeleteRecord={handleDeleteRecord}
-                onDeleteSelectedRecords={handleDeleteSelectedRecords}
                 canCreateRecords={canCreateRecords && !isSystemSchema}
                 onCreateRecords={handleCreateRecords}
+                canEditRecords={canEditRecords}
+                onEditRecords={handleEditRecords}
+                canDeleteRecords={canDeleteRecords}
+                onDeleteRecords={handleDeleteRecords}
               />
             </div>
           )}

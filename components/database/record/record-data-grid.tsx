@@ -49,9 +49,16 @@ import { formatColumnType, renderCellValue } from "./utils";
 
 interface TanstackTableRecord {
   id: string;
+  originalData: Record<string, unknown>;
   data: Record<string, unknown>;
-  originalRecord: Record<string, unknown>;
   isNewRecord?: boolean;
+  isEditing?: boolean;
+}
+
+interface EditedRecord {
+  id: string;
+  originalData: Record<string, unknown>;
+  data: Record<string, unknown>;
 }
 
 interface RecordDataGridProps {
@@ -64,13 +71,14 @@ interface RecordDataGridProps {
   sortDirection: SortDirection;
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
-  canEditRecords?: boolean;
-  onEditRecord?: (record: Record<string, unknown>) => void;
-  canDeleteRecords?: boolean;
-  onDeleteRecord?: (record: Record<string, unknown>) => void;
-  onDeleteSelectedRecords?: (records: Record<string, unknown>[]) => void;
   canCreateRecords?: boolean;
   onCreateRecords?: (records: Record<string, unknown>[]) => Promise<void>;
+  canEditRecords?: boolean;
+  onEditRecords?: (
+    records: { originalData: Record<string, unknown>; newData: Record<string, unknown> }[]
+  ) => Promise<void>;
+  canDeleteRecords?: boolean;
+  onDeleteRecords?: (records: Record<string, unknown>[]) => Promise<void>;
 }
 
 export function RecordDataGrid({
@@ -83,13 +91,12 @@ export function RecordDataGrid({
   sortDirection,
   onPageChange,
   onPageSizeChange,
-  canEditRecords = false,
-  onEditRecord,
-  canDeleteRecords = false,
-  onDeleteRecord,
-  onDeleteSelectedRecords,
   canCreateRecords = false,
   onCreateRecords,
+  canEditRecords = false,
+  onEditRecords,
+  canDeleteRecords = false,
+  onDeleteRecords,
 }: RecordDataGridProps) {
   const records = useMemo(() => recordsData?.items || [], [recordsData?.items]);
   const totalPages = recordsData?.totalPages || 0;
@@ -100,24 +107,35 @@ export function RecordDataGrid({
   const [newRecords, setNewRecords] = useState<{ id: string; data: Record<string, unknown> }[]>([]);
   const [isCreating, setIsCreating] = useState(false);
 
+  const [editingRecords, setEditingRecords] = useState<EditedRecord[]>([]);
+  const [isEditing, setIsEditing] = useState(false);
+
   // Transform data for TanStack Table
   const tanstackTableData = useMemo<TanstackTableRecord[]>(() => {
-    const existingRecords = records.map((record, index) => ({
-      id: `row-${index}`,
-      data: (record as { data?: Record<string, unknown> })?.data || {},
-      originalRecord: record,
-      isNewRecord: false,
-    }));
+    const existingRecords = records.map((record, index) => {
+      const editingRecord = editingRecords.find(
+        er => JSON.stringify(er.originalData) === JSON.stringify(record.data)
+      );
+
+      return {
+        id: `row-${index}`,
+        originalData: record.data,
+        data: editingRecord ? editingRecord.data : record.data,
+        isNewRecord: false,
+        isEditing: !!editingRecord,
+      };
+    });
 
     const newRecordRows = newRecords.map(newRecord => ({
       id: newRecord.id,
+      originalData: newRecord.data,
       data: newRecord.data,
-      originalRecord: newRecord.data,
       isNewRecord: true,
+      isEditing: false,
     }));
 
     return [...newRecordRows, ...existingRecords];
-  }, [records, newRecords]);
+  }, [records, newRecords, editingRecords]);
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
@@ -133,19 +151,19 @@ export function RecordDataGrid({
 
   // Sync external selection with internal state
   useEffect(() => {
-    if (!onselectionchange || !selectedRecords) return;
+    if (!onSelectionChange || !selectedRecords) return;
 
     const newSelection: RowSelectionState = {};
     tanstackTableData.forEach((row, index) => {
       const isSelected = selectedRecords.some(
-        selected => JSON.stringify(selected) === JSON.stringify(row.originalRecord)
+        selected => JSON.stringify(selected) === JSON.stringify(row.originalData)
       );
       if (isSelected) {
         newSelection[index] = true;
       }
     });
     setRowSelection(newSelection);
-  }, [selectedRecords, tanstackTableData]);
+  }, [selectedRecords, tanstackTableData, onSelectionChange]);
 
   const addNewRecord = () => {
     if (!table?.columns) return;
@@ -220,6 +238,59 @@ export function RecordDataGrid({
       console.error("Failed to create records:", error);
     } finally {
       setIsCreating(false);
+    }
+  };
+
+  const startEditingRecord = useCallback(
+    (record: Record<string, unknown>) => {
+      if (newRecords.length > 0) {
+        return;
+      }
+
+      const editedRecord: EditedRecord = {
+        id: `edit-${Date.now()}-${Math.random()}`,
+        originalData: record,
+        data: { ...record },
+      };
+
+      setEditingRecords(prev => [...prev, editedRecord]);
+    },
+    [newRecords.length]
+  );
+
+  const updateEditingRecord = useCallback(
+    (editingId: string, columnName: string, value: unknown) => {
+      setEditingRecords(prev =>
+        prev.map(record =>
+          record.id === editingId
+            ? { ...record, data: { ...record.data, [columnName]: value } }
+            : record
+        )
+      );
+    },
+    []
+  );
+
+  const cancelEditingRecord = useCallback((editingId: string) => {
+    setEditingRecords(prev => prev.filter(record => record.id !== editingId));
+  }, []);
+
+  const saveEditingRecords = async () => {
+    if (!onEditRecords || editingRecords.length === 0) return;
+
+    setIsEditing(true);
+    try {
+      const recordsToUpdate = editingRecords.map(record => ({
+        originalData: record.originalData,
+        newData: record.data,
+      }));
+
+      await onEditRecords(recordsToUpdate);
+      setEditingRecords([]);
+    } catch (error) {
+      console.error("Failed to update records:", error);
+    } finally {
+      setIsEditing(false);
     }
   };
 
@@ -346,16 +417,34 @@ export function RecordDataGrid({
           },
           cell: ({ getValue, row }) => {
             const value = getValue();
+            const record = row.original;
 
-            if (row.original.isNewRecord) {
+            if (record.isNewRecord) {
               return (
                 <EditableRowCell
-                  recordId={row.original.id}
+                  recordId={record.id}
                   value={value}
                   column={column}
                   onUpdate={updateNewRecord}
                 />
               );
+            }
+
+            if (record.isEditing) {
+              const editingRecord = editingRecords.find(
+                er => JSON.stringify(er.originalData) === JSON.stringify(record.originalData)
+              );
+
+              if (editingRecord) {
+                return (
+                  <EditableRowCell
+                    recordId={editingRecord.id}
+                    value={value}
+                    column={column}
+                    onUpdate={updateEditingRecord}
+                  />
+                );
+              }
             }
 
             return (
@@ -373,7 +462,7 @@ export function RecordDataGrid({
       })
     );
 
-    if ((canEditRecords && onEditRecord) || (canDeleteRecords && onDeleteRecord)) {
+    if ((canEditRecords && onEditRecords) || (canDeleteRecords && onDeleteRecords)) {
       columnDefs.push({
         id: "actions",
         header: () => <span className="flex items-center justify-end mr-4">Actions</span>,
@@ -395,22 +484,46 @@ export function RecordDataGrid({
             );
           }
 
+          if (record.isEditing) {
+            const editingRecord = editingRecords.find(
+              er => JSON.stringify(er.originalData) === JSON.stringify(record.originalData)
+            );
+
+            if (editingRecord) {
+              return (
+                <div className="flex items-center justify-end gap-1">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => cancelEditingRecord(editingRecord.id)}
+                    title="Cancel editing"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              );
+            }
+          }
+
           return (
             <div className="flex items-center justify-end gap-1">
-              {canEditRecords && onEditRecord && (
+              {canEditRecords && onEditRecords && (
                 <Button
                   size="sm"
                   variant="ghost"
-                  onClick={() => onEditRecord(row.original.originalRecord)}
+                  onClick={() => startEditingRecord(record.originalData)}
+                  disabled={newRecords.length > 0}
+                  title="Edit record"
                 >
                   <Edit className="h-3 w-3" />
                 </Button>
               )}
-              {canDeleteRecords && onDeleteRecord && (
+              {canDeleteRecords && onDeleteRecords && (
                 <Button
                   size="sm"
                   variant="ghost"
-                  onClick={() => onDeleteRecord(row.original.originalRecord)}
+                  onClick={() => onDeleteRecords([record.originalData])}
+                  title="Delete record"
                 >
                   <Trash2 className="h-3 w-3" />
                 </Button>
@@ -428,11 +541,16 @@ export function RecordDataGrid({
     table?.columns,
     onSelectionChange,
     canEditRecords,
-    onEditRecord,
+    onEditRecords,
     canDeleteRecords,
-    onDeleteRecord,
+    onDeleteRecords,
     updateNewRecord,
     removeNewRecord,
+    editingRecords,
+    updateEditingRecord,
+    cancelEditingRecord,
+    startEditingRecord,
+    newRecords.length,
   ]);
 
   const tableInstance = useReactTable({
@@ -466,7 +584,7 @@ export function RecordDataGrid({
       const selectedOriginalRecords = selectedIds
         .map(id => tanstackTableData[parseInt(id)])
         .filter(record => !record.isNewRecord)
-        .map(record => record.originalRecord);
+        .map(record => record.originalData);
 
       onSelectionChange(selectedOriginalRecords);
     },
@@ -510,17 +628,17 @@ export function RecordDataGrid({
 
           {canCreateRecords && onCreateRecords && (
             <>
-              {newRecords.length === 0 ? (
+              {newRecords.length === 0 && editingRecords.length === 0 ? (
                 <Button size="sm" onClick={addNewRecord} className="gap-2">
                   <Plus className="h-4 w-4" />
                   Add Record
                 </Button>
-              ) : (
+              ) : newRecords.length > 0 ? (
                 <Button size="sm" onClick={addNewRecord} variant="outline" className="gap-2">
                   <Plus className="h-4 w-4" />
                   Add Another
                 </Button>
-              )}
+              ) : null}
             </>
           )}
         </div>
@@ -534,17 +652,30 @@ export function RecordDataGrid({
                 : `Save ${newRecords.length} Record${newRecords.length > 1 ? "s" : ""}`}
             </Button>
           )}
-          {canDeleteRecords && selectedRecords.length > 0 && (
-            <Button
-              size="sm"
-              variant="destructive"
-              onClick={() => onDeleteSelectedRecords?.(selectedRecords)}
-              className="gap-2"
-            >
-              <Trash2 className="h-4 w-4" />
-              Delete Selected
+
+          {editingRecords.length > 0 && (
+            <Button size="sm" onClick={saveEditingRecords} disabled={isEditing} className="gap-2">
+              <Save className="h-4 w-4" />
+              {isEditing
+                ? "Updating..."
+                : `Update ${editingRecords.length} Record${editingRecords.length > 1 ? "s" : ""}`}
             </Button>
           )}
+
+          {canDeleteRecords &&
+            selectedRecords.length > 0 &&
+            newRecords.length === 0 &&
+            editingRecords.length === 0 && (
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={() => onDeleteRecords?.(selectedRecords)}
+                className="gap-2"
+              >
+                <Trash2 className="h-4 w-4" />
+                Delete Selected
+              </Button>
+            )}
         </div>
       </div>
 
@@ -574,7 +705,11 @@ export function RecordDataGrid({
                 <TableRow
                   key={row.id}
                   className={`${row.getIsSelected() ? "bg-muted/50" : ""} ${
-                    row.original.isNewRecord ? "bg-blue-50 dark:bg-blue-950/20" : ""
+                    row.original.isNewRecord
+                      ? "bg-blue-50 dark:bg-blue-950/20"
+                      : row.original.isEditing
+                      ? "bg-yellow-50 dark:bg-yellow-950/20"
+                      : ""
                   }`}
                   data-state={row.getIsSelected() && "selected"}
                 >

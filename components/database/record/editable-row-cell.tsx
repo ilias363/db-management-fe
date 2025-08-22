@@ -23,7 +23,7 @@ export function EditableRowCell({ recordId, value, column, onUpdate }: EditableR
     return (
       <Input
         type="text"
-        value={value === null ? "" : String(value)}
+        value={value === null || value === undefined ? "" : String(value)}
         maxLength={column.characterMaxLength}
         onChange={e => {
           let newValue: unknown = e.target.value;
@@ -44,7 +44,7 @@ export function EditableRowCell({ recordId, value, column, onUpdate }: EditableR
     return (
       <Input
         type="text"
-        value={value === null ? "" : String(value)}
+        value={value === null || value === undefined ? "" : String(value)}
         onChange={e => {
           let newValue: unknown = e.target.value;
 
@@ -60,6 +60,27 @@ export function EditableRowCell({ recordId, value, column, onUpdate }: EditableR
     );
   }
 
+  if (dataType === DataType.BOOLEAN || dataType.toUpperCase() === "TINYINT") {
+    return (
+      <Select
+        value={value === null || value === undefined ? "null" : String(value)}
+        onValueChange={newValue => {
+          const actualValue = newValue === "null" ? null : newValue === "true";
+          onUpdate(recordId, column.columnName, actualValue);
+        }}
+      >
+        <SelectTrigger className="h-8">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {column.isNullable && <SelectItem value="null">NULL</SelectItem>}
+          <SelectItem value="true">true</SelectItem>
+          <SelectItem value="false">false</SelectItem>
+        </SelectContent>
+      </Select>
+    );
+  }
+
   if (
     [
       DataType.INT,
@@ -71,13 +92,12 @@ export function EditableRowCell({ recordId, value, column, onUpdate }: EditableR
       DataType.FLOAT,
       DataType.REAL,
       DataType.DOUBLE,
-    ].includes(dataType) ||
-    dataType.includes("INT")
+    ].includes(dataType)
   ) {
     return (
       <Input
         type="number"
-        value={value === null ? "" : String(value)}
+        value={value === null || value === undefined ? "" : String(value)}
         onChange={e => {
           let newValue: unknown = e.target.value;
 
@@ -104,32 +124,11 @@ export function EditableRowCell({ recordId, value, column, onUpdate }: EditableR
     );
   }
 
-  if (dataType === DataType.BOOLEAN) {
-    return (
-      <Select
-        value={value === null ? "null" : String(value)}
-        onValueChange={newValue => {
-          const actualValue = newValue === "null" ? null : newValue === "true";
-          onUpdate(recordId, column.columnName, actualValue);
-        }}
-      >
-        <SelectTrigger className="h-8">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {column.isNullable && <SelectItem value="null">NULL</SelectItem>}
-          <SelectItem value="true">true</SelectItem>
-          <SelectItem value="false">false</SelectItem>
-        </SelectContent>
-      </Select>
-    );
-  }
-
   if (dataType === DataType.DATE) {
     return (
       <Input
         type="date"
-        value={value === null ? "" : String(value)}
+        value={value === null || value === undefined ? "" : String(value)}
         onChange={e => {
           let newValue: unknown = e.target.value;
 
@@ -149,7 +148,7 @@ export function EditableRowCell({ recordId, value, column, onUpdate }: EditableR
     return (
       <Input
         type="time"
-        value={value === null ? "" : String(value)}
+        value={value === null || value === undefined ? "" : String(value)}
         onChange={e => {
           let newValue: unknown = e.target.value;
 
@@ -169,7 +168,13 @@ export function EditableRowCell({ recordId, value, column, onUpdate }: EditableR
     return (
       <Input
         type="datetime-local"
-        value={value === null ? "" : String(value)}
+        value={
+          value === null || value === undefined
+            ? ""
+            : value === "CURRENT_TIMESTAMP"
+            ? new Date().toISOString().slice(0, 16)
+            : new Date(String(value)).toISOString().slice(0, 16)
+        }
         onChange={e => {
           let newValue: unknown = e.target.value;
 
@@ -188,7 +193,7 @@ export function EditableRowCell({ recordId, value, column, onUpdate }: EditableR
   return (
     <Input
       type="text"
-      value={value === null ? "" : String(value)}
+      value={value === null || value === undefined ? "" : String(value)}
       onChange={e => {
         let newValue: unknown = e.target.value;
 
