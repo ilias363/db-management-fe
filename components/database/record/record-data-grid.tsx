@@ -72,10 +72,16 @@ interface RecordDataGridProps {
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
   canCreateRecords?: boolean;
-  onCreateRecords?: (records: Record<string, unknown>[]) => void;
+  onCreateRecords?: (
+    records: Record<string, unknown>[],
+    onSuccess?: () => void,
+    onError?: (error: string) => void
+  ) => void;
   canEditRecords?: boolean;
   onEditRecords?: (
-    records: { originalData: Record<string, unknown>; newData: Record<string, unknown> }[]
+    records: { originalData: Record<string, unknown>; newData: Record<string, unknown> }[],
+    onSuccess?: () => void,
+    onError?: (error: string) => void
   ) => void;
   canDeleteRecords?: boolean;
   onDeleteRecords?: (records: Record<string, unknown>[]) => void;
@@ -273,12 +279,16 @@ export function RecordDataGrid({
     setIsCreating(true);
     try {
       const recordsToCreate = newRecords.map(record => record.data);
-      await onCreateRecords(recordsToCreate);
-      setNewRecords([]);
+
+      const onSuccess = () => {
+        setNewRecords([]);
+      };
+
+      onCreateRecords(recordsToCreate, onSuccess);
     } catch (error) {
       console.error("Failed to create records:", error);
     } finally {
-      setIsCreating(false);
+      setTimeout(() => setIsCreating(false), 500);
     }
   }, [onCreateRecords, newRecords]);
 
@@ -326,12 +336,15 @@ export function RecordDataGrid({
         newData: record.data,
       }));
 
-      await onEditRecords(recordsToUpdate);
-      setEditingRecords([]);
+      const onSuccess = () => {
+        setEditingRecords([]);
+      };
+
+      onEditRecords(recordsToUpdate, onSuccess);
     } catch (error) {
       console.error("Failed to update records:", error);
     } finally {
-      setIsEditing(false);
+      setTimeout(() => setIsEditing(false), 500);
     }
   }, [onEditRecords, editingRecords]);
 
