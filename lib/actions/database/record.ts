@@ -2,6 +2,7 @@
 
 import { apiClient } from "@/lib/api-client";
 import { withAuth } from "@/lib/auth";
+import { HttpError } from "@/lib/errors";
 import { PaginationParams } from "@/lib/types";
 import type {
     RecordAdvancedSearchDto,
@@ -191,6 +192,37 @@ interface CreateRecordResponse {
     data?: RecordDto;
 }
 
+interface CreateRecordsResponse {
+    success: boolean;
+    message: string;
+    data?: RecordDto[];
+    createdCount?: number;
+}
+
+interface UpdateRecordResponse {
+    success: boolean;
+    message: string;
+    data?: RecordDto;
+}
+
+interface UpdateRecordsResponse {
+    success: boolean;
+    message: string;
+    data?: RecordDto[];
+    updatedCount?: number;
+}
+
+interface DeleteRecordResponse {
+    success: boolean;
+    message: string;
+}
+
+interface DeleteRecordsResponse {
+    success: boolean;
+    message: string;
+    deletedCount?: number;
+}
+
 export async function createRecord(
     schemaName: string,
     tableName: string,
@@ -217,7 +249,13 @@ export async function createRecord(
                 data: response.data,
             };
         } catch (error) {
-            console.error("Failed to create record:", error);
+            if (error instanceof HttpError) {
+                return {
+                    success: false,
+                    message: error.message,
+                };
+            }
+
             return {
                 success: false,
                 message: "An unexpected error occurred while creating the record",
@@ -226,13 +264,6 @@ export async function createRecord(
     });
 
     return authAction();
-}
-
-interface CreateRecordsResponse {
-    success: boolean;
-    message: string;
-    data?: RecordDto[];
-    createdCount?: number;
 }
 
 export async function createRecords(
@@ -262,7 +293,13 @@ export async function createRecords(
                 createdCount: records.length,
             };
         } catch (error) {
-            console.error("Failed to create records:", error);
+            if (error instanceof HttpError) {
+                return {
+                    success: false,
+                    message: error.message,
+                };
+            }
+
             return {
                 success: false,
                 message: "An unexpected error occurred while creating records",
@@ -273,18 +310,202 @@ export async function createRecords(
     return authAction();
 }
 
-interface DeleteRecordsResponse {
-    success: boolean;
-    message: string;
-    deletedCount?: number;
+export async function updateRecord(
+    schemaName: string,
+    tableName: string,
+    primaryKeyValues: Record<string, unknown>,
+    data: Record<string, unknown>
+): Promise<UpdateRecordResponse> {
+    const authAction = await withAuth(async (): Promise<UpdateRecordResponse> => {
+        try {
+            const response = await apiClient.record.updateRecord({
+                schemaName,
+                tableName,
+                primaryKeyValues,
+                data,
+            });
+
+            if (!response.success) {
+                return {
+                    success: false,
+                    message: response.message || "Failed to update record",
+                };
+            }
+
+            return {
+                success: true,
+                message: "Record updated successfully",
+                data: response.data,
+            };
+        } catch (error) {
+            if (error instanceof HttpError) {
+                return {
+                    success: false,
+                    message: error.message,
+                };
+            }
+
+            return {
+                success: false,
+                message: "An unexpected error occurred while updating the record",
+            };
+        }
+    });
+
+    return authAction();
+}
+
+export async function updateRecords(
+    schemaName: string,
+    tableName: string,
+    updates: {
+        primaryKeyValues: Record<string, unknown>;
+        data: Record<string, unknown>;
+    }[]
+): Promise<UpdateRecordsResponse> {
+    const authAction = await withAuth(async (): Promise<UpdateRecordsResponse> => {
+        try {
+            const response = await apiClient.record.updateRecords({
+                schemaName,
+                tableName,
+                updates,
+            });
+
+            if (!response.success) {
+                return {
+                    success: false,
+                    message: response.message || "Failed to update records",
+                };
+            }
+
+            return {
+                success: true,
+                message: `Successfully updated ${updates.length} record(s)`,
+                data: response.data,
+                updatedCount: updates.length,
+            };
+        } catch (error) {
+            if (error instanceof HttpError) {
+                return {
+                    success: false,
+                    message: error.message,
+                };
+            }
+
+            return {
+                success: false,
+                message: "An unexpected error occurred while updating records",
+            };
+        }
+    });
+
+    return authAction();
+}
+
+export async function updateRecordByValues(
+    schemaName: string,
+    tableName: string,
+    identifyingValues: Record<string, unknown>,
+    newData: Record<string, unknown>,
+    allowMultiple: boolean = false
+): Promise<UpdateRecordsResponse> {
+    const authAction = await withAuth(async (): Promise<UpdateRecordsResponse> => {
+        try {
+            const response = await apiClient.record.updateRecordByValues({
+                schemaName,
+                tableName,
+                identifyingValues,
+                newData,
+                allowMultiple,
+            });
+
+            if (!response.success) {
+                return {
+                    success: false,
+                    message: response.message || "Failed to update record(s) by values",
+                };
+            }
+
+            const count = response.data?.length || 0;
+            return {
+                success: true,
+                message: `Successfully updated ${count} record(s)`,
+                data: response.data,
+                updatedCount: count,
+            };
+        } catch (error) {
+            if (error instanceof HttpError) {
+                return {
+                    success: false,
+                    message: error.message,
+                };
+            }
+
+            return {
+                success: false,
+                message: "An unexpected error occurred while updating record(s)",
+            };
+        }
+    });
+
+    return authAction();
+}
+
+export async function updateRecordsByValues(
+    schemaName: string,
+    tableName: string,
+    updates: {
+        identifyingValues: Record<string, unknown>;
+        newData: Record<string, unknown>;
+        allowMultiple?: boolean;
+    }[]
+): Promise<UpdateRecordsResponse> {
+    const authAction = await withAuth(async (): Promise<UpdateRecordsResponse> => {
+        try {
+            const response = await apiClient.record.updateRecordsByValues({
+                schemaName,
+                tableName,
+                updates,
+            });
+
+            if (!response.success) {
+                return {
+                    success: false,
+                    message: response.message || "Failed to update records by values",
+                };
+            }
+
+            const count = response.data?.length || 0;
+            return {
+                success: true,
+                message: `Successfully updated ${count} record(s)`,
+                data: response.data,
+                updatedCount: count,
+            };
+        } catch (error) {
+            if (error instanceof HttpError) {
+                return {
+                    success: false,
+                    message: error.message,
+                };
+            }
+
+            return {
+                success: false,
+                message: "An unexpected error occurred while updating records",
+            };
+        }
+    });
+
+    return authAction();
 }
 
 export async function deleteRecord(
     schemaName: string,
     tableName: string,
     primaryKeyValues: Record<string, unknown>
-): Promise<DeleteRecordsResponse> {
-    const authAction = await withAuth(async (): Promise<DeleteRecordsResponse> => {
+): Promise<DeleteRecordResponse> {
+    const authAction = await withAuth(async (): Promise<DeleteRecordResponse> => {
         try {
             const response = await apiClient.record.deleteRecord({
                 schemaName,
@@ -304,7 +525,13 @@ export async function deleteRecord(
                 message: "Record deleted successfully",
             };
         } catch (error) {
-            console.error("Failed to delete record:", error);
+            if (error instanceof HttpError) {
+                return {
+                    success: false,
+                    message: error.message,
+                };
+            }
+
             return {
                 success: false,
                 message: "An unexpected error occurred while deleting the record",
@@ -341,7 +568,13 @@ export async function deleteRecords(
                 deletedCount: response.data,
             };
         } catch (error) {
-            console.error("Failed to delete records:", error);
+            if (error instanceof HttpError) {
+                return {
+                    success: false,
+                    message: error.message,
+                };
+            }
+
             return {
                 success: false,
                 message: "An unexpected error occurred while deleting records",
@@ -381,7 +614,13 @@ export async function deleteRecordByValues(
                 deletedCount: count,
             };
         } catch (error) {
-            console.error("Failed to delete record by values:", error);
+            if (error instanceof HttpError) {
+                return {
+                    success: false,
+                    message: error.message,
+                };
+            }
+
             return {
                 success: false,
                 message: "An unexpected error occurred while deleting record(s)",
@@ -422,7 +661,13 @@ export async function deleteRecordsByValues(
                 deletedCount: count,
             };
         } catch (error) {
-            console.error("Failed to delete records by values:", error);
+            if (error instanceof HttpError) {
+                return {
+                    success: false,
+                    message: error.message,
+                };
+            }
+
             return {
                 success: false,
                 message: "An unexpected error occurred while deleting records",
