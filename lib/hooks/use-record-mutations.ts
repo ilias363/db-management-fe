@@ -9,12 +9,57 @@ import {
     deleteRecords,
     deleteRecordByValues,
     deleteRecordsByValues,
+    updateRecord,
+    updateRecordByValues,
+    updateRecords,
+    updateRecordsByValues,
 } from "@/lib/actions/database/record";
 import { recordQueries } from "@/lib/queries";
 import { BaseTableColumnMetadataDto, RecordDto } from "@/lib/types/database";
 import { ColumnType } from "@/lib/types";
 
 type TableColumn = Omit<BaseTableColumnMetadataDto, "table">;
+
+function getPrimaryKeyColumns(columns: TableColumn[]): TableColumn[] {
+    return columns.filter(
+        col =>
+            col.columnType === ColumnType.PRIMARY_KEY ||
+            col.columnType === ColumnType.PRIMARY_KEY_FOREIGN_KEY
+    );
+}
+
+function getUniqueColumns(columns: TableColumn[]): TableColumn[] {
+    return columns.filter(
+        col =>
+            col.isUnique &&
+            col.columnType !== ColumnType.PRIMARY_KEY &&
+            col.columnType !== ColumnType.PRIMARY_KEY_FOREIGN_KEY
+    );
+}
+
+function extractPrimaryKeyValues(
+    record: Record<string, unknown>,
+    primaryKeyColumns: TableColumn[]
+): Record<string, unknown> {
+    const pkValues: Record<string, unknown> = {};
+    primaryKeyColumns.forEach(column => {
+        pkValues[column.columnName] = record[column.columnName];
+    });
+    return pkValues;
+}
+
+function extractUniqueValues(
+    record: Record<string, unknown>,
+    uniqueColumns: TableColumn[]
+): Record<string, unknown> {
+    if (uniqueColumns.length === 0) {
+        // If no unique columns, return the whole record
+        return record;
+    }
+
+    const uniqueColumn = uniqueColumns[0];
+    return { [uniqueColumn.columnName]: record[uniqueColumn.columnName] };
+}
 
 interface UseCreateRecordMutationProps {
     schemaName: string;
@@ -102,45 +147,128 @@ export function useCreateRecordsMutation({
     });
 }
 
-function getPrimaryKeyColumns(columns: TableColumn[]): TableColumn[] {
-    return columns.filter(
-        col =>
-            col.columnType === ColumnType.PRIMARY_KEY ||
-            col.columnType === ColumnType.PRIMARY_KEY_FOREIGN_KEY
-    );
+interface UseUpdateRecordMutationProps {
+    schemaName: string;
+    tableName: string;
+    columns: TableColumn[];
+    onSuccess?: (updatedCount?: number) => void;
+    onError?: (error: string) => void;
 }
 
-function getUniqueColumns(columns: TableColumn[]): TableColumn[] {
-    return columns.filter(
-        col =>
-            col.isUnique &&
-            col.columnType !== ColumnType.PRIMARY_KEY &&
-            col.columnType !== ColumnType.PRIMARY_KEY_FOREIGN_KEY
-    );
-}
+export function useUpdateRecordMutation({
+    schemaName,
+    tableName,
+    columns,
+    onSuccess,
+    onError,
+}: UseUpdateRecordMutationProps) {
+    const queryClient = useQueryClient();
 
-function extractPrimaryKeyValues(
-    record: Record<string, unknown>,
-    primaryKeyColumns: TableColumn[]
-): Record<string, unknown> {
-    const pkValues: Record<string, unknown> = {};
-    primaryKeyColumns.forEach(column => {
-        pkValues[column.columnName] = record[column.columnName];
+    const primaryKeyColumns = getPrimaryKeyColumns(columns);
+    const uniqueColumns = getUniqueColumns(columns);
+    const hasPrimaryKey = primaryKeyColumns.length > 0;
+
+    return useMutation({
+        mutationFn: async (update: {
+            originalData: Record<string, unknown>;
+            newData: Record<string, unknown>;
+        }) => {
+            const { originalData, newData } = update;
+
+            if (hasPrimaryKey) {
+                const primaryKeyValues = extractPrimaryKeyValues(originalData, primaryKeyColumns);
+                return await updateRecord(schemaName, tableName, primaryKeyValues, newData);
+            } else {
+                const identifyingValues = extractUniqueValues(originalData, uniqueColumns);
+                return await updateRecordByValues(schemaName, tableName, identifyingValues, newData, false);
+            }
+        },
+        onSuccess: result => {
+            if (result.success) {
+                toast.success(result.message);
+                onSuccess?.("updatedCount" in result ? (result.updatedCount as number) : 1);
+
+                queryClient.invalidateQueries({
+                    queryKey: recordQueries.listsForTable(schemaName, tableName),
+                });
+                queryClient.invalidateQueries({
+                    queryKey: recordQueries.countForTable(schemaName, tableName).queryKey,
+                });
+            } else {
+                toast.error(result.message);
+                onError?.(result.message);
+            }
+        },
+        onError: error => {
+            const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+            toast.error(errorMessage);
+            onError?.(errorMessage);
+        },
     });
-    return pkValues;
 }
 
-function extractUniqueValues(
-    record: Record<string, unknown>,
-    uniqueColumns: TableColumn[]
-): Record<string, unknown> {
-    if (uniqueColumns.length === 0) {
-        // If no unique columns, return the whole record
-        return record;
-    }
+interface UseUpdateRecordsMutationProps {
+    schemaName: string;
+    tableName: string;
+    columns: TableColumn[];
+    onSuccess?: (updatedCount?: number) => void;
+    onError?: (error: string) => void;
+}
 
-    const uniqueColumn = uniqueColumns[0];
-    return { [uniqueColumn.columnName]: record[uniqueColumn.columnName] };
+export function useUpdateRecordsMutation({
+    schemaName,
+    tableName,
+    columns,
+    onSuccess,
+    onError,
+}: UseUpdateRecordsMutationProps) {
+    const queryClient = useQueryClient();
+
+    const primaryKeyColumns = getPrimaryKeyColumns(columns);
+    const uniqueColumns = getUniqueColumns(columns);
+    const hasPrimaryKey = primaryKeyColumns.length > 0;
+
+    return useMutation({
+        mutationFn: async (
+            updates: { originalData: Record<string, unknown>; newData: Record<string, unknown> }[]
+        ) => {
+            if (hasPrimaryKey) {
+                const updatePayload = updates.map(update => ({
+                    primaryKeyValues: extractPrimaryKeyValues(update.originalData, primaryKeyColumns),
+                    data: update.newData,
+                }));
+                return await updateRecords(schemaName, tableName, updatePayload);
+            } else {
+                const updatePayload = updates.map(update => ({
+                    identifyingValues: extractUniqueValues(update.originalData, uniqueColumns),
+                    newData: update.newData,
+                    allowMultiple: false,
+                }));
+                return await updateRecordsByValues(schemaName, tableName, updatePayload);
+            }
+        },
+        onSuccess: (result, variables) => {
+            if (result.success) {
+                toast.success(result.message);
+                onSuccess?.("updatedCount" in result ? (result.updatedCount as number) : variables.length);
+
+                queryClient.invalidateQueries({
+                    queryKey: recordQueries.listsForTable(schemaName, tableName),
+                });
+                queryClient.invalidateQueries({
+                    queryKey: recordQueries.countForTable(schemaName, tableName).queryKey,
+                });
+            } else {
+                toast.error(result.message);
+                onError?.(result.message);
+            }
+        },
+        onError: error => {
+            const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+            toast.error(errorMessage);
+            onError?.(errorMessage);
+        },
+    });
 }
 
 interface UseDeleteRecordMutationProps {
