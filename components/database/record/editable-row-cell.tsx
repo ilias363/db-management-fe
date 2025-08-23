@@ -31,7 +31,7 @@ export function EditableRowCell({ recordId, value, column, onUpdate }: EditableR
     return (
       <Input
         type="text"
-        value={value === null || value === undefined ? "" : String(value)}
+        value={!value ? "" : String(value)}
         maxLength={column.characterMaxLength}
         onChange={e => {
           let newValue: unknown = e.target.value;
@@ -52,7 +52,7 @@ export function EditableRowCell({ recordId, value, column, onUpdate }: EditableR
     return (
       <Input
         type="text"
-        value={value === null || value === undefined ? "" : String(value)}
+        value={!value ? "" : String(value)}
         onChange={e => {
           let newValue: unknown = e.target.value;
 
@@ -113,7 +113,7 @@ export function EditableRowCell({ recordId, value, column, onUpdate }: EditableR
     return (
       <Input
         type="number"
-        value={value === null || value === undefined ? "" : String(value)}
+        value={!value ? "" : String(value)}
         onChange={e => {
           let newValue: unknown = e.target.value;
 
@@ -144,7 +144,7 @@ export function EditableRowCell({ recordId, value, column, onUpdate }: EditableR
     return (
       <Input
         type="date"
-        value={value === null || value === undefined ? "" : String(value)}
+        value={!value ? "" : new Date(String(value)).toISOString().split("T")[0]}
         onChange={e => {
           let newValue: unknown = e.target.value;
 
@@ -164,7 +164,7 @@ export function EditableRowCell({ recordId, value, column, onUpdate }: EditableR
     return (
       <Input
         type="time"
-        value={value === null || value === undefined ? "" : String(value)}
+        value={!value ? "" : String(value)}
         onChange={e => {
           let newValue: unknown = e.target.value;
 
@@ -185,11 +185,11 @@ export function EditableRowCell({ recordId, value, column, onUpdate }: EditableR
       <Input
         type="datetime-local"
         value={
-          value === null || value === undefined
+          !value
             ? ""
             : value === "CURRENT_TIMESTAMP"
-            ? new Date().toISOString().slice(0, 16)
-            : new Date(String(value)).toISOString().slice(0, 16)
+            ? new Date().toISOString().split("Z")[0]
+            : new Date(String(value)).toISOString().split("Z")[0]
         }
         onChange={e => {
           let newValue: unknown = e.target.value;
@@ -209,7 +209,7 @@ export function EditableRowCell({ recordId, value, column, onUpdate }: EditableR
   return (
     <Input
       type="text"
-      value={value === null || value === undefined ? "" : String(value)}
+      value={!value ? "" : String(value)}
       onChange={e => {
         let newValue: unknown = e.target.value;
 

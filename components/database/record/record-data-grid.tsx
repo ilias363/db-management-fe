@@ -72,11 +72,11 @@ interface RecordDataGridProps {
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
   canCreateRecords?: boolean;
-  onCreateRecords?: (records: Record<string, unknown>[]) => Promise<void>;
+  onCreateRecords?: (records: Record<string, unknown>[]) => void;
   canEditRecords?: boolean;
   onEditRecords?: (
     records: { originalData: Record<string, unknown>; newData: Record<string, unknown> }[]
-  ) => Promise<void>;
+  ) => void;
   canDeleteRecords?: boolean;
   onDeleteRecords?: (records: Record<string, unknown>[]) => void;
 }
@@ -204,39 +204,50 @@ export function RecordDataGrid({
     const emptyData: Record<string, unknown> = {};
 
     table.columns.forEach(column => {
-      if (column.columnDefault !== null && column.columnDefault !== undefined) {
-        emptyData[column.columnName] = column.columnDefault;
-      } else if (!column.isNullable) {
-        switch (column.dataType.toUpperCase() as DataType) {
-          case (DataType.VARCHAR, DataType.TEXT, DataType.CHAR):
-            emptyData[column.columnName] = "";
-            break;
-          case (DataType.INT,
-          DataType.INTEGER,
-          DataType.SMALLINT,
-          DataType.BIGINT,
-          DataType.DECIMAL,
-          DataType.NUMERIC,
-          DataType.FLOAT,
-          DataType.REAL,
-          DataType.DOUBLE):
-            emptyData[column.columnName] = 0;
-            break;
-          case DataType.BOOLEAN:
-            emptyData[column.columnName] = false;
-            break;
-          case (DataType.DATE, DataType.TIMESTAMP):
-            emptyData[column.columnName] = new Date().toISOString().split("T")[0];
-            break;
-          case DataType.TIME:
-            emptyData[column.columnName] = new Date().toISOString().split("T")[1].split("Z")[0];
-            break;
-          default:
-            emptyData[column.columnName] = null;
-        }
-      } else {
-        emptyData[column.columnName] = null;
+      let initValue: string | null = null;
+
+      if (column.columnDefault !== undefined) {
+        initValue = column.columnDefault;
       }
+
+      if (!column.isNullable && !initValue) {
+        if (column.dataType.toUpperCase() === "TINYINT") {
+          initValue = "false";
+        } else {
+          switch (column.dataType.toUpperCase() as DataType) {
+            case (DataType.VARCHAR, DataType.TEXT, DataType.CHAR):
+              initValue = "required";
+              break;
+            case (DataType.INT,
+            DataType.INTEGER,
+            DataType.SMALLINT,
+            DataType.BIGINT,
+            DataType.DECIMAL,
+            DataType.NUMERIC,
+            DataType.FLOAT,
+            DataType.REAL,
+            DataType.DOUBLE):
+              initValue = "0";
+              break;
+            case DataType.BOOLEAN:
+              initValue = "false";
+              break;
+            case DataType.DATE:
+              initValue = new Date().toISOString();
+              break;
+            case DataType.TIME:
+              initValue = new Date().toISOString().split("T")[1].slice(0, 8);
+              break;
+            case DataType.TIMESTAMP:
+              initValue = new Date().toISOString().slice(0, 19);
+              break;
+            default:
+              initValue = "0";
+          }
+        }
+      }
+
+      emptyData[column.columnName] = initValue;
     });
 
     setNewRecords(prev => [...prev, { id: newRecordId, data: emptyData }]);
@@ -461,20 +472,16 @@ export function RecordDataGrid({
             }
 
             if (record.isEditing) {
+              const actualEditingRecord = editingRecordsRef.current.find(er =>
+                deepEqual(er.originalData, record.originalData)
+              );
               return (
                 <EditableRowCell
                   key={`${record.id}-${column.columnName}-editing`}
-                  recordId={record.id}
+                  recordId={actualEditingRecord?.id || record.id}
                   value={value}
                   column={column}
-                  onUpdate={(recordId, columnName, newValue) => {
-                    const actualEditingRecord = editingRecordsRef.current.find(er =>
-                      deepEqual(er.originalData, record.originalData)
-                    );
-                    if (actualEditingRecord) {
-                      updateEditingRecord(actualEditingRecord.id, columnName, newValue);
-                    }
-                  }}
+                  onUpdate={updateEditingRecord}
                 />
               );
             }
