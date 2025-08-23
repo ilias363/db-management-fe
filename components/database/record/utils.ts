@@ -1,5 +1,5 @@
 import { FilterOperator } from "@/lib/types";
-import { BaseTableColumnMetadataDto } from "@/lib/types/database";
+import { BaseColumnMetadataDto } from "@/lib/types/database";
 
 export const renderCellValue = (value: unknown): string => {
     if (value === null) return "NULL";
@@ -13,7 +13,7 @@ export const renderCellValue = (value: unknown): string => {
     return String(value);
 };
 
-export const formatColumnType = (column: Omit<BaseTableColumnMetadataDto, "table">) => {
+export const formatColumnType = (column: BaseColumnMetadataDto) => {
     let type = column.dataType.toUpperCase();
     if (column.characterMaxLength) {
         type += `(${column.characterMaxLength})`;

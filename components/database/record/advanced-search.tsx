@@ -28,11 +28,12 @@ import {
 } from "lucide-react";
 import { FilterOperator, SortDirection, DataType } from "@/lib/types";
 import {
-  BaseTableColumnMetadataDto,
+  BaseColumnMetadataDto,
   RecordAdvancedSearchDto,
   RecordFilterCriteriaDto,
   RecordSortCriteriaDto,
   TableMetadataDto,
+  ViewMetadataDto,
 } from "@/lib/types/database";
 import {
   formatColumnType,
@@ -43,7 +44,7 @@ import {
 } from "./utils";
 
 interface AdvancedSearchProps {
-  table: TableMetadataDto;
+  object: TableMetadataDto | ViewMetadataDto;
   onSearch: (searchParams: RecordAdvancedSearchDto) => void;
   onClear: () => void;
   isLoading?: boolean;
@@ -51,7 +52,7 @@ interface AdvancedSearchProps {
 }
 
 export function AdvancedSearch({
-  table,
+  object,
   onSearch,
   onClear,
   isLoading = false,
@@ -64,7 +65,7 @@ export function AdvancedSearch({
   const [sorts, setSorts] = useState<RecordSortCriteriaDto[]>([]);
 
   const handleAddFilter = useCallback(() => {
-    const firstColumn = table.columns?.[0];
+    const firstColumn = object.columns?.[0];
     if (firstColumn) {
       const newFilter: RecordFilterCriteriaDto = {
         columnName: firstColumn.columnName,
@@ -74,7 +75,7 @@ export function AdvancedSearch({
       };
       setFilters(prev => [...prev, newFilter]);
     }
-  }, [table.columns]);
+  }, [object.columns]);
 
   const handleUpdateFilter = useCallback(
     (index: number, updates: Partial<RecordFilterCriteriaDto>) => {
@@ -90,7 +91,7 @@ export function AdvancedSearch({
   }, []);
 
   const handleAddSort = useCallback(() => {
-    const firstColumn = table.columns?.[0];
+    const firstColumn = object.columns?.[0];
     if (firstColumn) {
       const newSort: RecordSortCriteriaDto = {
         columnName: firstColumn.columnName,
@@ -98,7 +99,7 @@ export function AdvancedSearch({
       };
       setSorts(prev => [...prev, newSort]);
     }
-  }, [table.columns]);
+  }, [object.columns]);
 
   const handleUpdateSort = useCallback((index: number, updates: Partial<RecordSortCriteriaDto>) => {
     setSorts(prev => prev.map((sort, i) => (i === index ? { ...sort, ...updates } : sort)));
@@ -110,15 +111,15 @@ export function AdvancedSearch({
 
   const handleSearch = useCallback(() => {
     const searchParams: RecordAdvancedSearchDto = {
-      schemaName: table.schema.schemaName,
-      objectName: table.tableName,
+      schemaName: object.schema.schemaName,
+      objectName: "tableName" in object ? object.tableName : object.viewName,
       globalSearch: globalSearch.trim() || undefined,
       distinct,
       filters: filters.length > 0 ? filters : undefined,
       sorts: sorts.length > 0 ? sorts : undefined,
     };
     onSearch(searchParams);
-  }, [table.schema.schemaName, table.tableName, globalSearch, distinct, filters, sorts, onSearch]);
+  }, [object, globalSearch, distinct, filters, sorts, onSearch]);
 
   const handleClear = useCallback(() => {
     setGlobalSearch("");
@@ -135,7 +136,7 @@ export function AdvancedSearch({
       return null;
     }
 
-    const column = table.columns?.find(col => col.columnName === filter.columnName);
+    const column = object.columns?.find(col => col.columnName === filter.columnName);
     if (!column) {
       return renderGenericInput(filter, index);
     }
@@ -167,7 +168,7 @@ export function AdvancedSearch({
   const renderBetweenInputs = (
     filter: RecordFilterCriteriaDto,
     index: number,
-    column: Omit<BaseTableColumnMetadataDto, "table">,
+    column: BaseColumnMetadataDto,
     dataType: DataType
   ) => {
     return (
@@ -181,7 +182,7 @@ export function AdvancedSearch({
   const renderMultipleValuesInput = (
     filter: RecordFilterCriteriaDto,
     index: number,
-    column: Omit<BaseTableColumnMetadataDto, "table">,
+    column: BaseColumnMetadataDto,
     dataType: DataType
   ) => {
     const isNumeric = [
@@ -317,7 +318,7 @@ export function AdvancedSearch({
   const renderSingleValueInput = (
     filter: RecordFilterCriteriaDto,
     index: number,
-    column: Omit<BaseTableColumnMetadataDto, "table">,
+    column: BaseColumnMetadataDto,
     dataType: DataType,
     valueType: "value" | "minValue" | "maxValue"
   ) => {
@@ -562,7 +563,7 @@ export function AdvancedSearch({
             </div>
 
             {filters.map((filter, index) => {
-              const column = table.columns?.find(col => col.columnName === filter.columnName);
+              const column = object.columns?.find(col => col.columnName === filter.columnName);
               const availableOperators = column
                 ? getOperatorsForDataType(column.dataType)
                 : Object.values(FilterOperator);
@@ -578,7 +579,7 @@ export function AdvancedSearch({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {table.columns?.map(column => (
+                        {object.columns?.map(column => (
                           <SelectItem key={column.columnName} value={column.columnName}>
                             <div className="flex items-center gap-2">
                               <span>{column.columnName}</span>
@@ -692,7 +693,7 @@ export function AdvancedSearch({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {table.columns?.map(column => (
+                    {object.columns?.map(column => (
                       <SelectItem key={column.columnName} value={column.columnName}>
                         <div className="flex items-center gap-2">
                           <span>{column.columnName}</span>
