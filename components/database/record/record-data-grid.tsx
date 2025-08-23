@@ -275,9 +275,16 @@ export function RecordDataGrid({
 
   const startEditingRecord = useCallback(
     (record: Record<string, unknown>) => {
-      if (newRecords.length > 0) {
-        return;
-      }
+      if (newRecords.length > 0 || !table?.columns) return;
+
+      table.columns.forEach(column => {
+        if (column.dataType.toUpperCase() == DataType.TIMESTAMP) {
+          record[column.columnName] = new Date(String(record[column.columnName]))
+            .toISOString()
+            .replace("T", " ")
+            .slice(0, 19);
+        }
+      });
 
       const editedRecord: EditedRecord = {
         id: `edit-${Date.now()}-${Math.random()}`,
@@ -287,7 +294,7 @@ export function RecordDataGrid({
 
       setEditingRecords(prev => [...prev, editedRecord]);
     },
-    [newRecords.length]
+    [newRecords.length, table?.columns]
   );
 
   const updateEditingRecord = useCallback(

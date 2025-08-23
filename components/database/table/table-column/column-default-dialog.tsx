@@ -138,8 +138,21 @@ export function ColumnDefaultDialog({
                         onChange={
                           column.dataType.toUpperCase() == DataType.TIMESTAMP
                             ? e => {
-                                const value = e.target.value;
-                                field.onChange(value ? value.replace("T", " ") : "");
+                                const parts = e.target.value.split("T");
+                                if (parts.length == 2) {
+                                  if (parts[1].length == 5) {
+                                    parts[1] += ":00";
+                                  }
+                                }
+                                field.onChange(parts.join(" "));
+                              }
+                            : column.dataType.toUpperCase() == DataType.TIME
+                            ? e => {
+                                if (e.target.value.length == 5) {
+                                  field.onChange(e.target.value + ":00");
+                                } else {
+                                  field.onChange(e.target.value);
+                                }
                               }
                             : field.onChange
                         }

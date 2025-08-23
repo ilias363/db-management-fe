@@ -164,10 +164,14 @@ export function EditableRowCell({ recordId, value, column, onUpdate }: EditableR
     return (
       <Input
         type="time"
+        step={1}
         value={!value ? "" : String(value)}
         onChange={e => {
-          let newValue: unknown = e.target.value;
+          let newValue: string | null = e.target.value;
 
+          if (newValue.length == 5) {
+            newValue += ":00";
+          }
           if (newValue === "" && column.isNullable) {
             newValue = null;
           }
@@ -184,6 +188,7 @@ export function EditableRowCell({ recordId, value, column, onUpdate }: EditableR
     return (
       <Input
         type="datetime-local"
+        step={1}
         value={
           !value
             ? ""
@@ -192,7 +197,14 @@ export function EditableRowCell({ recordId, value, column, onUpdate }: EditableR
             : new Date(String(value)).toISOString().split("Z")[0]
         }
         onChange={e => {
-          let newValue: unknown = e.target.value;
+          let newValue: string | null = e.target.value;
+          const parts = newValue.split("T");
+          if (parts.length == 2) {
+            if (parts[1].length == 5) {
+              parts[1] += ":00";
+            }
+          }
+          newValue = parts.join(" ");
 
           if (newValue === "" && column.isNullable) {
             newValue = null;
