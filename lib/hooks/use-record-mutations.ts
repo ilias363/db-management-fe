@@ -3,29 +3,119 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
+    createRecord,
+    createRecords,
     deleteRecord,
     deleteRecords,
     deleteRecordByValues,
-    deleteRecordsByValues
+    deleteRecordsByValues,
 } from "@/lib/actions/database/record";
 import { recordQueries } from "@/lib/queries";
-import { BaseTableColumnMetadataDto } from "@/lib/types/database";
+import { BaseTableColumnMetadataDto, RecordDto } from "@/lib/types/database";
 import { ColumnType } from "@/lib/types";
 
 type TableColumn = Omit<BaseTableColumnMetadataDto, "table">;
 
+interface UseCreateRecordMutationProps {
+    schemaName: string;
+    tableName: string;
+    onSuccess?: (createdRecord?: RecordDto) => void;
+    onError?: (error: string) => void;
+}
+
+export function useCreateRecordMutation({
+    schemaName,
+    tableName,
+    onSuccess,
+    onError,
+}: UseCreateRecordMutationProps) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (data: Record<string, unknown>) => {
+            return await createRecord(schemaName, tableName, data);
+        },
+        onSuccess: result => {
+            if (result.success) {
+                toast.success(result.message);
+                onSuccess?.(result.data);
+
+                queryClient.invalidateQueries({
+                    queryKey: recordQueries.listsForTable(schemaName, tableName),
+                });
+                queryClient.invalidateQueries({
+                    queryKey: recordQueries.countForTable(schemaName, tableName).queryKey,
+                });
+            } else {
+                toast.error(result.message);
+                onError?.(result.message);
+            }
+        },
+        onError: error => {
+            const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+            toast.error(errorMessage);
+            onError?.(errorMessage);
+        },
+    });
+}
+
+interface UseCreateRecordsMutationProps {
+    schemaName: string;
+    tableName: string;
+    onSuccess?: (createdCount?: number) => void;
+    onError?: (error: string) => void;
+}
+
+export function useCreateRecordsMutation({
+    schemaName,
+    tableName,
+    onSuccess,
+    onError,
+}: UseCreateRecordsMutationProps) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (records: Record<string, unknown>[]) => {
+            return await createRecords(schemaName, tableName, records);
+        },
+        onSuccess: result => {
+            if (result.success) {
+                toast.success(result.message);
+                onSuccess?.(result.createdCount);
+
+                queryClient.invalidateQueries({
+                    queryKey: recordQueries.listsForTable(schemaName, tableName),
+                });
+                queryClient.invalidateQueries({
+                    queryKey: recordQueries.countForTable(schemaName, tableName).queryKey,
+                });
+            } else {
+                toast.error(result.message);
+                onError?.(result.message);
+            }
+        },
+        onError: error => {
+            const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+            toast.error(errorMessage);
+            onError?.(errorMessage);
+        },
+    });
+}
+
 function getPrimaryKeyColumns(columns: TableColumn[]): TableColumn[] {
-    return columns.filter(col =>
-        col.columnType === ColumnType.PRIMARY_KEY ||
-        col.columnType === ColumnType.PRIMARY_KEY_FOREIGN_KEY
+    return columns.filter(
+        col =>
+            col.columnType === ColumnType.PRIMARY_KEY ||
+            col.columnType === ColumnType.PRIMARY_KEY_FOREIGN_KEY
     );
 }
 
 function getUniqueColumns(columns: TableColumn[]): TableColumn[] {
-    return columns.filter(col =>
-        col.isUnique &&
-        col.columnType !== ColumnType.PRIMARY_KEY &&
-        col.columnType !== ColumnType.PRIMARY_KEY_FOREIGN_KEY
+    return columns.filter(
+        col =>
+            col.isUnique &&
+            col.columnType !== ColumnType.PRIMARY_KEY &&
+            col.columnType !== ColumnType.PRIMARY_KEY_FOREIGN_KEY
     );
 }
 
@@ -66,7 +156,7 @@ export function useDeleteRecordMutation({
     tableName,
     columns,
     onSuccess,
-    onError
+    onError,
 }: UseDeleteRecordMutationProps) {
     const queryClient = useQueryClient();
 
@@ -84,10 +174,10 @@ export function useDeleteRecordMutation({
                 return await deleteRecordByValues(schemaName, tableName, identifyingValues, false);
             }
         },
-        onSuccess: (result) => {
+        onSuccess: result => {
             if (result.success) {
                 toast.success(result.message);
-                onSuccess?.('deletedCount' in result ? (result.deletedCount as number) : 1);
+                onSuccess?.("deletedCount" in result ? (result.deletedCount as number) : 1);
 
                 queryClient.invalidateQueries({
                     queryKey: recordQueries.listsForTable(schemaName, tableName),
@@ -100,7 +190,7 @@ export function useDeleteRecordMutation({
                 onError?.(result.message);
             }
         },
-        onError: (error) => {
+        onError: error => {
             const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
             toast.error(errorMessage);
             onError?.(errorMessage);
@@ -121,7 +211,7 @@ export function useDeleteRecordsMutation({
     tableName,
     columns,
     onSuccess,
-    onError
+    onError,
 }: UseDeleteRecordsMutationProps) {
     const queryClient = useQueryClient();
 
@@ -139,7 +229,7 @@ export function useDeleteRecordsMutation({
             } else {
                 const deletions = records.map(record => ({
                     identifyingValues: extractUniqueValues(record, uniqueColumns),
-                    allowMultiple: false
+                    allowMultiple: false,
                 }));
                 return await deleteRecordsByValues(schemaName, tableName, deletions);
             }
@@ -147,7 +237,7 @@ export function useDeleteRecordsMutation({
         onSuccess: (result, variables) => {
             if (result.success) {
                 toast.success(result.message);
-                onSuccess?.('deletedCount' in result ? (result.deletedCount as number) : variables.length);
+                onSuccess?.("deletedCount" in result ? (result.deletedCount as number) : variables.length);
 
                 queryClient.invalidateQueries({
                     queryKey: recordQueries.listsForTable(schemaName, tableName),
@@ -160,7 +250,7 @@ export function useDeleteRecordsMutation({
                 onError?.(result.message);
             }
         },
-        onError: (error) => {
+        onError: error => {
             const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
             toast.error(errorMessage);
             onError?.(errorMessage);
@@ -180,9 +270,9 @@ export function useDeleteStrategy(columns: TableColumn[]) {
         uniqueColumns,
         canDelete: columns.length > 0,
         strategy: hasPrimaryKey
-            ? 'primary-key'
+            ? "primary-key"
             : uniqueColumns.length > 0
-                ? 'unique-column'
-                : 'full-record'
+                ? "unique-column"
+                : "full-record",
     };
 }
