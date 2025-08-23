@@ -6,6 +6,7 @@ import { PaginationParams } from "@/lib/types";
 import type {
     RecordAdvancedSearchDto,
     RecordAdvancedSearchResponseDto,
+    RecordDto,
     TableRecordPageDto,
     ViewRecordPageDto,
 } from "@/lib/types/database";
@@ -178,6 +179,94 @@ export async function advancedSearchViewRecords(
         } catch (error) {
             console.error("Failed to perform advanced search on view records:", error);
             return null;
+        }
+    });
+
+    return authAction();
+}
+
+interface CreateRecordResponse {
+    success: boolean;
+    message: string;
+    data?: RecordDto;
+}
+
+export async function createRecord(
+    schemaName: string,
+    tableName: string,
+    data: Record<string, unknown>
+): Promise<CreateRecordResponse> {
+    const authAction = await withAuth(async (): Promise<CreateRecordResponse> => {
+        try {
+            const response = await apiClient.record.createRecord({
+                schemaName,
+                tableName,
+                data,
+            });
+
+            if (!response.success) {
+                return {
+                    success: false,
+                    message: response.message || "Failed to create record",
+                };
+            }
+
+            return {
+                success: true,
+                message: "Record created successfully",
+                data: response.data,
+            };
+        } catch (error) {
+            console.error("Failed to create record:", error);
+            return {
+                success: false,
+                message: "An unexpected error occurred while creating the record",
+            };
+        }
+    });
+
+    return authAction();
+}
+
+interface CreateRecordsResponse {
+    success: boolean;
+    message: string;
+    data?: RecordDto[];
+    createdCount?: number;
+}
+
+export async function createRecords(
+    schemaName: string,
+    tableName: string,
+    records: Record<string, unknown>[]
+): Promise<CreateRecordsResponse> {
+    const authAction = await withAuth(async (): Promise<CreateRecordsResponse> => {
+        try {
+            const response = await apiClient.record.createRecords({
+                schemaName,
+                tableName,
+                records,
+            });
+
+            if (!response.success) {
+                return {
+                    success: false,
+                    message: response.message || "Failed to create records",
+                };
+            }
+
+            return {
+                success: true,
+                message: `Successfully created ${records.length} record(s)`,
+                data: response.data,
+                createdCount: records.length,
+            };
+        } catch (error) {
+            console.error("Failed to create records:", error);
+            return {
+                success: false,
+                message: "An unexpected error occurred while creating records",
+            };
         }
     });
 
