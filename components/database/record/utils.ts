@@ -5,6 +5,10 @@ export const renderCellValue = (value: unknown): string => {
     if (value === null) return "NULL";
     if (value === undefined) return "";
     if (typeof value === "boolean") return value ? "true" : "false";
+    if (typeof value === "string" && !isNaN(Date.parse(value)) && value.includes("T")) {
+        const date = new Date(value);
+        return date.toLocaleString();
+    }
     if (typeof value === "object") return JSON.stringify(value);
     return String(value);
 };
