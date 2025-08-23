@@ -19,11 +19,7 @@ import {
   useUpdateRecordsMutation,
 } from "@/lib/hooks";
 import { SortDirection } from "@/lib/types";
-import {
-  TableMetadataDto,
-  TableRecordPageDto,
-  RecordAdvancedSearchDto,
-} from "@/lib/types/database";
+import { TableRecordPageDto, RecordAdvancedSearchDto } from "@/lib/types/database";
 import { RecordDataGrid, AdvancedSearch } from "@/components/database/record";
 import { Badge } from "@/components/ui/badge";
 import { ErrorMessage, LastUpdated, ConfirmDialog } from "@/components/common";
@@ -556,7 +552,7 @@ export function TableDataContent({ schemaName, tableName }: TableDataContentProp
           {table && (
             <div className="mb-6">
               <AdvancedSearch
-                table={table}
+                object={table}
                 onSearch={handleAdvancedSearch}
                 onClear={handleClearAdvancedSearch}
                 isLoading={recordsLoading}
@@ -623,7 +619,7 @@ export function TableDataContent({ schemaName, tableName }: TableDataContentProp
           ) : (
             <div className="w-full overflow-auto">
               <RecordDataGrid
-                table={table !== null ? table : ({} as TableMetadataDto)}
+                object={table}
                 recordsData={recordsData !== null ? recordsData : ({} as TableRecordPageDto)}
                 enableSelection={true}
                 sortBy={searchParams.sorts?.[0]?.columnName}

@@ -8,12 +8,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DataType } from "@/lib/types";
-import { BaseTableColumnMetadataDto } from "@/lib/types/database";
+import { BaseColumnMetadataDto } from "@/lib/types/database";
 
 interface EditableRowCellProps {
   recordId: string;
   value: unknown;
-  column: Omit<BaseTableColumnMetadataDto, "table">;
+  column: BaseColumnMetadataDto;
   onUpdate: (recordId: string, columnName: string, value: unknown) => void;
 }
 

@@ -42,7 +42,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ColumnType, DataType, SortDirection } from "@/lib/types";
-import { TableMetadataDto, TableRecordPageDto } from "@/lib/types/database";
+import {
+  TableMetadataDto,
+  TableRecordPageDto,
+  ViewMetadataDto,
+  ViewRecordPageDto,
+} from "@/lib/types/database";
 import { TablePagination } from "@/components/common";
 import { EditableRowCell } from "./editable-row-cell";
 import { formatColumnType, renderCellValue, deepEqual } from "./utils";
@@ -62,8 +67,8 @@ interface EditedRecord {
 }
 
 interface RecordDataGridProps {
-  table?: TableMetadataDto;
-  recordsData?: TableRecordPageDto;
+  object?: TableMetadataDto | ViewMetadataDto;
+  recordsData?: TableRecordPageDto | ViewRecordPageDto;
   enableSelection?: boolean;
   onSort: (columnName: string) => void;
   sortBy?: string;
@@ -91,7 +96,7 @@ interface RecordDataGridProps {
 }
 
 export function RecordDataGrid({
-  table,
+  object,
   recordsData,
   enableSelection = false,
   onSort,
@@ -185,12 +190,12 @@ export function RecordDataGrid({
   }, [sortBy, sortDirection]);
 
   const addNewRecord = useCallback(() => {
-    if (!table?.columns) return;
+    if (!object?.columns) return;
 
     const newRecordId = `new-${Date.now()}`;
     const emptyData: Record<string, unknown> = {};
 
-    table.columns.forEach(column => {
+    object.columns.forEach(column => {
       let initValue: string | null = null;
 
       if (column.columnDefault !== undefined) {
@@ -238,7 +243,7 @@ export function RecordDataGrid({
     });
 
     setNewRecords(prev => [...prev, { id: newRecordId, data: emptyData }]);
-  }, [table?.columns]);
+  }, [object?.columns]);
 
   const updateNewRecord = useCallback((recordId: string, columnName: string, value: unknown) => {
     setNewRecords(prev =>
@@ -275,9 +280,9 @@ export function RecordDataGrid({
 
   const startEditingRecord = useCallback(
     (record: Record<string, unknown>) => {
-      if (newRecords.length > 0 || !table?.columns) return;
+      if (newRecords.length > 0 || !object?.columns) return;
 
-      table.columns.forEach(column => {
+      object.columns.forEach(column => {
         if (column.dataType.toUpperCase() == DataType.TIMESTAMP) {
           record[column.columnName] = new Date(String(record[column.columnName]))
             .toISOString()
@@ -294,7 +299,7 @@ export function RecordDataGrid({
 
       setEditingRecords(prev => [...prev, editedRecord]);
     },
-    [newRecords.length, table?.columns]
+    [newRecords.length, object?.columns]
   );
 
   const updateEditingRecord = useCallback(
@@ -381,7 +386,7 @@ export function RecordDataGrid({
   }, []);
 
   const columns = useMemo<ColumnDef<TanstackTableRecord>[]>(() => {
-    if (!table?.columns) return [];
+    if (!object?.columns) return [];
 
     const columnDefs: ColumnDef<TanstackTableRecord>[] = [];
 
@@ -415,10 +420,11 @@ export function RecordDataGrid({
 
     // Data columns
     columnDefs.push(
-      ...table.columns.map((column): ColumnDef<TanstackTableRecord> => {
+      ...object.columns.map((column): ColumnDef<TanstackTableRecord> => {
         const isPrimaryKey =
-          column.columnType === ColumnType.PRIMARY_KEY ||
-          column.columnType === ColumnType.PRIMARY_KEY_FOREIGN_KEY;
+          "columnType" in column &&
+          (column.columnType === ColumnType.PRIMARY_KEY ||
+            column.columnType === ColumnType.PRIMARY_KEY_FOREIGN_KEY);
 
         return {
           id: column.columnName,
@@ -436,7 +442,7 @@ export function RecordDataGrid({
                   >
                     <div className="flex items-start justify-center gap-1">
                       <span className="truncate max-w-[150px]">{column.columnName}</span>
-                      <ColumnIcon columnType={column.columnType} />
+                      {"columnType" in column && <ColumnIcon columnType={column.columnType} />}
                       {isSorted === "asc" ? (
                         <ArrowUp className="h-3 w-3" />
                       ) : isSorted === "desc" ? (
@@ -591,7 +597,7 @@ export function RecordDataGrid({
 
     return columnDefs;
   }, [
-    table?.columns,
+    object?.columns,
     enableSelection,
     canEditRecords,
     onEditRecords,
