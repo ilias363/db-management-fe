@@ -64,8 +64,7 @@ interface EditedRecord {
 interface RecordDataGridProps {
   table?: TableMetadataDto;
   recordsData?: TableRecordPageDto;
-  selectedRecords?: Record<string, unknown>[];
-  onSelectionChange?: (records: Record<string, unknown>[]) => void;
+  enableSelection?: boolean;
   onSort: (columnName: string) => void;
   sortBy?: string;
   sortDirection: SortDirection;
@@ -84,14 +83,17 @@ interface RecordDataGridProps {
     onError?: (error: string) => void
   ) => void;
   canDeleteRecords?: boolean;
-  onDeleteRecords?: (records: Record<string, unknown>[]) => void;
+  onDeleteRecords?: (
+    records: Record<string, unknown>[],
+    onSuccess?: () => void,
+    onError?: (error: string) => void
+  ) => void;
 }
 
 export function RecordDataGrid({
   table,
   recordsData,
-  selectedRecords = [],
-  onSelectionChange,
+  enableSelection = false,
   onSort,
   sortBy,
   sortDirection,
@@ -181,27 +183,6 @@ export function RecordDataGrid({
       : [];
     setSorting(newSorting);
   }, [sortBy, sortDirection]);
-
-  // Sync external selection with internal state
-  const selectedRecordsMap = useMemo(() => {
-    const map = new Map<string, boolean>();
-    selectedRecords?.forEach(record => {
-      map.set(JSON.stringify(record), true);
-    });
-    return map;
-  }, [selectedRecords]);
-
-  useEffect(() => {
-    if (!onSelectionChange) return;
-
-    const newSelection: RowSelectionState = {};
-    tanstackTableData.forEach((row, index) => {
-      if (!row.isNewRecord && selectedRecordsMap.has(JSON.stringify(row.originalData))) {
-        newSelection[index] = true;
-      }
-    });
-    setRowSelection(newSelection);
-  }, [selectedRecordsMap, tanstackTableData, onSelectionChange]);
 
   const addNewRecord = useCallback(() => {
     if (!table?.columns) return;
@@ -348,6 +329,20 @@ export function RecordDataGrid({
     }
   }, [onEditRecords, editingRecords]);
 
+  const deleteSelectedRecords = useCallback(async () => {
+    const selectedIds = Object.keys(rowSelection).filter(id => rowSelection[id]);
+    if (!onDeleteRecords || selectedIds.length === 0) return;
+
+    try {
+      const recordsToDelete = selectedIds.map(id => tanstackTableData[parseInt(id)].originalData);
+
+      const onSuccess = () => setRowSelection({});
+      onDeleteRecords(recordsToDelete, onSuccess);
+    } catch (error) {
+      console.error("Failed to update records:", error);
+    }
+  }, [onDeleteRecords, rowSelection, tanstackTableData]);
+
   const ColumnIcon = useCallback(({ columnType }: { columnType: ColumnType }) => {
     switch (columnType) {
       case ColumnType.PRIMARY_KEY:
@@ -383,7 +378,7 @@ export function RecordDataGrid({
 
     const columnDefs: ColumnDef<TanstackTableRecord>[] = [];
 
-    if (onSelectionChange) {
+    if (enableSelection) {
       columnDefs.push({
         id: "select",
         header: ({ table }) => (
@@ -590,7 +585,7 @@ export function RecordDataGrid({
     return columnDefs;
   }, [
     table?.columns,
-    onSelectionChange,
+    enableSelection,
     canEditRecords,
     onEditRecords,
     canDeleteRecords,
@@ -619,20 +614,12 @@ export function RecordDataGrid({
 
   const rowSelectionChangeHandler = useCallback(
     (updater: ((old: RowSelectionState) => RowSelectionState) | RowSelectionState) => {
-      if (!onSelectionChange) return;
+      if (!enableSelection) return;
 
       const newRowSelection = typeof updater === "function" ? updater(rowSelection) : updater;
       setRowSelection(newRowSelection);
-
-      const selectedIds = Object.keys(newRowSelection).filter(id => newRowSelection[id]);
-      const selectedOriginalRecords = selectedIds
-        .map(id => tanstackTableData[parseInt(id)])
-        .filter(record => !record.isNewRecord)
-        .map(record => record.originalData);
-
-      onSelectionChange(selectedOriginalRecords);
     },
-    [rowSelection, onSelectionChange, tanstackTableData]
+    [rowSelection, enableSelection]
   );
 
   const tableInstance = useReactTable({
@@ -650,8 +637,8 @@ export function RecordDataGrid({
     onSortingChange: sortingChangeHandler,
     onRowSelectionChange: rowSelectionChangeHandler,
     onColumnVisibilityChange: setColumnVisibility,
-    enableRowSelection: !!onSelectionChange,
-    enableMultiRowSelection: !!onSelectionChange,
+    enableRowSelection: enableSelection,
+    enableMultiRowSelection: enableSelection,
     enableHiding: true,
   });
 
@@ -731,13 +718,13 @@ export function RecordDataGrid({
           )}
 
           {canDeleteRecords &&
-            selectedRecords.length > 0 &&
+            tableInstance.getIsSomeRowsSelected() &&
             newRecords.length === 0 &&
             editingRecords.length === 0 && (
               <Button
                 size="sm"
                 variant="destructive"
-                onClick={() => onDeleteRecords?.(selectedRecords)}
+                onClick={deleteSelectedRecords}
                 className="gap-2"
               >
                 <Trash2 className="h-4 w-4" />

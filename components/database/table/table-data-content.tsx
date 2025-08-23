@@ -36,9 +36,12 @@ interface TableDataContentProps {
 export function TableDataContent({ schemaName, tableName }: TableDataContentProps) {
   const router = useRouter();
 
-  const [selectedRecords, setSelectedRecords] = useState<Record<string, unknown>[]>([]);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
-  const [recordsToDelete, setRecordsToDelete] = useState<Record<string, unknown>[]>([]);
+  const [recordsToDeleteData, setRecordsToDeleteData] = useState<{
+    records: Record<string, unknown>[];
+    onSuccess?: () => void;
+    onError?: (error: string) => void;
+  }>({ records: [] });
 
   const [searchParams, setSearchParams] = useState<RecordAdvancedSearchDto>({
     schemaName,
@@ -131,14 +134,13 @@ export function TableDataContent({ schemaName, tableName }: TableDataContentProp
     columns: table?.columns || [],
     onSuccess: () => {
       refetchRecords();
-      setSelectedRecords([]);
       setShowDeleteConfirmation(false);
-      setRecordsToDelete([]);
+      setRecordsToDeleteData({ records: [] });
     },
     onError: error => {
       console.error("Failed to delete record:", error);
       setShowDeleteConfirmation(false);
-      setRecordsToDelete([]);
+      setRecordsToDeleteData({ records: [] });
     },
   });
 
@@ -148,14 +150,13 @@ export function TableDataContent({ schemaName, tableName }: TableDataContentProp
     columns: table?.columns || [],
     onSuccess: () => {
       refetchRecords();
-      setSelectedRecords([]);
       setShowDeleteConfirmation(false);
-      setRecordsToDelete([]);
+      setRecordsToDeleteData({ records: [] });
     },
     onError: error => {
       console.error("Failed to delete records:", error);
       setShowDeleteConfirmation(false);
-      setRecordsToDelete([]);
+      setRecordsToDeleteData({ records: [] });
     },
   });
 
@@ -305,18 +306,48 @@ export function TableDataContent({ schemaName, tableName }: TableDataContentProp
     }
   };
 
-  const handleDeleteRecords = (records: Record<string, unknown>[]) => {
+  const handleDeleteRecords = (
+    records: Record<string, unknown>[],
+    onSuccess?: () => void,
+    onError?: (error: string) => void
+  ) => {
     if (!canDeleteRecords) return;
 
-    setRecordsToDelete(records);
+    setRecordsToDeleteData({ records, onSuccess, onError });
     setShowDeleteConfirmation(true);
   };
 
   const handleConfirmDelete = () => {
-    if (recordsToDelete.length === 1) {
-      deleteSingleRecordMutation.mutate(recordsToDelete[0]);
-    } else if (recordsToDelete.length > 1) {
-      deleteMultipleRecordsMutation.mutate(recordsToDelete);
+    if (recordsToDeleteData.records.length === 1) {
+      deleteSingleRecordMutation.mutate(recordsToDeleteData.records[0], {
+        onSuccess: result => {
+          if (result.success) {
+            recordsToDeleteData.onSuccess?.();
+          } else {
+            recordsToDeleteData.onError?.(result.message);
+          }
+        },
+        onError: error => {
+          recordsToDeleteData.onError?.(
+            error instanceof Error ? error.message : "Failed to delete record"
+          );
+        },
+      });
+    } else if (recordsToDeleteData.records.length > 1) {
+      deleteMultipleRecordsMutation.mutate(recordsToDeleteData.records, {
+        onSuccess: result => {
+          if (result.success) {
+            recordsToDeleteData.onSuccess?.();
+          } else {
+            recordsToDeleteData.onError?.(result.message);
+          }
+        },
+        onError: error => {
+          recordsToDeleteData.onError?.(
+            error instanceof Error ? error.message : "Failed to delete records"
+          );
+        },
+      });
     }
   };
 
@@ -594,8 +625,7 @@ export function TableDataContent({ schemaName, tableName }: TableDataContentProp
               <RecordDataGrid
                 table={table !== null ? table : ({} as TableMetadataDto)}
                 recordsData={recordsData !== null ? recordsData : ({} as TableRecordPageDto)}
-                selectedRecords={selectedRecords}
-                onSelectionChange={setSelectedRecords}
+                enableSelection={true}
                 sortBy={searchParams.sorts?.[0]?.columnName}
                 sortDirection={searchParams.sorts?.[0]?.direction || SortDirection.ASC}
                 onSort={handleSort}
@@ -616,9 +646,9 @@ export function TableDataContent({ schemaName, tableName }: TableDataContentProp
       <ConfirmDialog
         title="Delete Records"
         description={
-          recordsToDelete.length === 1
+          recordsToDeleteData.records.length === 1
             ? "Are you sure you want to delete this record? This action cannot be undone."
-            : `Are you sure you want to delete these ${recordsToDelete.length} records? This action cannot be undone.`
+            : `Are you sure you want to delete these ${recordsToDeleteData.records.length} records? This action cannot be undone.`
         }
         open={showDeleteConfirmation}
         onConfirm={handleConfirmDelete}
