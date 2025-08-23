@@ -183,3 +183,163 @@ export async function advancedSearchViewRecords(
 
     return authAction();
 }
+
+interface DeleteRecordsResponse {
+    success: boolean;
+    message: string;
+    deletedCount?: number;
+}
+
+export async function deleteRecord(
+    schemaName: string,
+    tableName: string,
+    primaryKeyValues: Record<string, unknown>
+): Promise<DeleteRecordsResponse> {
+    const authAction = await withAuth(async (): Promise<DeleteRecordsResponse> => {
+        try {
+            const response = await apiClient.record.deleteRecord({
+                schemaName,
+                tableName,
+                primaryKeyValues,
+            });
+
+            if (!response.success) {
+                return {
+                    success: false,
+                    message: response.message || "Failed to delete record",
+                };
+            }
+
+            return {
+                success: true,
+                message: "Record deleted successfully",
+            };
+        } catch (error) {
+            console.error("Failed to delete record:", error);
+            return {
+                success: false,
+                message: "An unexpected error occurred while deleting the record",
+            };
+        }
+    });
+
+    return authAction();
+}
+
+export async function deleteRecords(
+    schemaName: string,
+    tableName: string,
+    primaryKeyValuesList: Record<string, unknown>[]
+): Promise<DeleteRecordsResponse> {
+    const authAction = await withAuth(async (): Promise<DeleteRecordsResponse> => {
+        try {
+            const response = await apiClient.record.deleteRecords({
+                schemaName,
+                tableName,
+                primaryKeyValuesList,
+            });
+
+            if (!response.success) {
+                return {
+                    success: false,
+                    message: response.message || "Failed to delete records",
+                };
+            }
+
+            return {
+                success: true,
+                message: `Successfully deleted ${response.data} record(s)`,
+                deletedCount: response.data,
+            };
+        } catch (error) {
+            console.error("Failed to delete records:", error);
+            return {
+                success: false,
+                message: "An unexpected error occurred while deleting records",
+            };
+        }
+    });
+
+    return authAction();
+}
+
+export async function deleteRecordByValues(
+    schemaName: string,
+    tableName: string,
+    identifyingValues: Record<string, unknown>,
+    allowMultiple: boolean = false
+): Promise<DeleteRecordsResponse> {
+    const authAction = await withAuth(async (): Promise<DeleteRecordsResponse> => {
+        try {
+            const response = await apiClient.record.deleteRecordByValues({
+                schemaName,
+                tableName,
+                identifyingValues,
+                allowMultiple,
+            });
+
+            if (!response.success) {
+                return {
+                    success: false,
+                    message: response.message || "Failed to delete record(s) by values",
+                };
+            }
+
+            const count = response.data || 0;
+            return {
+                success: true,
+                message: `Successfully deleted ${count} record(s)`,
+                deletedCount: count,
+            };
+        } catch (error) {
+            console.error("Failed to delete record by values:", error);
+            return {
+                success: false,
+                message: "An unexpected error occurred while deleting record(s)",
+            };
+        }
+    });
+
+    return authAction();
+}
+
+export async function deleteRecordsByValues(
+    schemaName: string,
+    tableName: string,
+    deletions: {
+        identifyingValues: Record<string, unknown>;
+        allowMultiple?: boolean;
+    }[]
+): Promise<DeleteRecordsResponse> {
+    const authAction = await withAuth(async (): Promise<DeleteRecordsResponse> => {
+        try {
+            const response = await apiClient.record.deleteRecordsByValues({
+                schemaName,
+                tableName,
+                deletions,
+            });
+
+            if (!response.success) {
+                return {
+                    success: false,
+                    message: response.message || "Failed to delete records by values",
+                };
+            }
+
+            const count = response.data || 0;
+            return {
+                success: true,
+                message: `Successfully deleted ${count} record(s)`,
+                deletedCount: count,
+            };
+        } catch (error) {
+            console.error("Failed to delete records by values:", error);
+            return {
+                success: false,
+                message: "An unexpected error occurred while deleting records",
+            };
+        }
+    });
+
+    return authAction();
+}
