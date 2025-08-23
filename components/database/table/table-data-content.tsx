@@ -10,9 +10,13 @@ import {
   useTable,
   useTableRecordsSearch,
   useDetailedPermissions,
+  useCreateRecordMutation,
+  useCreateRecordsMutation,
   useDeleteRecordMutation,
   useDeleteRecordsMutation,
   useDeleteStrategy,
+  useUpdateRecordMutation,
+  useUpdateRecordsMutation,
 } from "@/lib/hooks";
 import { SortDirection } from "@/lib/types";
 import {
@@ -74,6 +78,52 @@ export function TableDataContent({ schemaName, tableName }: TableDataContentProp
   });
 
   const deleteStrategy = useDeleteStrategy(table?.columns || []);
+
+  const createSingleRecordMutation = useCreateRecordMutation({
+    schemaName,
+    tableName,
+    onSuccess: () => {
+      refetchRecords();
+    },
+    onError: error => {
+      console.error("Failed to create record:", error);
+    },
+  });
+
+  const createMultipleRecordsMutation = useCreateRecordsMutation({
+    schemaName,
+    tableName,
+    onSuccess: () => {
+      refetchRecords();
+    },
+    onError: error => {
+      console.error("Failed to create records:", error);
+    },
+  });
+
+  const updateSingleRecordMutation = useUpdateRecordMutation({
+    schemaName,
+    tableName,
+    columns: table?.columns || [],
+    onSuccess: () => {
+      refetchRecords();
+    },
+    onError: error => {
+      console.error("Failed to update record:", error);
+    },
+  });
+
+  const updateMultipleRecordsMutation = useUpdateRecordsMutation({
+    schemaName,
+    tableName,
+    columns: table?.columns || [],
+    onSuccess: () => {
+      refetchRecords();
+    },
+    onError: error => {
+      console.error("Failed to update records:", error);
+    },
+  });
 
   const deleteSingleRecordMutation = useDeleteRecordMutation({
     schemaName,
@@ -183,14 +233,76 @@ export function TableDataContent({ schemaName, tableName }: TableDataContentProp
     }));
   };
 
-  const handleCreateRecords = async (recordsData: Record<string, unknown>[]) => {
-    console.log(recordsData);
+  const handleCreateRecords = (
+    recordsData: Record<string, unknown>[],
+    onSuccess?: () => void,
+    onError?: (error: string) => void
+  ) => {
+    if (!canCreateRecords || recordsData.length === 0) return;
+
+    if (recordsData.length === 1) {
+      createSingleRecordMutation.mutate(recordsData[0], {
+        onSuccess: result => {
+          if (result.success) {
+            onSuccess?.();
+          } else {
+            onError?.(result.message);
+          }
+        },
+        onError: error => {
+          onError?.(error instanceof Error ? error.message : "Failed to create record");
+        },
+      });
+    } else {
+      createMultipleRecordsMutation.mutate(recordsData, {
+        onSuccess: result => {
+          if (result.success) {
+            onSuccess?.();
+          } else {
+            onError?.(result.message);
+          }
+        },
+        onError: error => {
+          onError?.(error instanceof Error ? error.message : "Failed to create records");
+        },
+      });
+    }
   };
 
-  const handleEditRecords = async (
-    updates: { originalData: Record<string, unknown>; newData: Record<string, unknown> }[]
+  const handleEditRecords = (
+    updates: { originalData: Record<string, unknown>; newData: Record<string, unknown> }[],
+    onSuccess?: () => void,
+    onError?: (error: string) => void
   ) => {
-    console.log(updates);
+    if (!canEditRecords || updates.length === 0) return;
+
+    if (updates.length === 1) {
+      updateSingleRecordMutation.mutate(updates[0], {
+        onSuccess: result => {
+          if (result.success) {
+            onSuccess?.();
+          } else {
+            onError?.(result.message);
+          }
+        },
+        onError: error => {
+          onError?.(error instanceof Error ? error.message : "Failed to update record");
+        },
+      });
+    } else {
+      updateMultipleRecordsMutation.mutate(updates, {
+        onSuccess: result => {
+          if (result.success) {
+            onSuccess?.();
+          } else {
+            onError?.(result.message);
+          }
+        },
+        onError: error => {
+          onError?.(error instanceof Error ? error.message : "Failed to update records");
+        },
+      });
+    }
   };
 
   const handleDeleteRecords = (records: Record<string, unknown>[]) => {
