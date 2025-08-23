@@ -575,7 +575,7 @@ export function AdvancedSearch({
   };
 
   return (
-    <Card>
+    <Card className="py-4">
       <CardHeader>
         <Button
           variant="ghost"
