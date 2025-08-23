@@ -112,6 +112,21 @@ export function ColumnDefaultDialog({
                     <FormLabel>Default Value</FormLabel>
                     <FormControl>
                       <Input
+                        type={
+                          column.dataType.toUpperCase() == DataType.DATE
+                            ? "date"
+                            : column.dataType.toUpperCase() == DataType.TIME
+                            ? "time"
+                            : column.dataType.toUpperCase() == DataType.TIMESTAMP
+                            ? "datetime-local"
+                            : "text"
+                        }
+                        step={
+                          column.dataType.toUpperCase() == DataType.TIME ||
+                          column.dataType.toUpperCase() == DataType.TIMESTAMP
+                            ? 1 // Allows input with seconds precision
+                            : undefined
+                        }
                         placeholder={getCompatibleDefaultValuePattern(
                           column.dataType.toUpperCase() as DataType
                         )}
@@ -120,6 +135,14 @@ export function ColumnDefaultDialog({
                         }
                         {...field}
                         value={field.value || ""}
+                        onChange={
+                          column.dataType.toUpperCase() == DataType.TIMESTAMP
+                            ? e => {
+                                const value = e.target.value;
+                                field.onChange(value ? value.replace("T", " ") : "");
+                              }
+                            : field.onChange
+                        }
                       />
                     </FormControl>
                     {(column.dataType.toUpperCase() as DataType) == DataType.TEXT && (
