@@ -150,7 +150,7 @@ export function AdvancedSearch({
       return renderMultipleValuesInput(filter, index, column, dataType);
     }
 
-    return renderSingleValueInput(filter, index, column, dataType);
+    return renderSingleValueInput(filter, index, column, dataType, "value");
   };
 
   const renderGenericInput = (filter: RecordFilterCriteriaDto, index: number) => {
@@ -170,76 +170,10 @@ export function AdvancedSearch({
     column: Omit<BaseTableColumnMetadataDto, "table">,
     dataType: DataType
   ) => {
-    const isNumeric = [
-      DataType.INT,
-      DataType.INTEGER,
-      DataType.SMALLINT,
-      DataType.BIGINT,
-      DataType.DECIMAL,
-      DataType.NUMERIC,
-      DataType.FLOAT,
-      DataType.REAL,
-      DataType.DOUBLE,
-    ].includes(dataType);
-
-    const isDate = dataType === DataType.DATE;
-    const isTime = dataType === DataType.TIME;
-    const isTimestamp = dataType === DataType.TIMESTAMP;
-
-    const inputType = isNumeric
-      ? "number"
-      : isDate
-      ? "date"
-      : isTime
-      ? "time"
-      : isTimestamp
-      ? "datetime-local"
-      : "text";
-
-    const handleNumericConversion = (value: string): unknown => {
-      if (value === "" && column.isNullable) return null;
-      if (value === "") return null;
-
-      const num = Number(value);
-      if (isNaN(num)) return value;
-
-      if ([DataType.DECIMAL, DataType.NUMERIC].includes(dataType) && column.numericScale) {
-        return parseFloat(num.toFixed(column.numericScale));
-      } else if ([DataType.FLOAT, DataType.REAL, DataType.DOUBLE].includes(dataType)) {
-        return parseFloat(String(num));
-      } else {
-        return parseInt(String(num), 10);
-      }
-    };
-
     return (
       <div className="flex gap-2">
-        <Input
-          type={inputType}
-          placeholder="Min value"
-          value={(filter.minValue as string) || ""}
-          onChange={e => {
-            let value: unknown = e.target.value;
-            if (isNumeric) {
-              value = handleNumericConversion(e.target.value);
-            }
-            handleUpdateFilter(index, { minValue: value });
-          }}
-          className="flex-1"
-        />
-        <Input
-          type={inputType}
-          placeholder="Max value"
-          value={(filter.maxValue as string) || ""}
-          onChange={e => {
-            let value: unknown = e.target.value;
-            if (isNumeric) {
-              value = handleNumericConversion(e.target.value);
-            }
-            handleUpdateFilter(index, { maxValue: value });
-          }}
-          className="flex-1"
-        />
+        {renderSingleValueInput(filter, index, column, dataType, "minValue")}
+        {renderSingleValueInput(filter, index, column, dataType, "maxValue")}
       </div>
     );
   };
@@ -384,23 +318,25 @@ export function AdvancedSearch({
     filter: RecordFilterCriteriaDto,
     index: number,
     column: Omit<BaseTableColumnMetadataDto, "table">,
-    dataType: DataType
+    dataType: DataType,
+    valueType: "value" | "minValue" | "maxValue"
   ) => {
+    const filterValue = filter[valueType];
     if (dataType === DataType.BOOLEAN || dataType.toUpperCase() === "TINYINT") {
       return (
         <Select
           value={
-            filter.value === null || filter.value === undefined
+            filterValue === null || filterValue === undefined
               ? column.isNullable
                 ? "null"
                 : "false"
-              : String(filter.value) === "true"
+              : String(filterValue) === "true"
               ? "true"
               : "false"
           }
           onValueChange={newValue => {
             const actualValue = newValue === "null" ? null : newValue === "true";
-            handleUpdateFilter(index, { value: actualValue });
+            handleUpdateFilter(index, { [valueType]: actualValue });
           }}
         >
           <SelectTrigger className="flex-1">
@@ -432,7 +368,7 @@ export function AdvancedSearch({
         <Input
           type="number"
           placeholder={column.isNullable ? "Number or leave empty for NULL" : "Enter number"}
-          value={filter.value === null || filter.value === undefined ? "" : String(filter.value)}
+          value={filterValue === null || filterValue === undefined ? "" : String(filterValue)}
           onChange={e => {
             let value: unknown = e.target.value;
 
@@ -454,7 +390,7 @@ export function AdvancedSearch({
               }
             }
 
-            handleUpdateFilter(index, { value });
+            handleUpdateFilter(index, { [valueType]: value });
           }}
           className="flex-1"
         />
@@ -466,13 +402,13 @@ export function AdvancedSearch({
         <Input
           type="date"
           placeholder={column.isNullable ? "YYYY-MM-DD or leave empty for NULL" : "YYYY-MM-DD"}
-          value={filter.value === null || filter.value === undefined ? "" : String(filter.value)}
+          value={filterValue === null || filterValue === undefined ? "" : String(filterValue)}
           onChange={e => {
             let value: unknown = e.target.value;
             if (value === "" && column.isNullable) {
               value = null;
             }
-            handleUpdateFilter(index, { value });
+            handleUpdateFilter(index, { [valueType]: value });
           }}
           className="flex-1"
         />
@@ -483,14 +419,15 @@ export function AdvancedSearch({
       return (
         <Input
           type="time"
+          step={1}
           placeholder={column.isNullable ? "HH:MM:SS or leave empty for NULL" : "HH:MM:SS"}
-          value={filter.value === null || filter.value === undefined ? "" : String(filter.value)}
+          value={filterValue === null || filterValue === undefined ? "" : String(filterValue)}
           onChange={e => {
-            let value: unknown = e.target.value;
-            if (value === "" && column.isNullable) {
-              value = null;
+            if (e.target.value.length == 5) {
+              handleUpdateFilter(index, { [valueType]: e.target.value + ":00" });
+            } else {
+              handleUpdateFilter(index, { [valueType]: e.target.value });
             }
-            handleUpdateFilter(index, { value });
           }}
           className="flex-1"
         />
@@ -514,16 +451,19 @@ export function AdvancedSearch({
       return (
         <Input
           type="datetime-local"
+          step={1}
           placeholder={
             column.isNullable ? "Date and time or leave empty for NULL" : "Date and time"
           }
-          value={formatTimestampValue(filter.value)}
+          value={formatTimestampValue(filterValue)}
           onChange={e => {
-            let value: unknown = e.target.value;
-            if (value === "" && column.isNullable) {
-              value = null;
+            const parts = e.target.value.split("T");
+            if (parts.length == 2) {
+              if (parts[1].length == 5) {
+                parts[1] += ":00";
+              }
             }
-            handleUpdateFilter(index, { value });
+            handleUpdateFilter(index, { [valueType]: parts.join(" ") });
           }}
           className="flex-1"
         />
@@ -544,13 +484,13 @@ export function AdvancedSearch({
                 }`
           }
           maxLength={column.characterMaxLength || undefined}
-          value={filter.value === null || filter.value === undefined ? "" : String(filter.value)}
+          value={filterValue === null || filterValue === undefined ? "" : String(filterValue)}
           onChange={e => {
             let value: unknown = e.target.value;
             if (value === "" && column.isNullable) {
               value = null;
             }
-            handleUpdateFilter(index, { value });
+            handleUpdateFilter(index, { [valueType]: value });
           }}
           className="flex-1"
         />
@@ -561,13 +501,13 @@ export function AdvancedSearch({
       <Input
         type="text"
         placeholder={column.isNullable ? "Value or leave empty for NULL" : "Enter value"}
-        value={filter.value === null || filter.value === undefined ? "" : String(filter.value)}
+        value={filterValue === null || filterValue === undefined ? "" : String(filterValue)}
         onChange={e => {
           let value: unknown = e.target.value;
           if (value === "" && column.isNullable) {
             value = null;
           }
-          handleUpdateFilter(index, { value });
+          handleUpdateFilter(index, { [valueType]: value });
         }}
         className="flex-1"
       />
