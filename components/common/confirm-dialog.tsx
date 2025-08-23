@@ -20,6 +20,8 @@ interface ConfirmDialogProps {
   cancelText?: string;
   variant?: "default" | "destructive";
   children?: React.ReactNode;
+  confirmDisabled?: boolean;
+  preventClose?: boolean;
 }
 
 export function ConfirmDialog({
@@ -32,9 +34,18 @@ export function ConfirmDialog({
   cancelText = "Cancel",
   variant = "default",
   children,
+  confirmDisabled = false,
+  preventClose = false,
 }: ConfirmDialogProps) {
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen && preventClose) {
+      return;
+    }
+    onOpenChange(newOpen);
+  };
+
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialog open={open} onOpenChange={handleOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
@@ -45,13 +56,16 @@ export function ConfirmDialog({
           {children && <div className="mt-4">{children}</div>}
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => onOpenChange(false)}>{cancelText}</AlertDialogCancel>
+          <AlertDialogCancel onClick={() => handleOpenChange(false)} disabled={preventClose}>
+            {cancelText}
+          </AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
+            disabled={confirmDisabled}
             className={
               variant === "destructive"
-                ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                : undefined
+                ? "bg-destructive text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                : "disabled:opacity-50 disabled:cursor-not-allowed"
             }
           >
             {confirmText}

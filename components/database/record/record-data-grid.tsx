@@ -78,7 +78,7 @@ interface RecordDataGridProps {
     records: { originalData: Record<string, unknown>; newData: Record<string, unknown> }[]
   ) => Promise<void>;
   canDeleteRecords?: boolean;
-  onDeleteRecords?: (records: Record<string, unknown>[]) => Promise<void>;
+  onDeleteRecords?: (records: Record<string, unknown>[]) => void;
 }
 
 export function RecordDataGrid({

@@ -6,7 +6,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, ArrowLeft, Database, AlertTriangle } from "lucide-react";
-import { useTable, useTableRecordsSearch, useDetailedPermissions } from "@/lib/hooks";
+import {
+  useTable,
+  useTableRecordsSearch,
+  useDetailedPermissions,
+  useDeleteRecordMutation,
+  useDeleteRecordsMutation,
+  useDeleteStrategy,
+} from "@/lib/hooks";
 import { SortDirection } from "@/lib/types";
 import {
   TableMetadataDto,
@@ -15,7 +22,7 @@ import {
 } from "@/lib/types/database";
 import { RecordDataGrid, AdvancedSearch } from "@/components/database/record";
 import { Badge } from "@/components/ui/badge";
-import { ErrorMessage, LastUpdated } from "@/components/common";
+import { ErrorMessage, LastUpdated, ConfirmDialog } from "@/components/common";
 
 interface TableDataContentProps {
   schemaName: string;
@@ -26,6 +33,8 @@ export function TableDataContent({ schemaName, tableName }: TableDataContentProp
   const router = useRouter();
 
   const [selectedRecords, setSelectedRecords] = useState<Record<string, unknown>[]>([]);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [recordsToDelete, setRecordsToDelete] = useState<Record<string, unknown>[]>([]);
 
   const [searchParams, setSearchParams] = useState<RecordAdvancedSearchDto>({
     schemaName,
@@ -64,6 +73,42 @@ export function TableDataContent({ schemaName, tableName }: TableDataContentProp
     enabled: isTableEnabled,
   });
 
+  const deleteStrategy = useDeleteStrategy(table?.columns || []);
+
+  const deleteSingleRecordMutation = useDeleteRecordMutation({
+    schemaName,
+    tableName,
+    columns: table?.columns || [],
+    onSuccess: () => {
+      refetchRecords();
+      setSelectedRecords([]);
+      setShowDeleteConfirmation(false);
+      setRecordsToDelete([]);
+    },
+    onError: error => {
+      console.error("Failed to delete record:", error);
+      setShowDeleteConfirmation(false);
+      setRecordsToDelete([]);
+    },
+  });
+
+  const deleteMultipleRecordsMutation = useDeleteRecordsMutation({
+    schemaName,
+    tableName,
+    columns: table?.columns || [],
+    onSuccess: () => {
+      refetchRecords();
+      setSelectedRecords([]);
+      setShowDeleteConfirmation(false);
+      setRecordsToDelete([]);
+    },
+    onError: error => {
+      console.error("Failed to delete records:", error);
+      setShowDeleteConfirmation(false);
+      setRecordsToDelete([]);
+    },
+  });
+
   const recordsData = recordsResponse
     ? ({
         items: recordsResponse.records,
@@ -79,7 +124,10 @@ export function TableDataContent({ schemaName, tableName }: TableDataContentProp
   const canViewRecords = detailedPerms?.granularPermissions.canRead || false;
   const canCreateRecords = detailedPerms?.granularPermissions.canWrite || false;
   const canEditRecords = detailedPerms?.granularPermissions.canWrite || false;
-  const canDeleteRecords = detailedPerms?.granularPermissions.canDelete || false;
+  const canDeleteRecords =
+    (detailedPerms?.granularPermissions.canDelete || false) &&
+    deleteStrategy.canDelete &&
+    !(deleteSingleRecordMutation.isPending || deleteMultipleRecordsMutation.isPending);
   const isSystemSchema = table?.schema.isSystemSchema || false;
 
   const handleRefresh = async () => {
@@ -145,8 +193,19 @@ export function TableDataContent({ schemaName, tableName }: TableDataContentProp
     console.log(updates);
   };
 
-  const handleDeleteRecords = async () => {
-    console.log("Delete selected records:", selectedRecords);
+  const handleDeleteRecords = (records: Record<string, unknown>[]) => {
+    if (!canDeleteRecords) return;
+
+    setRecordsToDelete(records);
+    setShowDeleteConfirmation(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (recordsToDelete.length === 1) {
+      deleteSingleRecordMutation.mutate(recordsToDelete[0]);
+    } else if (recordsToDelete.length > 1) {
+      deleteMultipleRecordsMutation.mutate(recordsToDelete);
+    }
   };
 
   if (!canViewRecords && !tableLoading) {
@@ -441,6 +500,45 @@ export function TableDataContent({ schemaName, tableName }: TableDataContentProp
           )}
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        title="Delete Records"
+        description={
+          recordsToDelete.length === 1
+            ? "Are you sure you want to delete this record? This action cannot be undone."
+            : `Are you sure you want to delete these ${recordsToDelete.length} records? This action cannot be undone.`
+        }
+        open={showDeleteConfirmation}
+        onConfirm={handleConfirmDelete}
+        onOpenChange={setShowDeleteConfirmation}
+        confirmText={
+          deleteSingleRecordMutation.isPending || deleteMultipleRecordsMutation.isPending
+            ? "Deleting..."
+            : "Delete"
+        }
+        confirmDisabled={
+          deleteSingleRecordMutation.isPending || deleteMultipleRecordsMutation.isPending
+        }
+        preventClose={
+          deleteSingleRecordMutation.isPending || deleteMultipleRecordsMutation.isPending
+        }
+        variant="destructive"
+      >
+        {deleteStrategy && (
+          <div className="text-sm text-muted-foreground">
+            <p>
+              <strong>Deletion method:</strong>{" "}
+              {deleteStrategy.strategy === "primary-key"
+                ? `Using primary key columns (${deleteStrategy.primaryKeyColumns
+                    .map(col => col.columnName)
+                    .join(", ")})`
+                : deleteStrategy.strategy === "unique-column"
+                ? `Using unique column (${deleteStrategy.uniqueColumns[0]?.columnName})`
+                : "Using all column values"}
+            </p>
+          </div>
+        )}
+      </ConfirmDialog>
     </div>
   );
 }
