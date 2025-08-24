@@ -169,7 +169,7 @@ export function TableDataContent({ schemaName, tableName }: TableDataContentProp
     : null;
 
   const canViewRecords = detailedPerms?.granularPermissions.canRead || false;
-  const canCreateRecords = detailedPerms?.granularPermissions.canWrite || false;
+  const canCreateRecords = detailedPerms?.granularPermissions.canCreate || false;
   const canEditRecords = detailedPerms?.granularPermissions.canWrite || false;
   const canDeleteRecords =
     (detailedPerms?.granularPermissions.canDelete || false) &&
