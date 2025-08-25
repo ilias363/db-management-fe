@@ -5,6 +5,7 @@ import { withAuth } from "../auth";
 import {
     AnalyticsTimeRange,
     AuditActivityData,
+    DashboardStats,
     DatabaseStats,
     DatabaseTypeDto,
     DatabaseUsageData,
@@ -64,8 +65,8 @@ export async function getDatabaseStats(includeSystem: boolean): Promise<Database
     return authAction();
 }
 
-export async function getDashboardStats(includeSystem: boolean): Promise<DatabaseStats | null> {
-    const authAction = await withAuth(async (): Promise<DatabaseStats | null> => {
+export async function getDashboardStats(includeSystem: boolean): Promise<DashboardStats | null> {
+    const authAction = await withAuth(async (): Promise<DashboardStats | null> => {
         try {
             const response = await apiClient.analytics.getDashboardStats(includeSystem);
             if (!response.success || !response.data) {

@@ -624,7 +624,7 @@ class ApiClientImpl implements ApiClient {
 
   analytics = {
     getDatabaseUsage: (includeSystem: boolean): Promise<DatabaseUsageResponse> =>
-      this.request(`/analytics/database/usage=${includeSystem}`),
+      this.request(`/analytics/database/usage?includeSystem=${includeSystem}`),
 
     getDatabaseType: (): Promise<DatabaseTypeResponse> => this.request("/analytics/database/type"),
 
