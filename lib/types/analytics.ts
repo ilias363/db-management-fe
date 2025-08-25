@@ -60,6 +60,12 @@ export interface AuditActivityData {
     activeUsers: number;
 }
 
+export interface AuditHeatmapData {
+    dayOfWeek: number; // 1 = Monday, 2 = Tuesday, ... 7 = Sunday
+    hourOfDay: number; // 0-23
+    activityCount: number;
+}
+
 export type DatabaseTypeResponse = ApiResponse<DatabaseTypeDto>;
 export type DatabaseStatsResponse = ApiResponse<DatabaseStats>;
 export type DatabaseUsageResponse = ApiResponse<DatabaseUsageData[]>;
@@ -68,6 +74,7 @@ export type UserActivityResponse = ApiResponse<UserActivityData[]>;
 export type TopUsersByActivityResponse = ApiResponse<TopUsersByActivity[]>;
 export type RoleDistributionResponse = ApiResponse<RoleDistributionData[]>;
 export type AuditActivityResponse = ApiResponse<AuditActivityData[]>;
+export type AuditHeatmapResponse = ApiResponse<AuditHeatmapData[]>;
 
 // Query Parameters
 export interface AnalyticsTimeRange {

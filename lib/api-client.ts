@@ -35,6 +35,7 @@ import type {
   AnalyticsTimeRange,
   UserActivityResponse,
   AuditActivityResponse,
+  AuditHeatmapResponse,
   TopUsersByActivityResponse,
   RoleDistributionResponse,
 } from "./types";
@@ -658,6 +659,13 @@ class ApiClientImpl implements ApiClient {
         ? `?${new URLSearchParams(params as Record<string, string>).toString()}`
         : "";
       return this.request(`/analytics/audit/activity${query}`);
+    },
+
+    getAuditHeatmap: (params?: AnalyticsTimeRange): Promise<AuditHeatmapResponse> => {
+      const query = params
+        ? `?${new URLSearchParams(params as Record<string, string>).toString()}`
+        : "";
+      return this.request(`/analytics/audit/heatmap${query}`);
     },
   };
 }

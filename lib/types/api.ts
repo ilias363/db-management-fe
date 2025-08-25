@@ -33,6 +33,7 @@ import type {
   TopUsersByActivityResponse,
   RoleDistributionResponse,
   AuditActivityResponse,
+  AuditHeatmapResponse,
 } from "./index";
 
 import type {
@@ -238,5 +239,6 @@ export interface ApiClient {
     getTopUsersByActivity(params?: AnalyticsTimeRange & { limit?: number }): Promise<TopUsersByActivityResponse>;
     getRoleDistribution(): Promise<RoleDistributionResponse>;
     getAuditActivity(params?: AnalyticsTimeRange): Promise<AuditActivityResponse>;
+    getAuditHeatmap(params?: AnalyticsTimeRange): Promise<AuditHeatmapResponse>;
   };
 }
