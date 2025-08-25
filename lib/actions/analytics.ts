@@ -6,13 +6,17 @@ import {
     AnalyticsTimeRange,
     AuditActivityData,
     AuditHeatmapData,
+    AuditLogDto,
     DashboardStats,
     DatabaseStats,
     DatabaseTypeDto,
     DatabaseUsageData,
     RoleDistributionData,
     TopUsersByActivity,
+    UserActionBreakdown,
     UserActivityData,
+    UserDashboardStats,
+    UserDatabaseAccess,
 } from "../types";
 
 export async function getDatabaseUsage(
@@ -164,6 +168,86 @@ export async function getAuditHeatmap(
             return response.data;
         } catch (error) {
             console.error("Failed to get audit heatmap:", error);
+            return null;
+        }
+    });
+    return authAction();
+}
+
+export async function getUserDashboardStats(): Promise<UserDashboardStats | null> {
+    const authAction = await withAuth(async (): Promise<UserDashboardStats | null> => {
+        try {
+            const response = await apiClient.analytics.getUserDashboardStats();
+            if (!response.success || !response.data) {
+                return null;
+            }
+            return response.data;
+        } catch (error) {
+            console.error("Failed to get user dashboard stats:", error);
+            return null;
+        }
+    });
+    return authAction();
+}
+
+export async function getUserActionBreakdown(): Promise<UserActionBreakdown[] | null> {
+    const authAction = await withAuth(async (): Promise<UserActionBreakdown[] | null> => {
+        try {
+            const response = await apiClient.analytics.getUserActionBreakdown();
+            if (!response.success || !response.data) {
+                return null;
+            }
+            return response.data;
+        } catch (error) {
+            console.error("Failed to get user action breakdown:", error);
+            return null;
+        }
+    });
+    return authAction();
+}
+
+export async function getUserRecentActivity(limit?: number): Promise<AuditLogDto[] | null> {
+    const authAction = await withAuth(async (): Promise<AuditLogDto[] | null> => {
+        try {
+            const response = await apiClient.analytics.getUserRecentActivity(limit);
+            if (!response.success || !response.data) {
+                return null;
+            }
+            return response.data;
+        } catch (error) {
+            console.error("Failed to get user recent activity:", error);
+            return null;
+        }
+    });
+    return authAction();
+}
+
+export async function getUserDatabaseAccess(): Promise<UserDatabaseAccess[] | null> {
+    const authAction = await withAuth(async (): Promise<UserDatabaseAccess[] | null> => {
+        try {
+            const response = await apiClient.analytics.getUserDatabaseAccess();
+            if (!response.success || !response.data) {
+                return null;
+            }
+            return response.data;
+        } catch (error) {
+            console.error("Failed to get user database access:", error);
+            return null;
+        }
+    });
+    return authAction();
+}
+
+export async function getUserAuditHeatmap(): Promise<AuditHeatmapData[] | null> {
+    const authAction = await withAuth(async (): Promise<AuditHeatmapData[] | null> => {
+        try {
+            const response = await apiClient.analytics.getUserAuditHeatmap();
+            if (!response.success || !response.data) {
+                return null;
+            }
+            return response.data;
+        } catch (error) {
+            console.error("Failed to get user audit heatmap:", error);
             return null;
         }
     });
