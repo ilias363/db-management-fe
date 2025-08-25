@@ -19,10 +19,12 @@ export default function Dashboard() {
   const isLoading = authLoading || adminCheckLoading;
 
   useEffect(() => {
-    if (isAdmin) {
+    if (isAdmin === true) {
       queryClient.prefetchQuery(analyticsQueries.dashboardStats(true));
+    } else if (!isLoading && isAdmin === false) {
+      queryClient.prefetchQuery(analyticsQueries.userDashboardStats());
     }
-  }, [isAdmin, queryClient]);
+  }, [isAdmin, isLoading, queryClient]);
 
   if (isLoading) {
     return <LoadingScreen message="Loading dashboard..." />;

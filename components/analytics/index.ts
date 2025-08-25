@@ -6,3 +6,7 @@ export * from "./audit-heatmap";
 export * from "./top-users-table";
 export * from "./database-usage-table";
 export * from "./date-range-picker";
+export * from "./user-dashboard-stats-cards";
+export * from "./user-action-breakdown-chart";
+export * from "./user-recent-activity-table";
+export * from "./user-database-access-table";

@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,22 +14,17 @@ import {
   DateRangePicker,
 } from "@/components/analytics";
 import { useAnalyticsTimeRange } from "@/lib/hooks/use-analytics";
-import { BarChart3, Users, Database, Shield, RefreshCw } from "lucide-react";
+import { BarChart3, Users, Database, Shield } from "lucide-react";
 import { useState } from "react";
 
 export default function AdminDashboard() {
   const [includeSystem, setIncludeSystem] = useState(true);
-  const [refreshKey, setRefreshKey] = useState(0);
 
   const usersTimeRange = useAnalyticsTimeRange();
   const auditTimeRange = useAnalyticsTimeRange();
 
-  const handleRefresh = () => {
-    setRefreshKey(prev => prev + 1);
-  };
-
   return (
-    <div className="p-6 space-y-6" key={refreshKey}>
+    <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
@@ -53,16 +47,6 @@ export default function AdminDashboard() {
               Include System Data
             </Label>
           </div>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            className="flex items-center gap-2"
-          >
-            <RefreshCw className="h-4 w-4" />
-            Refresh
-          </Button>
         </div>
       </div>
 
