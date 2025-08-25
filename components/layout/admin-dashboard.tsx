@@ -9,6 +9,7 @@ import {
   UserActivityChart,
   RoleDistributionChart,
   AuditActivityChart,
+  AuditHeatmap,
   TopUsersTable,
   DatabaseUsageTable,
   DateRangePicker,
@@ -107,6 +108,7 @@ export default function AdminDashboard() {
             onTimeRangeChange={auditTimeRange.setTimeRange}
           />
           <AuditActivityChart timeRange={auditTimeRange.timeRange} />
+          <AuditHeatmap />
         </TabsContent>
       </Tabs>
     </div>
