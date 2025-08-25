@@ -1,6 +1,7 @@
 // Analytics types
 
-import { ApiResponse } from "./common";
+import { AuditLogDto } from "./audit";
+import { ActionType, ApiResponse } from "./common";
 
 export interface DatabaseTypeDto {
     type: string;
@@ -66,6 +67,32 @@ export interface AuditHeatmapData {
     activityCount: number;
 }
 
+export interface UserDashboardStats {
+    totalActions: number;
+    totalSuccessfulActions: number;
+    totalFailedActions: number;
+    successRate: number;
+    last7DaysActions: number;
+    last24HoursActions: number;
+    mostUsedAction: string;
+    mostAccessedSchema: string;
+    mostAccessedTable: string;
+    uniqueSchemasAccessed: number;
+    uniqueTablesAccessed: number;
+}
+
+export interface UserActionBreakdown {
+    actionType: ActionType;
+    actionCount: number;
+    percentage: number;
+}
+
+export interface UserDatabaseAccess {
+    schemaName: string;
+    accessCount: number;
+    lastAccessed: string;
+}
+
 export type DatabaseTypeResponse = ApiResponse<DatabaseTypeDto>;
 export type DatabaseStatsResponse = ApiResponse<DatabaseStats>;
 export type DatabaseUsageResponse = ApiResponse<DatabaseUsageData[]>;
@@ -75,6 +102,10 @@ export type TopUsersByActivityResponse = ApiResponse<TopUsersByActivity[]>;
 export type RoleDistributionResponse = ApiResponse<RoleDistributionData[]>;
 export type AuditActivityResponse = ApiResponse<AuditActivityData[]>;
 export type AuditHeatmapResponse = ApiResponse<AuditHeatmapData[]>;
+export type UserDashboardStatsResponse = ApiResponse<UserDashboardStats>;
+export type UserActionBreakdownResponse = ApiResponse<UserActionBreakdown[]>;
+export type UserRecentActivityResponse = ApiResponse<AuditLogDto[]>;
+export type UserDatabaseAccessResponse = ApiResponse<UserDatabaseAccess[]>;
 
 // Query Parameters
 export interface AnalyticsTimeRange {
