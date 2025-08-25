@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CalendarClock } from "lucide-react";
-import { useAuditHeatmap } from "@/lib/hooks/use-analytics";
+import { useAuditHeatmap, useUserAuditHeatmap } from "@/lib/hooks/use-analytics";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -25,6 +25,7 @@ const TIME_PERIODS = [
 
 interface AuditHeatmapProps {
   className?: string;
+  userSpecific?: boolean;
 }
 
 function getIntensityColor(count: number, maxCount: number): { bg: string; text: string } {
@@ -65,9 +66,17 @@ function getIntensityColor(count: number, maxCount: number): { bg: string; text:
   }
 }
 
-export function AuditHeatmap({ className }: AuditHeatmapProps) {
-  // Use the hook with no parameters to get all-time data
-  const { data: heatmapData, isLoading, error } = useAuditHeatmap();
+export function AuditHeatmap({ className, userSpecific = false }: AuditHeatmapProps) {
+  // Use different hooks based on whether we want user-specific or system-wide data
+  const adminHeatmap = useAuditHeatmap(undefined, { enabled: !userSpecific });
+  const userHeatmap = useUserAuditHeatmap({ enabled: userSpecific });
+
+  const { data: heatmapData, isLoading, error } = userSpecific ? userHeatmap : adminHeatmap;
+
+  const title = userSpecific ? "My Activity Patterns" : "Audit Activity Heatmap";
+  const description = userSpecific
+    ? "Your daily activity patterns by time of day"
+    : "System activity patterns by day and time";
 
   if (error) {
     return (
@@ -75,9 +84,9 @@ export function AuditHeatmap({ className }: AuditHeatmapProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CalendarClock className="h-4 w-4" />
-            Audit Activity Heatmap
+            {title}
           </CardTitle>
-          <CardDescription>System activity patterns by day and time</CardDescription>
+          <CardDescription>{description}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="text-sm text-muted-foreground">Failed to load heatmap data</div>
@@ -92,9 +101,9 @@ export function AuditHeatmap({ className }: AuditHeatmapProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CalendarClock className="h-4 w-4" />
-            Audit Activity Heatmap
+            {title}
           </CardTitle>
-          <CardDescription>System activity patterns by day and time</CardDescription>
+          <CardDescription>{description}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -141,10 +150,10 @@ export function AuditHeatmap({ className }: AuditHeatmapProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <CalendarClock className="h-4 w-4" />
-          Audit Activity Heatmap
+          {title}
         </CardTitle>
         <CardDescription>
-          System activity patterns by day and time • {totalActivity.toLocaleString()} total actions
+          {description} • {totalActivity.toLocaleString()} total actions
         </CardDescription>
       </CardHeader>
       <CardContent>
