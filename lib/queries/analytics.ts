@@ -8,6 +8,7 @@ import {
     getTopUsersByActivity,
     getRoleDistribution,
     getAuditActivity,
+    getAuditHeatmap,
 } from "../actions";
 import type { AnalyticsTimeRange } from "../types";
 
@@ -80,6 +81,14 @@ export const analyticsQueries = {
             queryKey: [...analyticsQueries.audit(), "activity", params],
             queryFn: () => getAuditActivity(params),
             staleTime: 2 * 60 * 1000,
+            retry: 2,
+        }),
+
+    auditHeatmap: (params?: AnalyticsTimeRange) =>
+        queryOptions({
+            queryKey: [...analyticsQueries.audit(), "heatmap", params],
+            queryFn: () => getAuditHeatmap(params),
+            staleTime: 10 * 60 * 1000,
             retry: 2,
         }),
 };

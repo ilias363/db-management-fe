@@ -62,9 +62,15 @@ export function useAuditActivity(params?: AnalyticsTimeRange, options?: { enable
     });
 }
 
+export function useAuditHeatmap(params?: AnalyticsTimeRange, options?: { enabled?: boolean }) {
+    return useQuery({
+        ...analyticsQueries.auditHeatmap(params),
+        enabled: options?.enabled,
+    });
+}
+
 export function useAnalyticsTimeRange(initialRange: AnalyticsTimeRange = { period: 'week' }) {
     const [timeRange, setTimeRange] = useState<AnalyticsTimeRange>(initialRange);
-
     return {
         timeRange,
         setTimeRange,
