@@ -5,6 +5,7 @@ import { withAuth } from "../auth";
 import {
     AnalyticsTimeRange,
     AuditActivityData,
+    AuditHeatmapData,
     DashboardStats,
     DatabaseStats,
     DatabaseTypeDto,
@@ -145,6 +146,24 @@ export async function getAuditActivity(
             return response.data;
         } catch (error) {
             console.error("Failed to get audit activity:", error);
+            return null;
+        }
+    });
+    return authAction();
+}
+
+export async function getAuditHeatmap(
+    params?: AnalyticsTimeRange
+): Promise<AuditHeatmapData[] | null> {
+    const authAction = await withAuth(async (): Promise<AuditHeatmapData[] | null> => {
+        try {
+            const response = await apiClient.analytics.getAuditHeatmap(params);
+            if (!response.success || !response.data) {
+                return null;
+            }
+            return response.data;
+        } catch (error) {
+            console.error("Failed to get audit heatmap:", error);
             return null;
         }
     });
