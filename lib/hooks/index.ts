@@ -1,5 +1,4 @@
 export * from "./use-audit-filters";
-export * from "./use-database-stats";
 export * from "./use-schemas";
 export * from "./use-auth";
 export * from "./use-tables";
@@ -15,3 +14,4 @@ export * from "./use-index-form";
 export * from "./use-column-form";
 export * from "./use-column-edit";
 export * from "./use-view-form";
+export * from "./use-analytics";

@@ -1,13 +1,13 @@
 "use server";
 
-import { apiClient } from "@/lib/api-client";
-import { withAuth } from "@/lib/auth";
-import { DatabaseStats } from "@/lib/types/database";
+import { apiClient } from "../api-client";
+import { withAuth } from "../auth";
+import { DatabaseStats } from "../types";
 
 export async function getDatabaseStats(includeSystem: boolean): Promise<DatabaseStats | null> {
     const authAction = await withAuth(async (): Promise<DatabaseStats | null> => {
         try {
-            const response = await apiClient.database.getDatabaseStats(includeSystem);
+            const response = await apiClient.analytics.getDatabaseStats(includeSystem);
             if (!response.success || !response.data) {
                 return null;
             }

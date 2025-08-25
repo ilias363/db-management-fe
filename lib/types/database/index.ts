@@ -6,4 +6,3 @@ export * from './column-new';
 export * from './column-update';
 export * from './index-meta';
 export * from './record';
-export * from './database';

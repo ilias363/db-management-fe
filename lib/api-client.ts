@@ -28,10 +28,10 @@ import type {
   RoleStatsResponse,
   ActionType,
   RolesResponse,
+  DatabaseTypeResponse,
+  DatabaseStatsResponse,
 } from "./types";
 import type {
-  DatabaseStatsResponse,
-  DatabaseTypeResponse,
   SchemasResponse,
   SchemaResponse,
   NewSchemaDto,
@@ -294,12 +294,6 @@ class ApiClientImpl implements ApiClient {
       this.request(`/audit-logs/${id}`, { method: "DELETE" }),
 
     getAuditStats: (): Promise<AuditStatsResponse> => this.request("/audit-logs/stats"),
-  };
-
-  database = {
-    getDatabaseType: (): Promise<DatabaseTypeResponse> => this.request("/database/type"),
-    getDatabaseStats: (includeSystem: boolean): Promise<DatabaseStatsResponse> =>
-      this.request(`/database/stats?includeSystem=${includeSystem}`),
   };
 
   schema = {
@@ -619,6 +613,12 @@ class ApiClientImpl implements ApiClient {
 
     getViewRecordCount: (schemaName: string, viewName: string): Promise<CountResponse> =>
       this.request(`/records/view/${schemaName}/${viewName}/count`),
+  };
+
+  analytics = {
+    getDatabaseType: (): Promise<DatabaseTypeResponse> => this.request("/analytics/database/type"),
+    getDatabaseStats: (includeSystem: boolean): Promise<DatabaseStatsResponse> =>
+      this.request(`/analytics/database/stats?includeSystem=${includeSystem}`),
   };
 }
 

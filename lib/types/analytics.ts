@@ -1,4 +1,6 @@
-import { ApiResponse } from "../index";
+// Analytics types
+
+import { ApiResponse } from "./common";
 
 export interface DatabaseTypeDto {
     type: string;

@@ -24,6 +24,8 @@ import type {
   ValidateTokenResponse,
   ActionType,
   RolesResponse,
+  DatabaseTypeResponse,
+  DatabaseStatsResponse,
 } from "./index";
 
 import type {
@@ -64,8 +66,6 @@ import type {
   BatchUpdateRecordsByValuesDto,
   BatchDeleteRecordsByValuesDto,
   RecordAdvancedSearchDto,
-  DatabaseTypeResponse,
-  DatabaseStatsResponse,
   UpdateColumnAutoIncrementDto,
   UpdateColumnNullableDto,
   UpdateColumnUniqueDto,
@@ -131,10 +131,6 @@ export interface ApiClient {
     getAuditLogById: (id: number) => Promise<AuditLogResponse>;
     deleteAuditLog: (id: number) => Promise<VoidResponse>;
     getAuditStats: () => Promise<AuditStatsResponse>;
-  };
-  database: {
-    getDatabaseType(): Promise<DatabaseTypeResponse>;
-    getDatabaseStats(includeSystem: boolean): Promise<DatabaseStatsResponse>;
   };
   schema: {
     getAllSchemas(includeSystem: boolean): Promise<SchemasResponse>;
@@ -225,5 +221,9 @@ export interface ApiClient {
     advancedSearchView(search: RecordAdvancedSearchDto): Promise<RecordAdvancedSearchResponse>;
     getTableRecordCount(schemaName: string, tableName: string): Promise<CountResponse>;
     getViewRecordCount(schemaName: string, viewName: string): Promise<CountResponse>;
+  };
+  analytics: {
+    getDatabaseType(): Promise<DatabaseTypeResponse>;
+    getDatabaseStats(includeSystem: boolean): Promise<DatabaseStatsResponse>;
   };
 }
