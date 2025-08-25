@@ -30,6 +30,13 @@ import type {
   RolesResponse,
   DatabaseTypeResponse,
   DatabaseStatsResponse,
+  DatabaseUsageResponse,
+  DashboardStatsResponse,
+  AnalyticsTimeRange,
+  UserActivityResponse,
+  AuditActivityResponse,
+  TopUsersByActivityResponse,
+  RoleDistributionResponse,
 } from "./types";
 import type {
   SchemasResponse,
@@ -616,9 +623,42 @@ class ApiClientImpl implements ApiClient {
   };
 
   analytics = {
+    getDatabaseUsage: (): Promise<DatabaseUsageResponse> =>
+      this.request("/analytics/database/usage"),
+
     getDatabaseType: (): Promise<DatabaseTypeResponse> => this.request("/analytics/database/type"),
+
     getDatabaseStats: (includeSystem: boolean): Promise<DatabaseStatsResponse> =>
       this.request(`/analytics/database/stats?includeSystem=${includeSystem}`),
+
+    getDashboardStats: (): Promise<DashboardStatsResponse> =>
+      this.request("/analytics/dashboard/stats"),
+
+    getUserActivity: (params?: AnalyticsTimeRange): Promise<UserActivityResponse> => {
+      const query = params
+        ? `?${new URLSearchParams(params as Record<string, string>).toString()}`
+        : "";
+      return this.request(`/analytics/users/activity${query}`);
+    },
+
+    getTopUsersByActivity: (
+      params?: AnalyticsTimeRange & { limit?: number }
+    ): Promise<TopUsersByActivityResponse> => {
+      const query = params
+        ? `?${new URLSearchParams(params as Record<string, string>).toString()}`
+        : "";
+      return this.request(`/analytics/users/top-by-activity${query}`);
+    },
+
+    getRoleDistribution: (): Promise<RoleDistributionResponse> =>
+      this.request("/analytics/roles/distribution"),
+
+    getAuditActivity: (params?: AnalyticsTimeRange): Promise<AuditActivityResponse> => {
+      const query = params
+        ? `?${new URLSearchParams(params as Record<string, string>).toString()}`
+        : "";
+      return this.request(`/analytics/audit/activity${query}`);
+    },
   };
 }
 

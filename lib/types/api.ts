@@ -26,6 +26,13 @@ import type {
   RolesResponse,
   DatabaseTypeResponse,
   DatabaseStatsResponse,
+  DatabaseUsageResponse,
+  DashboardStatsResponse,
+  UserActivityResponse,
+  AnalyticsTimeRange,
+  TopUsersByActivityResponse,
+  RoleDistributionResponse,
+  AuditActivityResponse,
 } from "./index";
 
 import type {
@@ -223,7 +230,13 @@ export interface ApiClient {
     getViewRecordCount(schemaName: string, viewName: string): Promise<CountResponse>;
   };
   analytics: {
+    getDatabaseUsage(includeSystem: boolean): Promise<DatabaseUsageResponse>;
     getDatabaseType(): Promise<DatabaseTypeResponse>;
     getDatabaseStats(includeSystem: boolean): Promise<DatabaseStatsResponse>;
+    getDashboardStats(includeSystem: boolean): Promise<DashboardStatsResponse>;
+    getUserActivity(params?: AnalyticsTimeRange): Promise<UserActivityResponse>;
+    getTopUsersByActivity(params?: AnalyticsTimeRange & { limit?: number }): Promise<TopUsersByActivityResponse>;
+    getRoleDistribution(): Promise<RoleDistributionResponse>;
+    getAuditActivity(params?: AnalyticsTimeRange): Promise<AuditActivityResponse>;
   };
 }
