@@ -9,13 +9,20 @@ import {
     getRoleDistribution,
     getAuditActivity,
     getAuditHeatmap,
+    getUserDashboardStats,
+    getUserActionBreakdown,
+    getUserRecentActivity,
+    getUserDatabaseAccess,
+    getUserAuditHeatmap,
 } from "../actions";
 import type { AnalyticsTimeRange } from "../types";
 
 export const analyticsQueries = {
     all: () => ["analytics"] as const,
+    allForAdmin: () => [...analyticsQueries.all(), "admin"] as const,
+    allForUser: () => [...analyticsQueries.all(), "user"] as const,
 
-    database: () => [...analyticsQueries.all(), "database"] as const,
+    database: () => [...analyticsQueries.allForAdmin(), "database"] as const,
     databaseStats: (includeSystem: boolean) =>
         queryOptions({
             queryKey: [...analyticsQueries.database(), "stats", { includeSystem }],
@@ -40,7 +47,7 @@ export const analyticsQueries = {
             retry: 2,
         }),
 
-    dashboard: () => [...analyticsQueries.all(), "dashboard"] as const,
+    dashboard: () => [...analyticsQueries.allForAdmin(), "dashboard"] as const,
     dashboardStats: (includeSystem: boolean) =>
         queryOptions({
             queryKey: [...analyticsQueries.dashboard(), "stats", { includeSystem }],
@@ -49,7 +56,7 @@ export const analyticsQueries = {
             retry: 2,
         }),
 
-    user: () => [...analyticsQueries.all(), "user"] as const,
+    user: () => [...analyticsQueries.allForAdmin(), "user"] as const,
     userActivity: (params?: AnalyticsTimeRange) =>
         queryOptions({
             queryKey: [...analyticsQueries.user(), "activity", params],
@@ -66,7 +73,7 @@ export const analyticsQueries = {
             retry: 2,
         }),
 
-    role: () => [...analyticsQueries.all(), "role"] as const,
+    role: () => [...analyticsQueries.allForAdmin(), "role"] as const,
     roleDistribution: () =>
         queryOptions({
             queryKey: [...analyticsQueries.role(), "distribution"],
@@ -75,7 +82,7 @@ export const analyticsQueries = {
             retry: 2,
         }),
 
-    audit: () => [...analyticsQueries.all(), "audit"] as const,
+    audit: () => [...analyticsQueries.allForAdmin(), "audit"] as const,
     auditActivity: (params?: AnalyticsTimeRange) =>
         queryOptions({
             queryKey: [...analyticsQueries.audit(), "activity", params],
@@ -88,6 +95,46 @@ export const analyticsQueries = {
         queryOptions({
             queryKey: [...analyticsQueries.audit(), "heatmap", params],
             queryFn: () => getAuditHeatmap(params),
+            staleTime: 10 * 60 * 1000,
+            retry: 2,
+        }),
+
+    userDashboardStats: () =>
+        queryOptions({
+            queryKey: [...analyticsQueries.allForUser(), "dashboard", "stats"],
+            queryFn: () => getUserDashboardStats(),
+            staleTime: 5 * 60 * 1000,
+            retry: 2,
+        }),
+
+    userActionBreakdown: () =>
+        queryOptions({
+            queryKey: [...analyticsQueries.allForUser(), "audit", "actionBreakdown"],
+            queryFn: () => getUserActionBreakdown(),
+            staleTime: 5 * 60 * 1000,
+            retry: 2,
+        }),
+
+    userRecentActivity: (limit?: number) =>
+        queryOptions({
+            queryKey: [...analyticsQueries.allForUser(), "audit", "recentActivity", { limit }],
+            queryFn: () => getUserRecentActivity(limit),
+            staleTime: 2 * 60 * 1000,
+            retry: 2,
+        }),
+
+    userDatabaseAccess: () =>
+        queryOptions({
+            queryKey: [...analyticsQueries.allForUser(), "database", "databaseAccess"],
+            queryFn: () => getUserDatabaseAccess(),
+            staleTime: 5 * 60 * 1000,
+            retry: 2,
+        }),
+
+    userAuditHeatmap: () =>
+        queryOptions({
+            queryKey: [...analyticsQueries.allForUser(), "audit", "auditHeatmap"],
+            queryFn: () => getUserAuditHeatmap(),
             staleTime: 10 * 60 * 1000,
             retry: 2,
         }),

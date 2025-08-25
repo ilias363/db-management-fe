@@ -76,3 +76,38 @@ export function useAnalyticsTimeRange(initialRange: AnalyticsTimeRange = { perio
         setTimeRange,
     };
 }
+
+export function useUserDashboardStats(options?: { enabled?: boolean }) {
+    return useQuery({
+        ...analyticsQueries.userDashboardStats(),
+        enabled: options?.enabled,
+    });
+}
+
+export function useUserActionBreakdown(options?: { enabled?: boolean }) {
+    return useQuery({
+        ...analyticsQueries.userActionBreakdown(),
+        enabled: options?.enabled,
+    });
+}
+
+export function useUserRecentActivity(limit?: number, options?: { enabled?: boolean }) {
+    return useQuery({
+        ...analyticsQueries.userRecentActivity(limit),
+        enabled: options?.enabled,
+    });
+}
+
+export function useUserDatabaseAccess(options?: { enabled?: boolean }) {
+    return useQuery({
+        ...analyticsQueries.userDatabaseAccess(),
+        enabled: options?.enabled,
+    });
+}
+
+export function useUserAuditHeatmap(options?: { enabled?: boolean }) {
+    return useQuery({
+        ...analyticsQueries.userAuditHeatmap(),
+        enabled: options?.enabled,
+    });
+}
