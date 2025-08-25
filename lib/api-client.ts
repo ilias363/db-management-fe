@@ -623,16 +623,16 @@ class ApiClientImpl implements ApiClient {
   };
 
   analytics = {
-    getDatabaseUsage: (): Promise<DatabaseUsageResponse> =>
-      this.request("/analytics/database/usage"),
+    getDatabaseUsage: (includeSystem: boolean): Promise<DatabaseUsageResponse> =>
+      this.request(`/analytics/database/usage=${includeSystem}`),
 
     getDatabaseType: (): Promise<DatabaseTypeResponse> => this.request("/analytics/database/type"),
 
     getDatabaseStats: (includeSystem: boolean): Promise<DatabaseStatsResponse> =>
       this.request(`/analytics/database/stats?includeSystem=${includeSystem}`),
 
-    getDashboardStats: (): Promise<DashboardStatsResponse> =>
-      this.request("/analytics/dashboard/stats"),
+    getDashboardStats: (includeSystem: boolean): Promise<DashboardStatsResponse> =>
+      this.request(`/analytics/dashboard/stats?includeSystem=${includeSystem}`),
 
     getUserActivity: (params?: AnalyticsTimeRange): Promise<UserActivityResponse> => {
       const query = params
