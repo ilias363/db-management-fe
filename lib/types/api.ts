@@ -34,6 +34,10 @@ import type {
   RoleDistributionResponse,
   AuditActivityResponse,
   AuditHeatmapResponse,
+  UserDashboardStatsResponse,
+  UserActionBreakdownResponse,
+  UserRecentActivityResponse,
+  UserDatabaseAccessResponse,
 } from "./index";
 
 import type {
@@ -240,5 +244,10 @@ export interface ApiClient {
     getRoleDistribution(): Promise<RoleDistributionResponse>;
     getAuditActivity(params?: AnalyticsTimeRange): Promise<AuditActivityResponse>;
     getAuditHeatmap(params?: AnalyticsTimeRange): Promise<AuditHeatmapResponse>;
+    getUserDashboardStats(): Promise<UserDashboardStatsResponse>;
+    getUserActionBreakdown(): Promise<UserActionBreakdownResponse>;
+    getUserRecentActivity(limit?: number): Promise<UserRecentActivityResponse>;
+    getUserDatabaseAccess(): Promise<UserDatabaseAccessResponse>;
+    getUserAuditHeatmap(): Promise<AuditHeatmapResponse>;
   };
 }

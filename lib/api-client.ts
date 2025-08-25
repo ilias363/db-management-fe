@@ -38,6 +38,10 @@ import type {
   AuditHeatmapResponse,
   TopUsersByActivityResponse,
   RoleDistributionResponse,
+  UserDashboardStatsResponse,
+  UserActionBreakdownResponse,
+  UserDatabaseAccessResponse,
+  UserRecentActivityResponse,
 } from "./types";
 import type {
   SchemasResponse,
@@ -667,6 +671,23 @@ class ApiClientImpl implements ApiClient {
         : "";
       return this.request(`/analytics/audit/heatmap${query}`);
     },
+
+    getUserDashboardStats: (): Promise<UserDashboardStatsResponse> =>
+      this.request("/analytics/user/dashboard/stats"),
+
+    getUserActionBreakdown: (): Promise<UserActionBreakdownResponse> =>
+      this.request("/analytics/user/audit/action-breakdown"),
+
+    getUserRecentActivity: (limit?: number): Promise<UserRecentActivityResponse> => {
+      const query = limit ? `?limit=${limit}` : "";
+      return this.request(`/analytics/user/audit/recent-activity${query}`);
+    },
+
+    getUserDatabaseAccess: (): Promise<UserDatabaseAccessResponse> =>
+      this.request("/analytics/user/database/access"),
+
+    getUserAuditHeatmap: (): Promise<AuditHeatmapResponse> =>
+      this.request("/analytics/user/audit/heatmap"),
   };
 }
 
