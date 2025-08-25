@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,11 +10,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DatePicker } from "@/components/ui/date-picker";
+import { DateTimePicker } from "@/components/ui/datetime-picker";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { CalendarIcon, BarChart3 } from "lucide-react";
 import type { AnalyticsTimeRange } from "@/lib/types";
+
+export function getDaysAgoStartOfDay(days: number): string {
+  const date = new Date();
+  date.setDate(date.getDate() - days);
+  return date.toISOString();
+}
 
 interface DateRangePickerProps {
   timeRange: AnalyticsTimeRange;
@@ -25,24 +31,15 @@ interface DateRangePickerProps {
 export function DateRangePicker({ timeRange, onTimeRangeChange, className }: DateRangePickerProps) {
   const [useCustomRange, setUseCustomRange] = useState(false);
 
-  // Initialize with default dates if using custom range
-  useEffect(() => {
-    if (timeRange.startDate || timeRange.endDate) {
-      setUseCustomRange(true);
-    }
-  }, [timeRange.startDate, timeRange.endDate]);
-
   const handleRangeTypeChange = (useCustom: boolean) => {
     setUseCustomRange(useCustom);
 
     if (useCustom) {
       if (!timeRange.startDate || !timeRange.endDate) {
-        const today = new Date();
-        const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
         onTimeRangeChange({
           ...timeRange,
-          startDate: lastWeek.toISOString().split("T")[0],
-          endDate: today.toISOString().split("T")[0],
+          startDate: getDaysAgoStartOfDay(7),
+          endDate: new Date().toISOString(),
           period: timeRange.period || "day",
         });
       } else {
@@ -80,12 +77,10 @@ export function DateRangePicker({ timeRange, onTimeRangeChange, className }: Dat
   };
 
   const handleQuickRange = (days: number) => {
-    const today = new Date();
-    const startDate = new Date(today.getTime() - days * 24 * 60 * 60 * 1000);
     onTimeRangeChange({
       ...timeRange,
-      startDate: startDate.toISOString().split("T")[0],
-      endDate: today.toISOString().split("T")[0],
+      startDate: getDaysAgoStartOfDay(days),
+      endDate: new Date().toISOString(),
     });
   };
 
@@ -129,16 +124,16 @@ export function DateRangePicker({ timeRange, onTimeRangeChange, className }: Dat
               <div className="space-y-3">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <Label className="text-xs">Start Date</Label>
-                    <DatePicker
+                    <Label className="text-xs">Start Date & Time</Label>
+                    <DateTimePicker
                       value={timeRange.startDate || ""}
                       onValueChange={handleStartDateChange}
                       className="w-full"
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs">End Date</Label>
-                    <DatePicker
+                    <Label className="text-xs">End Date & Time</Label>
+                    <DateTimePicker
                       value={timeRange.endDate || ""}
                       onValueChange={handleEndDateChange}
                       className="w-full"
@@ -206,8 +201,8 @@ export function DateRangePicker({ timeRange, onTimeRangeChange, className }: Dat
               <div className="text-xs text-muted-foreground">
                 {useCustomRange && timeRange.startDate && timeRange.endDate && timeRange.period && (
                   <>
-                    Data from {new Date(timeRange.startDate).toLocaleDateString()} to{" "}
-                    {new Date(timeRange.endDate).toLocaleDateString()}, aggregated by{" "}
+                    Data from {new Date(timeRange.startDate).toLocaleString()} to{" "}
+                    {new Date(timeRange.endDate).toLocaleString()}, aggregated by{" "}
                     <span className="font-medium">{timeRange.period}</span>
                   </>
                 )}
