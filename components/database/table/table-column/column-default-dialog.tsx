@@ -52,7 +52,7 @@ export function ColumnDefaultDialog({
       : (column.dataType.toUpperCase() as DataType);
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
 
-  const { form, isPending, submitError, submitDefaultUpdate, resetForm, isValid, isDirty, errors } =
+  const { form, isPending, submitError, submitDefaultUpdate, resetForm, isDirty, errors } =
     useUpdateColumnDefaultForm({
       column,
       schemaName,
@@ -175,7 +175,7 @@ export function ColumnDefaultDialog({
                 <Button type="button" variant="outline" onClick={handleClose} disabled={isPending}>
                   Cancel
                 </Button>
-                <Button type="submit" disabled={!isValid || isPending} className="min-w-24">
+                <Button type="submit" disabled={isPending} className="min-w-24">
                   {isPending ? "Updating..." : "Update Default"}
                 </Button>
               </DialogFooter>

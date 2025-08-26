@@ -59,7 +59,6 @@ export function ColumnPrimaryKeyDialog({
     submitError,
     submitPrimaryKeyUpdate,
     resetForm,
-    isValid,
     isDirty,
     errors,
     availableColumns,
@@ -231,7 +230,7 @@ export function ColumnPrimaryKeyDialog({
                 <Button
                   type="submit"
                   variant={isRemovingPk ? "destructive" : "default"}
-                  disabled={!isValid || isPending}
+                  disabled={isPending}
                   className="min-w-24"
                 >
                   {isPending

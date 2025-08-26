@@ -113,7 +113,7 @@ export function CreateSchemaDialog({ open, onOpenChange, onSuccess }: SchemaDial
                 <Button type="button" variant="outline" onClick={handleClose} disabled={isPending}>
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isPending || !form.watch("schemaName")?.trim()}>
+                <Button type="submit" disabled={isPending}>
                   {isPending ? "Creating..." : "Create Schema"}
                 </Button>
               </DialogFooter>

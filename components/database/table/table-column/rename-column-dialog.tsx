@@ -113,7 +113,7 @@ export function RenameColumnDialog({
                 <Button type="button" variant="outline" onClick={handleClose} disabled={isPending}>
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isPending || !form.formState.isValid}>
+                <Button type="submit" disabled={isPending}>
                   {isPending ? "Renaming..." : "Rename"}
                 </Button>
               </div>

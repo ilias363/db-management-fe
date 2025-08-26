@@ -71,7 +71,6 @@ export function ColumnForeignKeyDialog({
     submitForeignKeyRemoval,
     resetForm,
     hasForeignKey,
-    isValid,
     isDirty,
     errors,
   } = useUpdateColumnForeignKeyForm({
@@ -287,7 +286,7 @@ export function ColumnForeignKeyDialog({
                 <Button type="button" variant="outline" onClick={handleClose} disabled={isPending}>
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isPending || !isValid}>
+                <Button type="submit" disabled={isPending}>
                   <Link2 className="w-4 h-4 mr-2" />
                   {isPending ? "Creating..." : "Create Foreign Key"}
                 </Button>
