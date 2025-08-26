@@ -731,7 +731,7 @@ export function RecordDataGrid({
           )}
 
           {canDeleteRecords &&
-            tableInstance.getIsSomeRowsSelected() &&
+            (tableInstance.getIsSomeRowsSelected() || tableInstance.getIsAllRowsSelected()) &&
             newRecords.length === 0 &&
             editingRecords.length === 0 && (
               <Button
