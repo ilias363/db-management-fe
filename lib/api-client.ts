@@ -89,6 +89,7 @@ import type {
   CountResponse,
 } from "./types/database";
 import { HttpError } from "./errors";
+import { SqlExecutionRequestDto, SqlExecutionResponse } from "./types/sql";
 
 class ApiClientImpl implements ApiClient {
   private baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
@@ -688,6 +689,14 @@ class ApiClientImpl implements ApiClient {
 
     getUserAuditHeatmap: (): Promise<AuditHeatmapResponse> =>
       this.request("/analytics/user/audit/heatmap"),
+  };
+
+  sql = {
+    execute: (request: SqlExecutionRequestDto): Promise<SqlExecutionResponse> =>
+      this.request('/sql/execute', {
+        method: 'POST',
+        body: JSON.stringify(request),
+      }),
   };
 }
 

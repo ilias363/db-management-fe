@@ -85,6 +85,7 @@ import type {
   UpdateColumnForeignKeyDto,
   RecordAdvancedSearchResponse,
 } from "./database";
+import { SqlExecutionRequestDto, SqlExecutionResponse } from "./sql";
 
 export interface ApiClient {
   auth: {
@@ -249,5 +250,8 @@ export interface ApiClient {
     getUserRecentActivity(limit?: number): Promise<UserRecentActivityResponse>;
     getUserDatabaseAccess(): Promise<UserDatabaseAccessResponse>;
     getUserAuditHeatmap(): Promise<AuditHeatmapResponse>;
+  };
+  sql: {
+    execute(request: SqlExecutionRequestDto): Promise<SqlExecutionResponse>;
   };
 }
