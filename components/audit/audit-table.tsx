@@ -135,7 +135,11 @@ export function AuditTable({
       title: "Object",
       render: audit => {
         if (audit.objectName) {
-          return <span className="text-sm">{audit.objectName}</span>;
+          return (
+            <span className="text-sm truncate max-w-[150px] block" title={audit.objectName}>
+              {audit.objectName}
+            </span>
+          );
         }
         if (audit.tableName) {
           return (

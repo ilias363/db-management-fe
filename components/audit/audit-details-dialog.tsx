@@ -32,7 +32,7 @@ export function AuditDetailsDialog({ audit, isOpen, onClose }: AuditDetailsDialo
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[60vw] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="lg:max-w-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
@@ -41,7 +41,7 @@ export function AuditDetailsDialog({ audit, isOpen, onClose }: AuditDetailsDialo
           <DialogDescription>Detailed information about audit log #{audit.id}</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-6 min-w-0">
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Basic Information</CardTitle>
@@ -112,7 +112,7 @@ export function AuditDetailsDialog({ audit, isOpen, onClose }: AuditDetailsDialo
                 {audit.objectName && (
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">Object:</span>
-                    <span className="font-medium">{audit.objectName}</span>
+                    <span className="font-medium break-words max-w-[80%]">{audit.objectName}</span>
                   </div>
                 )}
               </CardContent>
@@ -125,7 +125,7 @@ export function AuditDetailsDialog({ audit, isOpen, onClose }: AuditDetailsDialo
                 <CardTitle className="text-lg">Action Details</CardTitle>
               </CardHeader>
               <CardContent>
-                <pre className="text-sm bg-muted p-3 rounded-md whitespace-pre-wrap break-all max-w-full overflow-auto">
+                <pre className="text-sm bg-muted p-3 rounded-md whitespace-pre-wrap break-words break-all max-w-full overflow-x-auto">
                   {audit.actionDetails}
                 </pre>
               </CardContent>
@@ -142,7 +142,7 @@ export function AuditDetailsDialog({ audit, isOpen, onClose }: AuditDetailsDialo
               </CardHeader>
               <CardContent>
                 <div className="bg-red-50 dark:bg-red-800 border border-red-200 rounded-md p-3">
-                  <pre className="text-sm text-red-800 dark:text-red-50 whitespace-pre-wrap break-all max-w-full overflow-auto">
+                  <pre className="text-sm text-red-800 dark:text-red-50 whitespace-pre-wrap break-words break-all max-w-full overflow-x-auto">
                     {audit.errorMessage}
                   </pre>
                 </div>
