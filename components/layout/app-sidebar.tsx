@@ -47,6 +47,7 @@ interface NavItem {
   icon: React.ComponentType<{ className?: string }>;
   badge?: string;
   comingSoon?: boolean;
+  adminOnly?: boolean;
 }
 
 const dashboardMenuItems: NavItem[] = [
@@ -54,24 +55,28 @@ const dashboardMenuItems: NavItem[] = [
     title: "Dashboard",
     href: "/",
     icon: LayoutDashboard,
+    adminOnly: false,
   },
 ];
 
-const adminMenuItems: NavItem[] = [
+const administrationMenuItems: NavItem[] = [
   {
     title: "User Management",
     href: "/admin/users",
     icon: Users,
+    adminOnly: true,
   },
   {
     title: "Role Management",
     href: "/admin/roles",
     icon: Shield,
+    adminOnly: true,
   },
   {
     title: "Audit Logs",
     href: "/admin/audit",
     icon: FileText,
+    adminOnly: true,
   },
 ];
 
@@ -80,23 +85,34 @@ const globalMenuItems: NavItem[] = [
     title: "Database",
     href: "/database",
     icon: Server,
+    adminOnly: false,
   },
   {
     title: "Schema Management",
     href: "/database/schemas",
     icon: Database,
+    adminOnly: false,
   },
   {
     title: "Table Management",
     href: "/database/tables",
     icon: Table,
+    adminOnly: false,
   },
   {
     title: "View Management",
     href: "/database/views",
     icon: View,
+    adminOnly: false,
   },
 ];
+
+const sqlEditorMenuItem: NavItem = {
+  title: "SQL Editor",
+  href: "/admin/sql-editor",
+  icon: FileText,
+  adminOnly: true,
+};
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -139,30 +155,33 @@ export function AppSidebar() {
           <SidebarGroupLabel>Dashboard</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {dashboardMenuItems.map(item => (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname === item.href}
-                    className={cn(item.comingSoon && "cursor-not-allowed opacity-60")}
-                  >
-                    <Link href={item.comingSoon ? "#" : item.href}>
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                      {item.comingSoon && (
-                        <SidebarMenuBadge className="bg-orange-100 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400">
-                          Soon
-                        </SidebarMenuBadge>
-                      )}
-                      {!item.comingSoon && item.badge && (
-                        <SidebarMenuBadge className="bg-primary/20 text-primary">
-                          {item.badge}
-                        </SidebarMenuBadge>
-                      )}
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {dashboardMenuItems.map(
+                item =>
+                  (!item.adminOnly || isAdmin) && (
+                    <SidebarMenuItem key={item.href}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={pathname === item.href}
+                        className={cn(item.comingSoon && "cursor-not-allowed opacity-60")}
+                      >
+                        <Link href={item.comingSoon ? "#" : item.href}>
+                          <item.icon className="h-4 w-4" />
+                          <span>{item.title}</span>
+                          {item.comingSoon && (
+                            <SidebarMenuBadge className="bg-orange-100 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400">
+                              Soon
+                            </SidebarMenuBadge>
+                          )}
+                          {!item.comingSoon && item.badge && (
+                            <SidebarMenuBadge className="bg-primary/20 text-primary">
+                              {item.badge}
+                            </SidebarMenuBadge>
+                          )}
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -171,7 +190,7 @@ export function AppSidebar() {
             <SidebarGroupLabel>Administration</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {adminMenuItems.map(item => (
+                {administrationMenuItems.map(item => (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
                       asChild
@@ -199,38 +218,72 @@ export function AppSidebar() {
             </SidebarGroupContent>
           </SidebarGroup>
         )}
-        <SidebarGroup>
-          <SidebarGroupLabel>Database Management</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {globalMenuItems.map(item => (
-                <SidebarMenuItem key={item.href}>
+        {isAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Tools</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem key={sqlEditorMenuItem.href}>
                   <SidebarMenuButton
                     asChild
-                    isActive={
-                      item.href === "/database"
-                        ? pathname === item.href
-                        : pathname.startsWith(item.href)
-                    }
-                    className={cn(item.comingSoon && "cursor-not-allowed opacity-60")}
+                    isActive={pathname === sqlEditorMenuItem.href}
+                    className={cn(sqlEditorMenuItem.comingSoon && "cursor-not-allowed opacity-60")}
                   >
-                    <Link href={item.comingSoon ? "#" : item.href}>
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                      {item.comingSoon && (
+                    <Link href={sqlEditorMenuItem.comingSoon ? "#" : sqlEditorMenuItem.href}>
+                      <sqlEditorMenuItem.icon className="h-4 w-4" />
+                      <span>{sqlEditorMenuItem.title}</span>
+                      {sqlEditorMenuItem.comingSoon && (
                         <SidebarMenuBadge className="bg-orange-100 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400">
                           Soon
                         </SidebarMenuBadge>
                       )}
-                      {!item.comingSoon && item.badge && (
+                      {!sqlEditorMenuItem.comingSoon && sqlEditorMenuItem.badge && (
                         <SidebarMenuBadge className="bg-primary/20 text-primary">
-                          {item.badge}
+                          {sqlEditorMenuItem.badge}
                         </SidebarMenuBadge>
                       )}
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-              ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+        <SidebarGroup>
+          <SidebarGroupLabel>Database Management</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {globalMenuItems.map(
+                item =>
+                  (!item.adminOnly || isAdmin) && (
+                    <SidebarMenuItem key={item.href}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={
+                          item.href === "/database"
+                            ? pathname === item.href
+                            : pathname.startsWith(item.href)
+                        }
+                        className={cn(item.comingSoon && "cursor-not-allowed opacity-60")}
+                      >
+                        <Link href={item.comingSoon ? "#" : item.href}>
+                          <item.icon className="h-4 w-4" />
+                          <span>{item.title}</span>
+                          {item.comingSoon && (
+                            <SidebarMenuBadge className="bg-orange-100 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400">
+                              Soon
+                            </SidebarMenuBadge>
+                          )}
+                          {!item.comingSoon && item.badge && (
+                            <SidebarMenuBadge className="bg-primary/20 text-primary">
+                              {item.badge}
+                            </SidebarMenuBadge>
+                          )}
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

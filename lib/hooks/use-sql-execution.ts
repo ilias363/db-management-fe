@@ -25,7 +25,6 @@ export function useSqlExecution({ onSuccess, onError }: UseSqlExecutionOptions =
         },
         onError: error => {
             const msg = error.message || 'Execution failed';
-            toast.error(msg);
             onError?.(msg);
         },
     });
