@@ -13,6 +13,7 @@ import {
   Loader2,
   ExternalLink,
   Database,
+  BarChart3,
 } from "lucide-react";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -191,7 +192,7 @@ export function ViewCard({ schemaName, viewName, isSystemSchema, className }: Vi
         <div className="pt-2 border-t space-y-2">
           <Button asChild variant="outline" size="sm" className="w-full">
             <Link href={`/database/views/${schemaName}/${viewName}/data`}>
-              <Eye className="h-4 w-4 mr-2" />
+              <BarChart3 className="h-4 w-4 mr-2 rotate-90" />
               Browse View Data
             </Link>
           </Button>

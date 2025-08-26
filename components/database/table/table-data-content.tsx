@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Table, ArrowLeft, Database, AlertTriangle } from "lucide-react";
+import { Table, ArrowLeft, Database, AlertTriangle, ExternalLink } from "lucide-react";
 import {
   useTable,
   useTableRecordsSearch,
@@ -23,6 +23,7 @@ import { TableRecordPageDto, RecordAdvancedSearchDto } from "@/lib/types/databas
 import { RecordDataGrid, AdvancedSearch } from "@/components/database/record";
 import { Badge } from "@/components/ui/badge";
 import { ErrorMessage, LastUpdated, ConfirmDialog } from "@/components/common";
+import Link from "next/link";
 
 interface TableDataContentProps {
   schemaName: string;
@@ -536,7 +537,15 @@ export function TableDataContent({ schemaName, tableName }: TableDataContentProp
           </div>
         </div>
 
-        <LastUpdated onRefresh={handleRefresh} resetTrigger={Number(recordsLoading)} />
+        <div className="flex items-center gap-2">
+          <Button asChild variant="outline" size="sm" className="gap-2">
+            <Link href={`/database/tables/${schemaName}/${tableName}`}>
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Go To Details
+            </Link>
+          </Button>
+          <LastUpdated onRefresh={handleRefresh} resetTrigger={Number(recordsLoading)} />
+        </div>
       </div>
 
       <Card>

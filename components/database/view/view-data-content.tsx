@@ -5,13 +5,14 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Eye, ArrowLeft, Database, AlertTriangle } from "lucide-react";
+import { Eye, ArrowLeft, Database, AlertTriangle, ExternalLink } from "lucide-react";
 import { useView, useViewRecordsSearch, useDetailedPermissions } from "@/lib/hooks";
 import { SortDirection } from "@/lib/types";
 import { RecordAdvancedSearchDto, ViewRecordPageDto } from "@/lib/types/database";
 import { RecordDataGrid, AdvancedSearch } from "@/components/database/record";
 import { Badge } from "@/components/ui/badge";
 import { ErrorMessage, LastUpdated } from "@/components/common";
+import Link from "next/link";
 
 interface ViewDataContentProps {
   schemaName: string;
@@ -310,7 +311,15 @@ export function ViewDataContent({ schemaName, viewName }: ViewDataContentProps) 
           </div>
         </div>
 
-        <LastUpdated onRefresh={handleRefresh} resetTrigger={Number(recordsLoading)} />
+        <div className="flex items-center gap-2">
+          <Button asChild variant="outline" size="sm" className="gap-2">
+            <Link href={`/database/views/${schemaName}/${viewName}`}>
+              <ExternalLink className="h-4 w-4" />
+              Go To Details
+            </Link>
+          </Button>
+          <LastUpdated onRefresh={handleRefresh} resetTrigger={Number(recordsLoading)} />
+        </div>
       </div>
 
       <Card>
