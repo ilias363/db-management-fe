@@ -42,6 +42,7 @@ import type {
   UserActionBreakdownResponse,
   UserDatabaseAccessResponse,
   UserRecentActivityResponse,
+  ExportFormat,
 } from "./types";
 import type {
   SchemasResponse,
@@ -697,6 +698,41 @@ class ApiClientImpl implements ApiClient {
         method: 'POST',
         body: JSON.stringify(request),
       }),
+  };
+
+  export = {
+    exportUsers: async (format: ExportFormat = 'csv'): Promise<Response> => {
+      const url = `${this.baseUrl}/export/users?format=${format}`;
+      const headers = await this.getAuthHeaders();
+      const res = await fetch(url, { method: 'GET', headers, credentials: 'include' });
+      if (!res.ok) {
+        const text = await res.text().catch(() => 'Export users failed');
+        throw new HttpError(res.status, text || 'Export users failed');
+      }
+      return res;
+    },
+
+    exportRoles: async (format: ExportFormat = 'csv'): Promise<Response> => {
+      const url = `${this.baseUrl}/export/roles?format=${format}`;
+      const headers = await this.getAuthHeaders();
+      const res = await fetch(url, { method: 'GET', headers, credentials: 'include' });
+      if (!res.ok) {
+        const text = await res.text().catch(() => 'Export roles failed');
+        throw new HttpError(res.status, text || 'Export roles failed');
+      }
+      return res;
+    },
+
+    exportAudits: async (format: ExportFormat = 'csv'): Promise<Response> => {
+      const url = `${this.baseUrl}/export/audits?format=${format}`;
+      const headers = await this.getAuthHeaders();
+      const res = await fetch(url, { method: 'GET', headers, credentials: 'include' });
+      if (!res.ok) {
+        const text = await res.text().catch(() => 'Export audit logs failed');
+        throw new HttpError(res.status, text || 'Export audit logs failed');
+      }
+      return res;
+    },
   };
 }
 

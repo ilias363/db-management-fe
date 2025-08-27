@@ -38,6 +38,7 @@ import type {
   UserActionBreakdownResponse,
   UserRecentActivityResponse,
   UserDatabaseAccessResponse,
+  ExportFormat,
 } from "./index";
 
 import type {
@@ -253,5 +254,10 @@ export interface ApiClient {
   };
   sql: {
     execute(request: SqlExecutionRequestDto): Promise<SqlExecutionResponse>;
+  };
+  export: {
+    exportUsers(format: ExportFormat): Promise<Response>;
+    exportRoles(format: ExportFormat): Promise<Response>;
+    exportAudits(format: ExportFormat): Promise<Response>;
   };
 }
