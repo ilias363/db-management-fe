@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
 import { ThemeToggle } from "@/components/theme";
@@ -39,7 +39,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { toast } from "sonner";
 
 interface NavItem {
   title: string;
@@ -118,6 +117,7 @@ export function AppSidebar() {
   const pathname = usePathname();
   const { user, isLoading, logout } = useAuth();
   const isAdmin = user?.roles?.some(role => role.name === "ADMIN");
+  const router = useRouter();
 
   if (isLoading || !user) {
     return (
@@ -314,7 +314,7 @@ export function AppSidebar() {
                 align="end"
                 sideOffset={4}
               >
-                <DropdownMenuItem onClick={() => toast("Profile feature coming soon!")}>
+                <DropdownMenuItem onClick={() => router.push("/profile")}>
                   <User className="mr-2 h-4 w-4" />
                   <span>Profile</span>
                 </DropdownMenuItem>
