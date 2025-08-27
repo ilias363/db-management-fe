@@ -1,6 +1,7 @@
 export * from "./confirm-dialog";
 export * from "./data-table";
 export * from "./error-message";
+export * from "./export-button";
 export * from "./last-updated";
 export * from "./loading-screen";
 export * from "./permission-badge";
