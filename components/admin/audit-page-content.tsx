@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { AuditLogDto, ActionType, AuditStats, SortDirection } from "@/lib/types";
 
 import { AuditStatsCards, AuditTable, AuditDetailsDialog } from "@/components/audit";
-import { ConfirmDialog, LastUpdated } from "@/components/common";
+import { ConfirmDialog, LastUpdated, ErrorMessage, ExportButton } from "@/components/common";
 import {
   Select,
   SelectContent,
@@ -20,9 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { deleteAuditLog } from "@/lib/actions";
-import { useAuditFilters } from "@/lib/hooks";
-import { useAuditData } from "@/lib/hooks";
-import { ErrorMessage } from "@/components/common";
+import { useAuditFilters, useAuditData, useExportAudits } from "@/lib/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const ACTION_TYPES = Object.values(ActionType);
@@ -115,6 +113,7 @@ export function AuditPageContent() {
   const audits = auditResponse?.data?.audits?.items || [];
   const totalAudits = auditResponse?.data?.audits?.totalItems || 0;
   const stats = auditResponse?.data?.stats;
+  const { exportAudits, exporting: exportingAudits } = useExportAudits();
 
   const clearUserFilter = () => {
     router.push("/admin/audit");
@@ -232,6 +231,11 @@ export function AuditPageContent() {
           <p className="text-muted-foreground">Monitor and review user actions across the system</p>
         </div>
         <div className="flex items-center gap-4">
+          <ExportButton
+            onExport={exportAudits}
+            resourceName="audit logs"
+            disabled={exportingAudits}
+          />
           <LastUpdated onRefresh={handleRefresh} resetTrigger={fetchTrigger} />
         </div>
       </div>

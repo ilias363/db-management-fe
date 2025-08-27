@@ -11,12 +11,10 @@ import { RoleDto, RoleStats, SortDirection } from "@/lib/types";
 import { RoleStatsCards } from "@/components/role/role-stats-cards";
 import { RoleTable } from "@/components/role/role-table";
 import { RoleDialog } from "@/components/role/role-dialog";
-import { ConfirmDialog } from "@/components/common/confirm-dialog";
-import { LastUpdated } from "@/components/common/last-updated";
+import { ConfirmDialog, LastUpdated, ErrorMessage, ExportButton } from "@/components/common";
 import { Input } from "@/components/ui/input";
 import { deleteRole } from "@/lib/actions";
-import { useRolesData } from "@/lib/hooks";
-import { ErrorMessage } from "@/components/common";
+import { useRolesData, useExportRoles } from "@/lib/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export function RolesPageContent() {
@@ -62,6 +60,7 @@ export function RolesPageContent() {
   const roles = rolesResponse?.data?.roles?.items || [];
   const totalRoles = rolesResponse?.data?.roles?.totalItems || 0;
   const stats = rolesResponse?.data?.stats;
+  const { exportRoles, exporting: exportingRoles } = useExportRoles();
 
   const handleViewRole = (role: RoleDto) => {
     router.push(`/admin/roles/${role.id}`);
@@ -159,6 +158,7 @@ export function RolesPageContent() {
           </p>
         </div>
         <div className="flex items-center gap-4">
+          <ExportButton onExport={exportRoles} resourceName="roles" disabled={exportingRoles} />
           <Button size="sm" className="gap-2" onClick={openCreateDialog}>
             <Plus className="h-4 w-4" />
             Create Role

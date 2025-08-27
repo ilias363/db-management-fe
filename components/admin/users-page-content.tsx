@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { UserDto, SortDirection, UserStats } from "@/lib/types";
 
 import { UserStatsCards, UserTable, UserDialog } from "@/components/user";
-import { ConfirmDialog, LastUpdated, ErrorMessage } from "@/components/common";
+import { ConfirmDialog, LastUpdated, ErrorMessage, ExportButton } from "@/components/common";
 import {
   Select,
   SelectContent,
@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { toggleUserStatus } from "@/lib/actions";
-import { useUsersData, useAllRoles } from "@/lib/hooks";
+import { useUsersData, useAllRoles, useExportUsers } from "@/lib/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export function UsersPageContent() {
@@ -58,6 +58,7 @@ export function UsersPageContent() {
   });
 
   const { data: rolesResponse, isError: rolesError } = useAllRoles();
+  const { exportUsers, exporting: exportingUsers } = useExportUsers();
 
   useEffect(() => {
     if (prevFetchingRef.current && !usersFetching) {
@@ -159,6 +160,7 @@ export function UsersPageContent() {
           <p className="text-muted-foreground">Manage users and their roles across the system</p>
         </div>
         <div className="flex items-center gap-4">
+          <ExportButton onExport={exportUsers} resourceName="users" disabled={exportingUsers} />
           <Button size="sm" className="gap-2" onClick={openCreateDialog}>
             <Plus className="h-4 w-4" />
             Create User
