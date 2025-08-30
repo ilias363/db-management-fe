@@ -179,7 +179,7 @@ export function CreateTableDialog({
                   <CardDescription>Basic metadata for the new table</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-4 items-start">
                     <FormField
                       control={form.control}
                       name="schemaName"
