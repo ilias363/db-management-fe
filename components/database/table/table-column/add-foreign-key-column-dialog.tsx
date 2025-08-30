@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useWatch } from "react-hook-form";
 import {
   Dialog,
   DialogContent,
@@ -70,8 +71,17 @@ export function AddForeignKeyColumnDialog({
       },
     });
 
-  const { handleSubmit, watch } = form;
-  const dataType = watch("dataType");
+  const { handleSubmit, setValue } = form;
+  const dataType = useWatch({ control: form.control, name: "dataType" });
+
+  const handleDataTypeChange = (newDataType: DataType) => {
+    setValue("characterMaxLength", undefined);
+    setValue("numericPrecision", undefined);
+    setValue("numericScale", undefined);
+    setValue("columnDefault", undefined);
+
+    setValue("dataType", newDataType);
+  };
 
   useEffect(() => {
     if (open) {
@@ -91,9 +101,6 @@ export function AddForeignKeyColumnDialog({
     setShowUnsavedWarning(false);
     onOpenChange(false);
   };
-
-  const requiresCharacterMaxLength = NEEDS_CHARACTER_MAX_LENGTH.includes(dataType);
-  const supportsNumericPrecision = NEEDS_NUMERIC_PRECISION.includes(dataType);
 
   return (
     <>
@@ -138,7 +145,7 @@ export function AddForeignKeyColumnDialog({
                     <FormItem>
                       <FormLabel>Data Type *</FormLabel>
                       <Select
-                        onValueChange={field.onChange}
+                        onValueChange={handleDataTypeChange}
                         defaultValue={field.value}
                         disabled={isPending}
                       >
@@ -161,7 +168,7 @@ export function AddForeignKeyColumnDialog({
                 />
               </div>
 
-              {requiresCharacterMaxLength && (
+              {NEEDS_CHARACTER_MAX_LENGTH.includes(dataType) && (
                 <FormField
                   control={form.control}
                   name="characterMaxLength"
@@ -186,7 +193,7 @@ export function AddForeignKeyColumnDialog({
                 />
               )}
 
-              {supportsNumericPrecision && (
+              {NEEDS_NUMERIC_PRECISION.includes(dataType) && (
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}

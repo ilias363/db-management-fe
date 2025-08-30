@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useWatch } from "react-hook-form";
 import {
   Dialog,
   DialogContent,
@@ -67,8 +68,16 @@ export function AddPrimaryKeyColumnDialog({
       },
     });
 
-  const { handleSubmit, watch } = form;
-  const dataType = watch("dataType");
+  const { handleSubmit, setValue } = form;
+  const dataType = useWatch({ control: form.control, name: "dataType" });
+
+  const handleDataTypeChange = (newDataType: DataType) => {
+    setValue("characterMaxLength", undefined);
+    setValue("numericPrecision", undefined);
+    setValue("numericScale", undefined);
+
+    setValue("dataType", newDataType);
+  };
 
   useEffect(() => {
     if (open) {
@@ -89,8 +98,6 @@ export function AddPrimaryKeyColumnDialog({
     onOpenChange(false);
   };
 
-  const requiresCharacterMaxLength = NEEDS_CHARACTER_MAX_LENGTH.includes(dataType);
-  const supportsNumericPrecision = NEEDS_NUMERIC_PRECISION.includes(dataType);
   const supportsAutoIncrement = AUTO_INCREMENT_COMPATIBLE_TYPES.includes(dataType);
 
   return (
@@ -136,7 +143,7 @@ export function AddPrimaryKeyColumnDialog({
                     <FormItem>
                       <FormLabel>Data Type *</FormLabel>
                       <Select
-                        onValueChange={field.onChange}
+                        onValueChange={handleDataTypeChange}
                         defaultValue={field.value}
                         disabled={isPending}
                       >
@@ -160,7 +167,7 @@ export function AddPrimaryKeyColumnDialog({
               </div>
 
               {/* Conditional Data Type Parameters */}
-              {requiresCharacterMaxLength && (
+              {NEEDS_CHARACTER_MAX_LENGTH.includes(dataType) && (
                 <FormField
                   control={form.control}
                   name="characterMaxLength"
@@ -185,7 +192,7 @@ export function AddPrimaryKeyColumnDialog({
                 />
               )}
 
-              {supportsNumericPrecision && (
+              {NEEDS_NUMERIC_PRECISION.includes(dataType) && (
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
