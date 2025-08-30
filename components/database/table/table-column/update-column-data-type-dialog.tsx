@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useWatch } from "react-hook-form";
 import { AlertCircle } from "lucide-react";
 import {
   Dialog,
@@ -57,10 +58,6 @@ export function UpdateColumnDataTypeDialog({
   onSuccess,
 }: UpdateColumnDataTypeDialogProps) {
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
-  // A state to force re-render cuz the form doesn't automatically update the fields
-  // (probably something related to react-compiler auto memoization)
-  const [rerenderTrigger, setRerenderTrigger] = useState(1);
-
   const { form, isPending, submitError, submitUpdate, resetForm, isValid, isDirty, errors } =
     useUpdateColumnDataTypeForm({
       column,
@@ -92,20 +89,16 @@ export function UpdateColumnDataTypeDialog({
     onOpenChange(false);
   };
 
-  const { handleSubmit, watch, setValue } = form;
-  const dataType = watch("dataType");
+  const { handleSubmit, setValue } = form;
+  const dataType = useWatch({ control: form.control, name: "dataType" });
 
   const handleDataTypeChange = (newDataType: DataType) => {
     setValue("characterMaxLength", undefined);
     setValue("numericPrecision", undefined);
     setValue("numericScale", undefined);
-    setValue("dataType", newDataType);
-    setRerenderTrigger(prev => prev + 1);
-  };
 
-  const requiresCharacterMaxLength =
-    NEEDS_CHARACTER_MAX_LENGTH.includes(dataType) && !!rerenderTrigger;
-  const supportsNumericPrecision = NEEDS_NUMERIC_PRECISION.includes(dataType) && !!rerenderTrigger;
+    setValue("dataType", newDataType);
+  };
 
   return (
     <>
@@ -154,7 +147,7 @@ export function UpdateColumnDataTypeDialog({
               />
 
               {/* Character length field for VARCHAR/CHAR */}
-              {requiresCharacterMaxLength && (
+              {NEEDS_CHARACTER_MAX_LENGTH.includes(dataType) && (
                 <FormField
                   control={form.control}
                   name="characterMaxLength"
@@ -180,7 +173,7 @@ export function UpdateColumnDataTypeDialog({
               )}
 
               {/* Numeric precision and scale for DECIMAL/NUMERIC */}
-              {supportsNumericPrecision && (
+              {NEEDS_NUMERIC_PRECISION.includes(dataType) && (
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
