@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useWatch } from "react-hook-form";
 import { ColumnType } from "@/lib/types";
 import { TableMetadataDto } from "@/lib/types/database";
 import {
@@ -105,21 +106,22 @@ export function CreateTableDialog({
 
   const isFormValid = allColumns.length > 0 && isValid;
 
-  const standardColumnsLength = form.watch("standardColumns").length;
-  const primaryKeyColumnsLength = form.watch("primaryKeyColumns").length;
-  const foreignKeyColumnsLength = form.watch("foreignKeyColumns").length;
-  const primaryKeyForeignKeyColumnsLength = form.watch("primaryKeyForeignKeyColumns").length;
-
-  // Trigger validation when columns change
-  useEffect(() => {
-    form.trigger();
-  }, [
-    form,
-    standardColumnsLength,
-    primaryKeyColumnsLength,
-    foreignKeyColumnsLength,
-    primaryKeyForeignKeyColumnsLength,
-  ]);
+  const standardColumnsLength = useWatch({
+    control: form.control,
+    compute: values => values.standardColumns.length,
+  });
+  const primaryKeyColumnsLength = useWatch({
+    control: form.control,
+    compute: values => values.primaryKeyColumns.length,
+  });
+  const foreignKeyColumnsLength = useWatch({
+    control: form.control,
+    compute: values => values.foreignKeyColumns.length,
+  });
+  const primaryKeyForeignKeyColumnsLength = useWatch({
+    control: form.control,
+    compute: values => values.primaryKeyForeignKeyColumns.length,
+  });
 
   const getColumnTypeBadgeVariant = (columnType: ColumnType) => {
     switch (columnType) {

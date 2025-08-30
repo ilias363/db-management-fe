@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { PrimaryKeyColumnSchema } from "@/lib/schemas/database";
-import { ColumnType, DataType } from "@/lib/types";
+import { AUTO_INCREMENT_COMPATIBLE_TYPES, ColumnType, DataType } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, Edit3 } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { primaryKeyColumnSchema } from "@/lib/schemas/database";
 
@@ -102,10 +102,6 @@ function PrimaryKeyColumnCard({ column, onUpdate, onRemove }: PrimaryKeyColumnCa
 }
 
 function PrimaryKeyColumnForm({ column, onSave, onCancel }: PrimaryKeyColumnFormProps) {
-  // A state to force re-render cuz the form doesn't automatically update the fields
-  // (probably something related to react-compiler auto memoization)
-  const [rerenderTrigger, setRerenderTrigger] = useState(1);
-
   const form = useForm<PrimaryKeyColumnSchema>({
     resolver: zodResolver(primaryKeyColumnSchema),
     defaultValues: column || {
@@ -120,8 +116,8 @@ function PrimaryKeyColumnForm({ column, onSave, onCancel }: PrimaryKeyColumnForm
     mode: "onChange",
   });
 
-  const { handleSubmit, watch, setValue } = form;
-  const dataType = watch("dataType");
+  const { handleSubmit, setValue } = form;
+  const dataType = useWatch({ control: form.control, name: "dataType" });
 
   const handleDataTypeChange = (newDataType: DataType) => {
     setValue("characterMaxLength", undefined);
@@ -129,23 +125,13 @@ function PrimaryKeyColumnForm({ column, onSave, onCancel }: PrimaryKeyColumnForm
     setValue("numericScale", undefined);
 
     setValue("dataType", newDataType);
-    setRerenderTrigger(prev => prev + 1);
   };
 
   const onSubmit = (data: PrimaryKeyColumnSchema) => {
     onSave(data);
   };
 
-  const requiresCharacterMaxLength =
-    NEEDS_CHARACTER_MAX_LENGTH.includes(dataType) && !!rerenderTrigger;
-  const supportsNumericPrecision = NEEDS_NUMERIC_PRECISION.includes(dataType) && !!rerenderTrigger;
-
-  const isAutoIncrementSupported = [
-    DataType.INT,
-    DataType.INTEGER,
-    DataType.SMALLINT,
-    DataType.BIGINT,
-  ].includes(dataType);
+  const isAutoIncrementSupported = AUTO_INCREMENT_COMPATIBLE_TYPES.includes(dataType);
 
   return (
     <Card>
@@ -201,7 +187,7 @@ function PrimaryKeyColumnForm({ column, onSave, onCancel }: PrimaryKeyColumnForm
               />
             </div>
 
-            {requiresCharacterMaxLength && (
+            {NEEDS_CHARACTER_MAX_LENGTH.includes(dataType) && (
               <FormField
                 control={form.control}
                 name="characterMaxLength"
@@ -225,7 +211,7 @@ function PrimaryKeyColumnForm({ column, onSave, onCancel }: PrimaryKeyColumnForm
               />
             )}
 
-            {supportsNumericPrecision && (
+            {NEEDS_NUMERIC_PRECISION.includes(dataType) && (
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
@@ -289,7 +275,7 @@ function PrimaryKeyColumnForm({ column, onSave, onCancel }: PrimaryKeyColumnForm
                     <FormDescription>
                       {isAutoIncrementSupported
                         ? "Automatically generate sequential values"
-                        : "Auto increment is only available for INT, INTEGER, SMALLINT, and BIGINT types"}
+                        : "Auto increment not available for selected type"}
                     </FormDescription>
                   </div>
                 </FormItem>

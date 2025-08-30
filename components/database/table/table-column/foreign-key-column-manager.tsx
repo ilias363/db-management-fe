@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, Edit3 } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { foreignKeyColumnSchema } from "@/lib/schemas/database";
 
@@ -106,10 +106,6 @@ function ForeignKeyColumnCard({ column, onUpdate, onRemove }: ForeignKeyColumnCa
 }
 
 function ForeignKeyColumnForm({ column, onSave, onCancel }: ForeignKeyColumnFormProps) {
-  // A state to force re-render cuz the form doesn't automatically update the fields
-  // (probably something related to react-compiler auto memoization)
-  const [rerenderTrigger, setRerenderTrigger] = useState(1);
-
   const form = useForm<ForeignKeyColumnSchema>({
     resolver: zodResolver(foreignKeyColumnSchema),
     defaultValues: column || {
@@ -130,8 +126,8 @@ function ForeignKeyColumnForm({ column, onSave, onCancel }: ForeignKeyColumnForm
     mode: "onChange",
   });
 
-  const { handleSubmit, watch, setValue } = form;
-  const dataType = watch("dataType");
+  const { handleSubmit, setValue } = form;
+  const dataType = useWatch({ control: form.control, name: "dataType" });
 
   const handleDataTypeChange = (newDataType: DataType) => {
     setValue("characterMaxLength", undefined);
@@ -140,16 +136,11 @@ function ForeignKeyColumnForm({ column, onSave, onCancel }: ForeignKeyColumnForm
     setValue("columnDefault", undefined);
 
     setValue("dataType", newDataType);
-    setRerenderTrigger(prev => prev + 1);
   };
 
   const onSubmit = (data: ForeignKeyColumnSchema) => {
     onSave(data);
   };
-
-  const requiresCharacterMaxLength =
-    NEEDS_CHARACTER_MAX_LENGTH.includes(dataType) && !!rerenderTrigger;
-  const supportsNumericPrecision = NEEDS_NUMERIC_PRECISION.includes(dataType) && !!rerenderTrigger;
 
   return (
     <Card>
@@ -203,7 +194,7 @@ function ForeignKeyColumnForm({ column, onSave, onCancel }: ForeignKeyColumnForm
               />
             </div>
 
-            {requiresCharacterMaxLength && (
+            {NEEDS_CHARACTER_MAX_LENGTH.includes(dataType) && (
               <FormField
                 control={form.control}
                 name="characterMaxLength"
@@ -227,7 +218,7 @@ function ForeignKeyColumnForm({ column, onSave, onCancel }: ForeignKeyColumnForm
               />
             )}
 
-            {supportsNumericPrecision && (
+            {NEEDS_NUMERIC_PRECISION.includes(dataType) && (
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}

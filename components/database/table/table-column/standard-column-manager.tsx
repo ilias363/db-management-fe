@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, Edit3 } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { standardColumnSchema } from "@/lib/schemas/database";
 
@@ -103,10 +103,6 @@ function StandardColumnCard({ column, onUpdate, onRemove }: StandardColumnCardPr
 }
 
 function StandardColumnForm({ column, onSave, onCancel }: StandardColumnFormProps) {
-  // A state to force re-render cuz the form doesn't automatically update the fields
-  // (probably something related to react-compiler auto memoization)
-  const [rerenderTrigger, setRerenderTrigger] = useState(1);
-
   const form = useForm<StandardColumnSchema>({
     resolver: zodResolver(standardColumnSchema),
     defaultValues: column || {
@@ -123,9 +119,9 @@ function StandardColumnForm({ column, onSave, onCancel }: StandardColumnFormProp
     mode: "onChange",
   });
 
-  const { handleSubmit, watch, setValue } = form;
-  const dataType = watch("dataType");
-  const isUnique = watch("isUnique");
+  const { handleSubmit, setValue } = form;
+  const dataType = useWatch({ control: form.control, name: "dataType" });
+  const isUnique = useWatch({ control: form.control, name: "isUnique" });
 
   const handleDataTypeChange = (newDataType: DataType) => {
     setValue("characterMaxLength", undefined);
@@ -134,16 +130,11 @@ function StandardColumnForm({ column, onSave, onCancel }: StandardColumnFormProp
     setValue("columnDefault", undefined);
 
     setValue("dataType", newDataType);
-    setRerenderTrigger(prev => prev + 1);
   };
 
   const onSubmit = (data: StandardColumnSchema) => {
     onSave(data);
   };
-
-  const requiresCharacterMaxLength =
-    NEEDS_CHARACTER_MAX_LENGTH.includes(dataType) && !!rerenderTrigger;
-  const supportsNumericPrecision = NEEDS_NUMERIC_PRECISION.includes(dataType) && !!rerenderTrigger;
 
   return (
     <Card>
@@ -196,7 +187,7 @@ function StandardColumnForm({ column, onSave, onCancel }: StandardColumnFormProp
               />
             </div>
 
-            {requiresCharacterMaxLength && (
+            {NEEDS_CHARACTER_MAX_LENGTH.includes(dataType) && (
               <FormField
                 control={form.control}
                 name="characterMaxLength"
@@ -220,7 +211,7 @@ function StandardColumnForm({ column, onSave, onCancel }: StandardColumnFormProp
               />
             )}
 
-            {supportsNumericPrecision && (
+            {NEEDS_NUMERIC_PRECISION.includes(dataType) && (
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
