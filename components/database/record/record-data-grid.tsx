@@ -284,10 +284,12 @@ export function RecordDataGrid({
 
       object.columns.forEach(column => {
         if (column.dataType.toUpperCase() == DataType.TIMESTAMP) {
-          record[column.columnName] = new Date(String(record[column.columnName]))
-            .toISOString()
-            .replace("T", " ")
-            .slice(0, 19);
+          record[column.columnName] = record[column.columnName]
+            ? new Date(String(record[column.columnName]))
+                .toISOString()
+                .replace("T", " ")
+                .slice(0, 19)
+            : "";
         }
       });
 
