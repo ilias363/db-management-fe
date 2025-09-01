@@ -4,6 +4,8 @@ const nextConfig: NextConfig = {
   experimental: {
     reactCompiler: true,
   },
+  // Enable standalone output to slim the production Docker image
+  output: 'standalone',
   typescript: {
     ignoreBuildErrors: true,
   },

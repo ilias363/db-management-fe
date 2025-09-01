@@ -1,0 +1,17 @@
+.next/cache
+.next/trace
+.next/types
+node_modules
+npm-debug.log
+Dockerfile*
+Dockerfile
+.dockerignore
+.git
+.github
+.idea
+.vscode
+.eslintrc*
+*.iml
+*.log
+coverage
+.env*
