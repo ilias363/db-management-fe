@@ -5,7 +5,7 @@ Frontend service for the [Database Management System](https://github.com/ilias36
 ## Quick Run (Local)
 ```
 npm install
-cp env.production.example .env  # adjust NEXT_PUBLIC_API_URL
+cp .env.example .env  # adjust NEXT_PUBLIC_API_URL
 npm run dev
 ```
 Serves at http://localhost:3000 (or configured port).
