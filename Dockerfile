@@ -24,7 +24,6 @@ WORKDIR /app
 
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 ENV NODE_ENV=production
-ENV PORT=3000
 
 # Create non-root user
 RUN addgroup -S nodegrp && adduser -S nodeusr -G nodegrp
