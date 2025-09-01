@@ -9,7 +9,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         <div className="flex h-14 items-center gap-4 border-b bg-background/95 px-6">
           <SidebarTrigger />
           <div className="flex items-center gap-2">
-            <span className="text-lg font-semibold">DB Manager</span>
+            <span className="text-lg font-semibold">Database Management System</span>
           </div>
         </div>
 
