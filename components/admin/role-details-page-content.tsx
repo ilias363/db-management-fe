@@ -186,7 +186,7 @@ export function RoleDetailsPageContent({ roleId }: RoleDetailsPageContentProps) 
             </Button>
           </div>
         </div>
-        <ErrorMessage error="Role not found" />
+        {roleLoading ? <div>Loading role details...</div> : <ErrorMessage error="Role not found" />}
       </div>
     );
   }

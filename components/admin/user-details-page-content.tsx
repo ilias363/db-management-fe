@@ -163,7 +163,7 @@ export function UserDetailsPageContent({ userId }: UserDetailsPageContentProps) 
             </Button>
           </div>
         </div>
-        <ErrorMessage error="User not found" />
+        {userLoading ? <div>Loading user details...</div> : <ErrorMessage error="User not found" />}
       </div>
     );
   }
