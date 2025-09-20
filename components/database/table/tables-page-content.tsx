@@ -165,15 +165,15 @@ export function TablesPageContent() {
               </SelectTrigger>
               <SelectContent>
                 {schemasLoading ? (
-                  <SelectItem value="" disabled>
+                  <SelectItem value="loading" disabled>
                     Loading schemas...
                   </SelectItem>
                 ) : schemasError ? (
-                  <SelectItem value="" disabled>
+                  <SelectItem value="error" disabled>
                     Error loading schemas
                   </SelectItem>
                 ) : schemas.length === 0 ? (
-                  <SelectItem value="" disabled>
+                  <SelectItem value="no-schemas" disabled>
                     No schemas available
                   </SelectItem>
                 ) : (
@@ -196,7 +196,6 @@ export function TablesPageContent() {
                 )}
               </SelectContent>
             </Select>
-            {permsLoading && <Skeleton className="h-8 w-24" />}
             {permsError && <span className="text-xs text-destructive">Perms failed</span>}
             {schemasError && (
               <span className="text-xs text-destructive">Failed to load schemas</span>
