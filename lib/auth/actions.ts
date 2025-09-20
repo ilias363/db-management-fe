@@ -123,12 +123,16 @@ export async function getDetailedPermissions(
     }
 }
 
-export async function getIsSystemAdmin(): Promise<boolean> {
-    const session = await validateAndRefreshSession();
-    if (!session) return false;
+export async function getIsSystemAdmin(validateSession: boolean = true): Promise<boolean> {
+    let session: SessionData | null = null;
+  
+	if (validateSession) {
+		session = await validateAndRefreshSession();
+		if (!session) return false;
+	}
 
     try {
-        const response = await apiClient.auth.getIsCurrentUserSystemAdmin(session.accessToken);
+        const response = await apiClient.auth.getIsCurrentUserSystemAdmin(session?.accessToken);
         return response.success && response.data?.isSystemAdmin || false;
     } catch (error) {
         console.error("Failed to check admin status:", error);
@@ -234,7 +238,7 @@ export async function requireAdmin() {
     const session = await requireAuth();
 
     if (!session.isSystemAdmin) {
-        const isAdmin = await getIsSystemAdmin();
+        const isAdmin = await getIsSystemAdmin(false);
         if (!isAdmin) {
             redirect("/?unauthorized=true");
         }

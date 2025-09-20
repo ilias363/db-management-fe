@@ -40,7 +40,7 @@ export const authQueries = {
     isSystemAdminQuery: () =>
         queryOptions({
             queryKey: authQueries.isSystemAdmin(),
-            queryFn: getIsSystemAdmin,
+            queryFn: () => getIsSystemAdmin(),
             staleTime: 5 * 60 * 1000,
             retry: 2,
         }),
