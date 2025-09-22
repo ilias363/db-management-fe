@@ -171,15 +171,15 @@ export function ViewsPageContent() {
               </SelectTrigger>
               <SelectContent>
                 {schemasLoading ? (
-                  <SelectItem value="" disabled>
+                  <SelectItem value="loading" disabled>
                     Loading schemas...
                   </SelectItem>
                 ) : schemasError ? (
-                  <SelectItem value="" disabled>
+                  <SelectItem value="error" disabled>
                     Error loading schemas
                   </SelectItem>
                 ) : schemas.length === 0 ? (
-                  <SelectItem value="" disabled>
+                  <SelectItem value="no-schemas" disabled>
                     No schemas available
                   </SelectItem>
                 ) : (
